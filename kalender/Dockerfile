@@ -4,7 +4,11 @@
 FROM composer:2 AS vendor
 WORKDIR /app
 COPY composer.json ./
-RUN composer install --no-dev --no-interaction --no-progress --no-scripts --no-autoloader --prefer-dist --ignore-platform-reqs
+# Das composer-Image hat eine neuere PHP-Version als die Laufzeit (8.3).
+# composer.json legt deshalb config.platform.php = 8.3.0 fest; hier werden nur
+# Erweiterungen ignoriert, die im composer-Image fehlen (intl, sodium …),
+# niemals die PHP-Version – sonst landen Pakete für PHP 8.4+ im Image.
+RUN composer install --no-dev --no-interaction --no-progress --no-scripts --no-autoloader --prefer-dist --ignore-platform-req='ext-*'
 COPY src/ src/
 RUN composer dump-autoload --no-dev --optimize --classmap-authoritative
 

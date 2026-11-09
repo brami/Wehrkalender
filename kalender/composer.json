@@ -33,12 +33,19 @@
         "symfony/polyfill-php83": "*"
     },
     "autoload": {
-        "psr-4": { "Kalender\\": "src/" }
+        "psr-4": {
+            "Kalender\\": "src/"
+        }
     },
     "autoload-dev": {
-        "psr-4": { "Kalender\\Tests\\": "tests/" }
+        "psr-4": {
+            "Kalender\\Tests\\": "tests/"
+        }
     },
     "config": {
+        "platform": {
+            "php": "8.3.0"
+        },
         "sort-packages": true,
         "optimize-autoloader": true
     },

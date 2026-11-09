@@ -86,7 +86,8 @@ Die Frage ist bereits in der Doku offen. Für den Test sind `michael.bramer` und
 
 ### B1. `setup-server.sh` überschreibt die Anwendung
 Das Skript schreibt `docker-compose.yml`, `caddy/Caddyfile` und `www/index.html` bei **jedem** Lauf neu (nur Caddy-Testseite und MariaDB). Ein erneuter Lauf, etwa für `-B` (externes Backup-Ziel), entfernt also App und Worker aus Compose und Caddy.
-**Vorschlag:** Diese Dateien nur anlegen, wenn sie fehlen, oder eine Option `--app` ergänzen. Die vollständigen Fassungen liegen in `deploy/docker-compose.yml` und `deploy/Caddyfile`.
+**Erledigt (09.11.2026):** Das Skript heißt jetzt `setup-server-kalender-ff.sh` und installiert die Anwendung selbst (ZIP neben dem Skript bzw. `-Z`, Aktualisierung mit `-U`). Ist die Anwendung installiert, lässt die Grundeinrichtung `docker-compose.yml` und `Caddyfile` unverändert. Die Compose-Datei des Skripts reicht nur die nötigen Umgebungsvariablen an die Container weiter (kein `DB_ROOT_PASSWORD`, kein `RESTIC_PASSWORD`) und ist damit maßgeblich; `deploy/docker-compose.yml` im ZIP ist nur noch ein Beispiel.
+Die technische Doku nennt an mehreren Stellen noch `setup-server.sh`.
 
 ### B2. Namen der Konfigurationswerte
 - Die Doku nennt `APP_DOMAIN`, `setup-server.sh` schreibt `DOMAIN`. **Umgesetzt:** Die Anwendung liest beides.

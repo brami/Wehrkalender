@@ -1091,6 +1091,13 @@ x-app: &app
     ADMIN_ALERT_EMAILS: ${ADMIN_ALERT_EMAILS:-}
   volumes:
     - app-storage:/srv/app/storage
+  healthcheck:              # erkennt z. B. fehlerhafte Abhängigkeiten im Image
+    test: ["CMD", "php", "-r", "require '/srv/app/vendor/autoload.php';"]
+    interval: 60s
+    timeout: 10s
+    retries: 3
+    start_period: 90s
+    start_interval: 5s
   depends_on:
     db:
       condition: service_healthy
@@ -1256,6 +1263,11 @@ CADDY
   case "$code" in
     200) log "https://$DOMAIN/health: in Ordnung." ;;
     503) log "https://$DOMAIN/health antwortet (503: noch kein Import aus MP Feuer – bis zum Import erwartet)." ;;
+    502|504)
+         docker compose ps
+         docker compose logs --tail 40 app || true
+         log "FEHLER: Caddy erreicht die Anwendung nicht (HTTP $code). Protokoll des app-Containers siehe oben."
+         exit 1 ;;
     *)   log "WARNUNG: https://$DOMAIN/health nicht erreichbar (HTTP ${code:-–}). Meist fehlt noch das Zertifikat (DNS prüfen)."
          log "         Test im Container: docker compose exec app php bin/console list" ;;
   esac
