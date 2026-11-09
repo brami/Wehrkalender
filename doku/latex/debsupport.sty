@@ -1,0 +1,272 @@
+% =====================================================================
+%  debsupport.sty  --  Corporate Design deb-support fuer LaTeX
+%  Abgeleitet aus der Rechnungsvorlage RE490022 (28.03.2025)
+%
+%  Paketoptionen:
+%    brief    -> wird automatisch von debsupport.lco gesetzt
+%    bericht  -> Seitenlayout fuer Berichte/Protokolle (scrartcl/scrreprt)
+%    aushang  -> Seitenlayout fuer Aushaenge (scrartcl)
+%
+%  Firmendaten aendern:  \dssetup{telefon=..., iban=..., ...}
+%  Engine: pdfLaTeX (lualatex/xelatex funktionieren ebenfalls)
+% =====================================================================
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{debsupport}[2026/11/07 v1.0 Corporate Design deb-support]
+
+\newif\ifds@brief
+\newif\ifds@bericht
+\newif\ifds@aushang
+\DeclareOption{brief}{\ds@brieftrue}
+\DeclareOption{bericht}{\ds@berichttrue}
+\DeclareOption{aushang}{\ds@aushangtrue}
+\ProcessOptions\relax
+
+% ---------------------------------------------------------------------
+%  Schriften & Sprache
+%  Fliesstext: Helvetica (wie Vorlage), Kopf/Fuss: Computer Modern
+% ---------------------------------------------------------------------
+\RequirePackage{iftex}
+\ifPDFTeX
+  \RequirePackage[T1]{fontenc}
+  \RequirePackage{lmodern}
+  \RequirePackage[scaled=1]{helvet}
+\else
+  \RequirePackage{fontspec}
+  \setmainfont{Latin Modern Roman}
+  \IfFontExistsTF{TeX Gyre Heros}
+    {\setsansfont{TeX Gyre Heros}}{\setsansfont{Latin Modern Sans}}
+\fi
+\renewcommand*{\familydefault}{\sfdefault}
+\IfFileExists{ngerman.ldf}
+  {\RequirePackage[ngerman]{babel}}
+  {\RequirePackage[ngerman,provide=*]{babel}}
+\RequirePackage{microtype}
+
+\RequirePackage{xcolor}
+\RequirePackage{graphicx}
+\RequirePackage{array,booktabs,longtable,tabularx}
+\RequirePackage{enumitem}
+\RequirePackage{siunitx}
+\RequirePackage{eso-pic}
+\RequirePackage[skins,breakable]{tcolorbox}
+\RequirePackage{scrlayer-scrpage}
+\ifds@brief\else\RequirePackage{lastpage}\fi
+
+% ---------------------------------------------------------------------
+%  Farben
+% ---------------------------------------------------------------------
+\definecolor{dsrot}{RGB}{255,0,0}     % Logofarbe
+\definecolor{dsgrau}{gray}{0.40}      % Nebeninformationen
+\definecolor{dshell}{gray}{0.93}      % Hinterlegungen
+
+% ---------------------------------------------------------------------
+%  Firmendaten (Schluessel fuer \dssetup)
+% ---------------------------------------------------------------------
+\ExplSyntaxOn
+\keys_define:nn { debsupport }
+  {
+    firma     .tl_gset:N = \dsFirma ,
+    inhaber   .tl_gset:N = \dsInhaber ,
+    strasse   .tl_gset:N = \dsStrasse ,
+    plz       .tl_gset:N = \dsPLZ ,
+    ort       .tl_gset:N = \dsOrt ,
+    land      .tl_gset:N = \dsLand ,
+    telefon   .tl_gset:N = \dsTelefon ,
+    email     .tl_gset:N = \dsEmail ,
+    web       .tl_gset:N = \dsWeb ,
+    steuernr  .tl_gset:N = \dsSteuernr ,
+    ustid     .tl_gset:N = \dsUStId ,
+    bank      .tl_gset:N = \dsBank ,
+    bic       .tl_gset:N = \dsBIC ,
+    iban      .tl_gset:N = \dsIBAN ,
+  }
+\NewDocumentCommand \dssetup { m } { \keys_set:nn { debsupport } {#1} }
+\ExplSyntaxOff
+
+\dssetup{
+  firma    = deb-support,
+  inhaber  = Michael Bramer,
+  strasse  = Im Reuter 18,
+  plz      = 52372,
+  ort      = Kreuzau,
+  land     = D,
+  telefon  = +49--2422--503206,
+  email    = m.bramer@debsupport.de,
+  web      = http://www.debsupport.de,
+  steuernr = 207/5022/0124,
+  ustid    = DE188446802,
+  bank     = Deutsche Bank D\"uren,
+  bic      = DEUTDEDB395,
+  iban     = DE82\,3957\,0024\,0803\,1932\,00,
+}
+
+% ---------------------------------------------------------------------
+%  Schrift-Hilfen
+% ---------------------------------------------------------------------
+\newcommand*{\dsserif}{\fontfamily{lmr}\selectfont}
+\newcommand*{\dssans}{\fontfamily{lmss}\selectfont}
+\newcommand*{\dsklein}{\fontsize{8}{9.6}\selectfont}
+
+% Logo: "deb-support" in roten Kapitaelchen.  \dslogo[<Schriftgroesse in pt>]
+\newcommand*{\dslogo}[1][24.88]{%
+  {\color{dsrot}\dsserif\fontsize{#1}{#1}\selectfont\scshape\dsFirma}}
+
+% Absenderblock rechts oben (Computer Modern 12pt, rechtsbuendig)
+\newcommand*{\dsabsenderblock}{%
+  {\dsserif\fontsize{12}{14.45}\selectfont
+   \begin{tabular}[b]{@{}r@{}}
+     \dsStrasse\\
+     Inh.~\dsInhaber\\
+     \dsLand-\dsPLZ~\dsOrt
+   \end{tabular}}}
+
+% Ruecksendezeile im Adressfenster
+\newcommand*{\dsruecksendezeile}{%
+  {\dsserif\dsklein\dsFirma\ --- \dsStrasse\ --- \dsPLZ~\dsOrt}}
+
+% ---------------------------------------------------------------------
+%  Absolut positionierte Elemente der ersten Seite (Masse in mm)
+% ---------------------------------------------------------------------
+% Kopf: Logo links, Absender rechts, Linie 25,1 mm von oben
+\newcommand*{\ds@kopf}{%
+  \put(24.5,279.4){\makebox(0,0)[lb]{\dslogo}}%
+  \put(195.6,276.3){\makebox(0,0)[rb]{\dsabsenderblock}}%
+  \put(17.8,271.85){\rule{179.8mm}{0.4pt}}}
+
+% Fuss: Kontakt links, Steuer/Bank rechts, Linie 259,2 mm von oben
+\newcommand*{\ds@fuss}{%
+  \put(17.8,37.8){\rule{179.8mm}{0.4pt}}%
+  \put(19.9,37.0){\makebox(0,0)[lt]{\dsfussblock@links}}%
+  \put(114.3,37.0){\makebox(0,0)[lt]{\dsfussblock@rechts}}}
+\newcommand*{\dsfussblock@links}{%
+  \fontsize{10}{11.955}\selectfont
+  \begin{tabular}[t]{@{}>{\dssans}l@{\hspace{4.6mm}}>{\dsserif}l@{}}
+    \multicolumn{2}{@{}l}{\strut}\\
+    Telefon: & \dsTelefon\\
+    E--Mail: & \dsEmail\\
+    HTTP:    & \dsWeb
+  \end{tabular}}
+\newcommand*{\dsfussblock@rechts}{%
+  \fontsize{10}{11.955}\selectfont
+  \begin{tabular}[t]{@{}>{\dssans}l@{\hspace{4.2mm}}>{\dsserif}l@{}}
+    Steuernr.:       & \dsSteuernr\\
+    USt-Id:          & \dsUStId\\
+    Bankverbindung:  & \dsBank\\
+                     & BIC/SWIFT \dsBIC\\
+                     & IBAN \dsIBAN
+  \end{tabular}}
+
+% Adressfenster: Ruecksendezeile + Eckmarken (18--102,7 mm x 36,4--78,4 mm)
+\newcommand*{\ds@fenster}{%
+  \put(60.35,258.4){\makebox(0,0)[b]{\dsruecksendezeile}}%
+  \put(18.0,256.6){\rule{84.7mm}{0.4pt}}%
+  \linethickness{0.4pt}%
+  \put(18.0,260.6){\line(1,0){1}}\put(18.0,260.6){\line(0,-1){1}}%
+  \put(102.7,260.6){\line(-1,0){1}}\put(102.7,260.6){\line(0,-1){1}}%
+  \put(18.0,218.6){\line(1,0){1}}\put(18.0,218.6){\line(0,1){1}}%
+  \put(102.7,218.6){\line(-1,0){1}}\put(102.7,218.6){\line(0,1){1}}}
+
+% Oeffentliche Befehle fuer die aktuelle Seite
+\newcommand*{\dskopfhierhin}{%
+  \AddToShipoutPictureBG*{\setlength{\unitlength}{1mm}\ds@kopf}}
+\newcommand*{\dsfusshierhin}{%
+  \AddToShipoutPictureBG*{\setlength{\unitlength}{1mm}\ds@fuss}}
+\newcommand*{\dsfensterhierhin}{%
+  \AddToShipoutPictureBG*{\setlength{\unitlength}{1mm}\ds@fenster}}
+
+% Kopfzeile der Folgeseiten: kleines Logo links, Text rechts, Linie
+\newcommand*{\dsfolgekopf}[1]{%
+  \parbox[b]{\textwidth}{\dslogo[14]\hfill #1\\[-0.4ex]%
+    \rule{\textwidth}{0.4pt}}}
+
+% ---------------------------------------------------------------------
+%  Listen, Hinweisboxen
+% ---------------------------------------------------------------------
+\setlist{noitemsep,topsep=0.3\baselineskip}
+\setlist[itemize]{label=\textbullet}
+\newlist{dsliste}{itemize}{1}             % kleine Liste wie in der Rechnung
+\setlist[dsliste]{label=\textbullet,leftmargin=1.2em,nosep,
+                  font=\fontsize{7}{8.5}\selectfont,
+                  before=\fontsize{7}{8.5}\selectfont}
+
+\newtcolorbox{dshinweis}[1][]{%
+  enhanced jigsaw,breakable,colback=dshell,colframe=dsrot,
+  boxrule=0pt,leftrule=3pt,arc=0pt,outer arc=0pt,
+  left=3mm,right=3mm,top=2mm,bottom=2mm,
+  fonttitle=\bfseries,coltitle=black,
+  attach title to upper={\par\smallskip},#1}
+
+% ---------------------------------------------------------------------
+%  Betraege (deutsches Format: 6.400,00)
+% ---------------------------------------------------------------------
+\sisetup{locale=DE,group-separator={.},output-decimal-marker={,},
+         group-minimum-digits=4,mode=text,
+         reset-text-series=false,reset-text-family=false}
+\newcommand*{\dsbetrag}[1]{%
+  \num[round-mode=places,round-precision=2]{#1}}
+
+% (Positionstabelle fuer Rechnungen hier weggelassen – nur fuer die lokale
+%  Uebersetzungspruefung der Berichte; Original siehe Projekt latex/debsupport.sty)
+
+% Zahlungs-/Hinweiszeile wie in der Vorlage:  \dszeile{Zahlung:}{Text}
+\newcommand{\dszeile}[2]{%
+  \par\noindent\begin{tabularx}{\linewidth}{@{}l@{\hspace{4mm}}X@{}}
+    #1 & #2
+  \end{tabularx}\par\bigskip}
+
+% Infoblock (rechts neben Betreff):  \dsinfo{Auftrag: & 290003 \\ ...}
+\newcommand{\dsinfo}[1]{%
+  \begin{tabular}[t]{@{}l@{\hspace{1.4mm}}l@{}}#1\end{tabular}}
+
+% ---------------------------------------------------------------------
+%  Layout fuer Berichte / Protokolle
+% ---------------------------------------------------------------------
+\newcommand*{\dsdokumentart}{Bericht}
+\newcommand*{\dskurztitel}{}
+\newcommand*{\dsbeleg}{}
+
+\ifds@bericht
+  \RequirePackage[a4paper,left=21mm,right=15.3mm,top=36mm,bottom=28mm,
+                  headheight=8mm,headsep=6mm,footskip=12mm]{geometry}
+  \KOMAoptions{parskip=half-}
+  \setkomafont{disposition}{\sffamily\bfseries}
+  \setkomafont{section}{\Large}
+  \setkomafont{subsection}{\large}
+  \renewcommand*{\sectionformat}{\textcolor{dsrot}{\thesection}\enskip}
+  \renewcommand*{\subsectionformat}{\textcolor{dsrot}{\thesubsection}\enskip}
+  % Folgeseiten: kleines Logo links, Kurztitel rechts, Linie
+  \newpairofpagestyles{dsfolge}{%
+    \setkomafont{pageheadfoot}{\normalfont\sffamily\small}%
+    \setkomafont{pagenumber}{}%
+    \ihead{\dsfolgekopf{\dskurztitel}}%
+    \ofoot{\dsklein Seite \thepage\ von \pageref*{LastPage}%
+           \ifx\dsbeleg\empty\else\ (\dsbeleg)\fi}}
+  % Erste Seite: grosser Briefkopf (absolut), nur Seitenzahl unten
+  \newpairofpagestyles{dserste}{%
+    \setkomafont{pagenumber}{}%
+    \ofoot{\dsklein Seite \thepage\ von \pageref*{LastPage}%
+           \ifx\dsbeleg\empty\else\ (\dsbeleg)\fi}}
+  \pagestyle{dsfolge}
+  \AtBeginDocument{\thispagestyle{dserste}\dskopfhierhin}
+\fi
+
+% Titelblock fuer Berichte:
+%   \dstitel{Titel}{Untertitel}{Datum: & ... \\ Autor: & ...}
+\newcommand{\dstitel}[3]{%
+  \begingroup\noindent
+  {\color{dsrot}\dsserif\large\scshape\dsdokumentart}\par\smallskip
+  {\fontsize{22}{26}\selectfont\bfseries #1\par}%
+  \ifx\relax#2\relax\else\smallskip{\large\color{dsgrau}#2\par}\fi
+  \medskip\noindent\rule{\linewidth}{0.4pt}\par\smallskip
+  \ifx\relax#3\relax\else
+    \noindent{\small\begin{tabular}{@{}>{\bfseries}l@{\hspace{4mm}}l@{}}#3\end{tabular}}\par
+  \fi
+  \bigskip\endgroup}
+
+% ---------------------------------------------------------------------
+%  Links (zuletzt)
+% ---------------------------------------------------------------------
+\RequirePackage[hidelinks,pdfusetitle]{hyperref}
+\urlstyle{same}
+
+\endinput
