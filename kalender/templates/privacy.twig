@@ -1,0 +1,19 @@
+{% extends 'layout.twig' %}
+{% block title %}Datenschutz – {{ app_name }}{% endblock %}
+{% block content %}
+<h1>Hinweise zum Datenschutz</h1>
+<p class="muted small">Entwurf – Abstimmung mit der bzw. dem Datenschutzbeauftragten steht aus.</p>
+<div class="box">
+  <h2 style="margin-top:0">Welche Daten gespeichert werden</h2>
+  <ul>
+    <li>aus MP Feuer: Name, E-Mail-Adresse, Mitgliedschaften (Einheit, Gruppen, Abteilungen, Lehrgänge) und die Termine der Bereiche,</li>
+    <li>Ihr Benutzername und ein vom System erzeugtes Passwort (verschlüsselt gespeichert),</li>
+    <li>als Nutzungsdaten nur Zeitpunkte: Versand der Begrüßungs-E-Mail, Aufruf des Begrüßungslinks, erste und letzte Anmeldung im Web-Frontend, letzter Abruf über Smartphone/Tablet bzw. je Abo-Link, jeweils mit dem erkannten Gerätetyp.</li>
+  </ul>
+  <p>Ein Verlauf einzelner Zugriffe wird nicht gespeichert (abgesehen von den Zugriffsprotokollen des Webservers: 14 Tage, IP-Adressen gekürzt).</p>
+  <h2>Wer die Daten sieht</h2>
+  <p>Die Administratoren des Kalenderservers sehen in einer Nutzerübersicht, wer das System nutzt (Zeitpunkte, Gerätetyp und die Namen Ihrer Kalender) – aber keine Termininhalte. So können sie bei Problemen helfen.</p>
+  <h2>Löschung</h2>
+  <p>Scheiden Sie aus der Feuerwehr aus, werden Ihr Zugang und alle zugehörigen Daten beim nächsten Import vollständig gelöscht. Importprotokolle werden nach 90 Tagen gelöscht.</p>
+</div>
+{% endblock %}

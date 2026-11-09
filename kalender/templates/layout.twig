@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>{% block title %}{{ app_name }}{% endblock %}</title>
+  <link rel="stylesheet" href="/assets/style.css">
+  <link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
+  <script src="/assets/app.js" defer></script>
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-inner">
+    <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span>{{ app_name }}</a>
+    {% if current_user %}
+    <nav class="nav" aria-label="Hauptmenü">
+      <a href="/" {% if current_path == '/' %}aria-current="page"{% endif %}>Meine Kalender</a>
+      <a href="/geraete" {% if current_path starts with '/geraete' %}aria-current="page"{% endif %}>Smartphone &amp; Tablet</a>
+      <a href="/mitgliedschaften" {% if current_path == '/mitgliedschaften' %}aria-current="page"{% endif %}>Mitgliedschaften</a>
+      <a href="/anleitung/ios" {% if current_path starts with '/anleitung' %}aria-current="page"{% endif %}>Anleitungen</a>
+      {% if current_user.is_admin %}<a href="/admin" {% if current_path starts with '/admin' %}aria-current="page"{% endif %}>Verwaltung</a>{% endif %}
+      <form method="post" action="/logout" class="inline">
+        <input type="hidden" name="_csrf" value="{{ csrf }}">
+        <button type="submit" class="link">Abmelden</button>
+      </form>
+    </nav>
+    {% endif %}
+  </div>
+</header>
+
+<main class="wrap{% block main_class %}{% endblock %}">
+  {% for f in flashes %}
+    <div class="flash flash-{{ f.type }}" role="status">{{ f.message }}</div>
+  {% endfor %}
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p>
+      {% if last_import %}
+        Letzter erfolgreicher Import aus MP Feuer: <strong>{{ last_import.finished_at|lt }}</strong>
+        {% if last_import.warnings > 0 %}(mit {{ last_import.warnings }} Warnung{{ last_import.warnings == 1 ? '' : 'en' }}){% else %}(fehlerfrei){% endif %}.
+      {% else %}
+        Es wurde noch kein Import aus MP Feuer durchgeführt.
+      {% endif %}
+      {% if last_attempt and last_attempt.status in ['failed', 'aborted'] %}
+        <br><span class="warn">Der letzte Importversuch am {{ last_attempt.started_at|lt }} ist fehlgeschlagen; die Daten können veraltet sein.</span>
+      {% endif %}
+    </p>
+    <p class="muted"><a href="/anleitung/ios">Anleitungen</a> · <a href="/datenschutz">Datenschutz</a> · Termine werden ausschließlich in MP Feuer gepflegt.</p>
+  </div>
+</footer>
+</body>
+</html>

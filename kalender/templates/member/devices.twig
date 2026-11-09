@@ -1,0 +1,67 @@
+{% extends 'layout.twig' %}
+{% block title %}Smartphone & Tablet – {{ app_name }}{% endblock %}
+{% block content %}
+<h1>Smartphone &amp; Tablet</h1>
+<p>Mit diesen Angaben richten Sie die Kalender auf iPhone, iPad oder Android ein. Ein Zugang genügt für alle Ihre Kalender und für beliebig viele Geräte.</p>
+
+<div class="box">
+  <dl class="facts">
+    <dt>Serveradresse</dt>
+    <dd>
+      <div class="copy"><input type="text" id="srv" value="{{ server }}" readonly><button type="button" class="btn btn-secondary btn-small" data-copy="srv">Kopieren</button></div>
+    </dd>
+    <dt>Benutzername</dt>
+    <dd>
+      <div class="copy"><input type="text" id="usr" value="{{ current_user.username }}" readonly><button type="button" class="btn btn-secondary btn-small" data-copy="usr">Kopieren</button></div>
+    </dd>
+    <dt>Passwort</dt>
+    <dd>
+      {% if password %}
+        <span id="pw-mask" class="secret">•••••-•••••-•••••-•••••</span>
+        <span id="pw" class="secret" hidden>{{ password }}</span>
+        <input type="hidden" id="pw-value" value="{{ password }}">
+        <div class="actions" style="margin-top:.4rem">
+          <button type="button" class="btn btn-secondary btn-small" data-reveal="pw">Passwort anzeigen</button>
+          <button type="button" class="btn btn-secondary btn-small" data-copy="pw-value">Kopieren</button>
+        </div>
+      {% else %}
+        <span class="warn">Das Passwort kann nicht angezeigt werden. Bitte ein neues Passwort erzeugen.</span>
+      {% endif %}
+    </dd>
+    <dt>Vollständige Adresse</dt>
+    <dd class="small"><code>{{ principal_url }}</code><br><span class="muted">nur nötig, wenn die Serveradresse allein nicht funktioniert (z. B. DAVx⁵)</span></dd>
+  </dl>
+</div>
+
+<div class="box">
+  <h2 style="margin-top:0">Letzter Abruf</h2>
+  {% if current_user.last_dav_at %}
+    <p>Zuletzt erfolgreich abgerufen: <strong>{{ current_user.last_dav_at|lt }}</strong> mit <strong>{{ device }}</strong>.</p>
+  {% else %}
+    <p>Mit Ihrem Zugang wurden noch keine Termine auf ein Smartphone oder Tablet abgerufen.</p>
+  {% endif %}
+  {% if current_user.password_changed_at and current_user.last_dav_at and current_user.last_dav_at < current_user.password_changed_at %}
+    <p class="warn small">Seit dem letzten Passwortwechsel ({{ current_user.password_changed_at|lt }}) hat sich noch kein Gerät angemeldet. Bitte das neue Passwort auf Ihren Geräten eintragen.</p>
+  {% endif %}
+</div>
+
+<h2>Einrichten</h2>
+<div class="grid">
+  <div class="box">
+    <h3 style="margin-top:0">iPhone und iPad</h3>
+    <p>Am einfachsten mit dem Konfigurationsprofil: auf dem iPhone/iPad in Safari öffnen, laden und in den Einstellungen installieren.</p>
+    <p><a class="btn" href="/geraete/kalender-ff-krz.mobileconfig">Profil für iPhone/iPad laden</a></p>
+    <p class="small"><a href="/anleitung/ios">Anleitung, auch für die Einrichtung von Hand</a></p>
+  </div>
+  <div class="box">
+    <h3 style="margin-top:0">Android</h3>
+    <p>Android braucht einmalig die App <strong>DAVx⁵</strong>. Danach erscheinen die Kalender in jeder Kalender-App.</p>
+    <p class="small"><a href="/anleitung/android">Anleitung für Android</a></p>
+  </div>
+  <div class="box">
+    <h3 style="margin-top:0">Outlook</h3>
+    <p>Outlook nutzt statt Benutzername und Passwort die persönlichen Abo-Links auf der <a href="/">Startseite</a>.</p>
+    <p class="small"><a href="/anleitung/outlook">Anleitung für Outlook</a></p>
+  </div>
+</div>
+{% endblock %}

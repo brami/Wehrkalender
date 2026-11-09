@@ -1,0 +1,80 @@
+{% extends 'layout.twig' %}
+{% import 'admin/_macros.twig' as m %}
+{% block title %}{{ u.first_name }} {{ u.last_name }} – {{ app_name }}{% endblock %}
+{% block content %}
+<p class="small"><a href="/admin/benutzer{% if query %}?{{ query }}{% endif %}">← Zurück zur Nutzerübersicht</a></p>
+<h1>{{ u.first_name }} {{ u.last_name }}</h1>
+
+<div class="box">
+  <dl class="facts">
+    <dt>Benutzername</dt><dd class="mono">{{ u.username }}{% if outdated %} <span class="badge b-warn">veraltet – Vorschlag: {{ suggestion }}</span>{% endif %}</dd>
+    <dt>Status</dt><dd>{{ m.user_status(u.status) }}{% if u.status == 'locked_email' %} <span class="small warn">E-Mail-Adresse ungültig – in MP Feuer korrigieren</span>{% endif %}</dd>
+    <dt>E-Mail (MP Feuer)</dt><dd class="mono">{{ u.email }}</dd>
+    <dt>Kennung MP Feuer</dt><dd class="mono">{{ u.mp_id }}</dd>
+    <dt>Administrator</dt><dd>{{ u.is_admin ? 'ja' : 'nein' }}</dd>
+  </dl>
+  <div class="actions">
+    <form method="post" action="/admin/benutzer/{{ u.id }}/begruessung" class="inline">
+      <input type="hidden" name="_csrf" value="{{ csrf }}">
+      <input type="hidden" name="back" value="{{ query }}">
+      <button class="btn btn-secondary" type="submit" {% if u.status != 'active' %}disabled{% endif %}>Begrüßungs-E-Mail erneut senden</button>
+    </form>
+    {% if outdated %}
+      <a class="btn btn-secondary" href="/admin/benutzer/{{ u.id }}/benutzername{% if query %}?{{ query }}{% endif %}">Benutzername umstellen …</a>
+    {% endif %}
+  </div>
+</div>
+
+<h2>Nutzung</h2>
+<div class="box">
+  <dl class="facts">
+    <dt>Begrüßung verschickt</dt><dd>{{ u.welcome_sent_at ? u.welcome_sent_at|lt ~ ' an ' ~ u.welcome_sent_for : '–' }}</dd>
+    <dt>Begrüßungslink aufgerufen</dt><dd>{{ u.welcome_used_at ? u.welcome_used_at|lt : 'nie' }}</dd>
+    <dt>Erste Anmeldung</dt><dd>{{ u.first_web_login_at ? u.first_web_login_at|lt : 'nie' }}</dd>
+    <dt>Letzte Anmeldung</dt><dd>{{ u.last_web_login_at ? u.last_web_login_at|lt : 'nie' }}</dd>
+    <dt>Smartphone/Tablet</dt><dd>{{ u.last_dav_at ? u.last_dav_at|lt ~ ' (' ~ (u.last_dav_client|device) ~ ')' : 'nie' }}</dd>
+    <dt>Outlook/Abo-Link</dt><dd>{{ u.last_feed_at ? u.last_feed_at|lt : 'nie' }}</dd>
+    <dt>Passwort zuletzt erzeugt</dt><dd>{{ u.password_changed_at|lt }}</dd>
+  </dl>
+</div>
+
+<h2>Kalender</h2>
+{% if calendars is empty %}<p class="muted">Keine Kalender zugeordnet.</p>{% else %}
+<div class="table-wrap"><table>
+  <thead><tr><th>Kalender</th><th>zugeordnet seit</th><th>letzter Abruf per Abo-Link</th></tr></thead>
+  <tbody>
+  {% for c in calendars %}
+    <tr>
+      <td><span class="swatch" style="background: {{ c.color }}"></span> {{ c.display_name }}</td>
+      <td class="nowrap">{{ c.since|lt }}</td>
+      <td>{{ c.last_access_at ? c.last_access_at|lt ~ ' (' ~ (c.last_client|device) ~ ')' : 'nie' }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% endif %}
+
+<h2>Mitgliedschaften laut MP Feuer</h2>
+{% if memberships is empty %}<p class="muted">Keine.</p>{% else %}
+<div class="table-wrap"><table>
+  <thead><tr><th>Bezeichnung</th><th>Schlüssel</th><th>führt zu Kalender</th></tr></thead>
+  <tbody>
+  {% for ms in memberships %}
+    <tr><td>{{ ms.label }}</td><td class="mono small">{{ ms.mp_key }}</td>
+      <td>{% if ms.calendar %}<span class="swatch" style="background: {{ ms.color }}"></span> {{ ms.calendar }}{% else %}<span class="muted">–</span>{% endif %}</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% endif %}
+
+{% if history is not empty %}
+<h2>Frühere Benutzernamen</h2>
+<ul>{% for h in history %}<li><span class="mono">{{ h.old_username }}</span> → <span class="mono">{{ h.new_username }}</span> am {{ h.changed_at|lt }}</li>{% endfor %}</ul>
+{% endif %}
+
+<h2>E-Mails an dieses Mitglied</h2>
+{% if mails is empty %}<p class="muted">Keine.</p>{% else %}
+<ul class="small">{% for mail in mails %}<li>{{ mail.created_at|lt }} – <a href="/admin/mails/{{ mail.id }}">{{ m.mail_type(mail.type) }}</a> {{ m.mail_status(mail.status) }}</li>{% endfor %}</ul>
+{% endif %}
+<p class="small muted">Termininhalte werden hier bewusst nicht angezeigt.</p>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'layout.twig' %}
+{% block title %}Anmeldelink anfordern – {{ app_name }}{% endblock %}
+{% block content %}
+<div class="narrow">
+  <h1>Anmeldelink anfordern</h1>
+  <p>Geben Sie Ihren Benutzernamen (<code>vorname.nachname</code>) oder Ihre E-Mail-Adresse ein. Wir schicken Ihnen einen Link, mit dem Sie sich einmalig ohne Passwort anmelden können. Der Link ist 30 Minuten gültig.</p>
+  <form method="post" action="/login/link" class="box">
+    <input type="hidden" name="_csrf" value="{{ csrf }}">
+    <label for="identity">Benutzername oder E-Mail-Adresse</label>
+    <input type="text" id="identity" name="identity" value="{{ identity }}" autocomplete="username" autocapitalize="none" spellcheck="false" required autofocus>
+    <div class="actions">
+      <button class="btn" type="submit">Link schicken</button>
+      <a href="/login">Zurück zur Anmeldung</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

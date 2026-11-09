@@ -1,0 +1,89 @@
+{% extends 'layout.twig' %}
+{% block title %}Kalender & Zuordnungen – {{ app_name }}{% endblock %}
+{% block content %}
+<h1>Kalender &amp; Zuordnungen</h1>
+{% include 'admin/_nav.twig' %}
+<p class="muted">Jeder Bereich aus MP Feuer (Einheit, Gruppe, Abteilung, Lehrgang) wird über seinen Schlüssel einem Kalender zugeordnet. Die Zuordnung bestimmt zweierlei: in welchem Kalender die Termine des Bereichs erscheinen und welche Mitglieder (über ihre Mitgliedschaften) den Kalender sehen.</p>
+
+<h2>Kalender</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>Kalender</th><th>Kurzname</th><th>Mitglieder</th><th>Termine</th><th>Eigenschaften</th></tr></thead>
+  <tbody>
+  {% for c in calendars %}
+    <tr>
+      <td><span class="swatch" style="background: {{ c.color }}"></span> <strong>{{ c.display_name }}</strong>{% if c.description %}<br><span class="small muted">{{ c.description }}</span>{% endif %}</td>
+      <td class="mono small">{{ c.slug }}</td>
+      <td><a href="/admin/benutzer?kalender={{ c.slug }}">{{ c.members }}</a></td>
+      <td>{{ c.events }}</td>
+      <td>
+        <details>
+          <summary class="small">{{ c.active ? 'aktiv' : 'deaktiviert' }}{{ c.all_members ? ', für alle Mitglieder' : '' }} – bearbeiten</summary>
+          <form method="post" action="/admin/kalender/{{ c.id }}">
+            <input type="hidden" name="_csrf" value="{{ csrf }}">
+            <label for="n{{ c.id }}">Name</label><input type="text" id="n{{ c.id }}" name="display_name" value="{{ c.display_name }}" required>
+            <label for="c{{ c.id }}">Farbe</label><input type="color" id="c{{ c.id }}" name="color" value="{{ c.color|lower }}">
+            <label for="d{{ c.id }}">Beschreibung</label><input type="text" id="d{{ c.id }}" name="description" value="{{ c.description }}">
+            <label class="check"><input type="checkbox" name="active" value="1" {% if c.active %}checked{% endif %}> aktiv (an Geräte ausliefern)</label>
+            <label class="check"><input type="checkbox" name="all_members" value="1" {% if c.all_members %}checked{% endif %}> für alle Mitglieder (unabhängig von Mitgliedschaften)</label>
+            <div class="actions"><button class="btn btn-small" type="submit">Speichern</button></div>
+          </form>
+        </details>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+
+<details class="box" style="margin-top:1rem">
+  <summary><strong>Neuen Kalender anlegen</strong></summary>
+  <form method="post" action="/admin/kalender">
+    <input type="hidden" name="_csrf" value="{{ csrf }}">
+    <label for="nn">Name</label><input type="text" id="nn" name="display_name" required placeholder="z. B. LG Drove">
+    <label for="ns">Kurzname (Teil der Adresse, später nicht änderbar)</label><input type="text" id="ns" name="slug" required pattern="[a-z0-9][a-z0-9-]*" placeholder="z. B. lg-drove">
+    <label for="nc">Farbe</label><input type="color" id="nc" name="color" value="#b91c1c">
+    <label for="nd">Beschreibung</label><input type="text" id="nd" name="description">
+    <label class="check"><input type="checkbox" name="active" value="1" checked> aktiv</label>
+    <label class="check"><input type="checkbox" name="all_members" value="1"> für alle Mitglieder</label>
+    <div class="actions"><button class="btn" type="submit">Anlegen</button></div>
+  </form>
+</details>
+
+<h2>Zuordnung Bereich → Kalender</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>Schlüssel (MP Feuer)</th><th>Bezeichnung</th><th>Mitglieder</th><th>Kalender</th><th></th></tr></thead>
+  <tbody>
+  {% for s in sources %}
+    <tr>
+      <td class="mono">{{ s.mp_key }}</td><td>{{ s.label ?? '–' }}</td><td>{{ s.members }}</td><td>{{ s.display_name }}</td>
+      <td>
+        <form method="post" action="/admin/zuordnung/{{ s.id }}/loeschen" class="inline">
+          <input type="hidden" name="_csrf" value="{{ csrf }}">
+          <button class="btn btn-secondary btn-small" type="submit">entfernen</button>
+        </form>
+      </td>
+    </tr>
+  {% else %}
+    <tr><td colspan="5" class="muted">Noch keine Zuordnungen.</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+
+<div class="box" style="margin-top:1rem">
+  <h3 style="margin-top:0">Zuordnung hinzufügen</h3>
+  <form method="post" action="/admin/zuordnung">
+    <input type="hidden" name="_csrf" value="{{ csrf }}">
+    <label for="k">Schlüssel aus MP Feuer</label>
+    <input type="text" id="k" name="mp_key" list="areas" required placeholder="z. B. LG-DROVE">
+    <datalist id="areas">{% for a in areas %}<option value="{{ a.mp_key }}">{{ a.label }}</option>{% endfor %}</datalist>
+    <label for="kc">Kalender</label>
+    <select id="kc" name="calendar_id">{% for c in calendars %}<option value="{{ c.id }}">{{ c.display_name }}</option>{% endfor %}</select>
+    <div class="actions"><button class="btn" type="submit">Zuordnen</button></div>
+  </form>
+</div>
+
+{% if areas is not empty %}
+<h2>Bereiche ohne Kalender</h2>
+<p class="small muted">Diese Schlüssel kommen in Mitgliedschaften vor, führen aber zu keinem Kalender.</p>
+<ul>{% for a in areas %}<li><code>{{ a.mp_key }}</code> – {{ a.label }} ({{ a.members }} Mitglieder)</li>{% endfor %}</ul>
+{% endif %}
+{% endblock %}

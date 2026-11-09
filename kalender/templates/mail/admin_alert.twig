@@ -1,0 +1,20 @@
+{% extends 'mail/_layout.twig' %}
+{% block subject %}{{ subject }}{% endblock %}
+{% block text %}{% autoescape false %}
+Hallo,
+
+der Kalenderserver meldet:
+
+{% for l in lines %}- {{ l }}
+{% endfor %}
+Details auf der Status-Seite: {{ admin_url }}
+
+--
+Automatische Warnung des Kalenderservers
+{% endautoescape %}{% endblock %}
+{% block content %}
+<p>Hallo,</p>
+<p>der Kalenderserver meldet:</p>
+<ul>{% for l in lines %}<li>{{ l }}</li>{% endfor %}</ul>
+<p><a href="{{ admin_url }}">Zur Status-Seite</a></p>
+{% endblock %}

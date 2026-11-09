@@ -1,0 +1,39 @@
+{% extends 'guide/_base.twig' %}
+{% block heading %}iPhone und iPad{% endblock %}
+{% block guide %}
+<h2>Weg 1: Konfigurationsprofil (empfohlen)</h2>
+<ol class="steps">
+  <li>Auf dem iPhone/iPad in <strong>Safari</strong> <code>{{ base_url }}</code> öffnen und anmelden.</li>
+  <li>Unter <strong>Smartphone &amp; Tablet</strong> auf <strong>Profil für iPhone/iPad laden</strong> tippen und den Download erlauben.</li>
+  <li><strong>Einstellungen</strong> öffnen. Oben erscheint <strong>Profil geladen</strong> – antippen.
+      (Sonst: Einstellungen → Allgemein → VPN und Geräteverwaltung → „Kalender FF KRZ“.)</li>
+  <li><strong>Installieren</strong> tippen, Gerätecode eingeben und noch zweimal <strong>Installieren</strong> bestätigen.
+      Der Hinweis „nicht signiert“ ist normal.</li>
+  <li>Die Kalender-App öffnen. Nach kurzer Zeit erscheinen unter <strong>Kalender</strong> die Kalender der FF KRZ.</li>
+</ol>
+
+<h2>Weg 2: Von Hand einrichten</h2>
+<ol class="steps">
+  <li><strong>Einstellungen → Apps → Kalender → Kalender-Accounts → Account hinzufügen</strong>
+      (bei älteren iOS-Versionen: Einstellungen → Kalender → Accounts → Account hinzufügen).</li>
+  <li><strong>Andere</strong> wählen, dann <strong>CalDAV-Account hinzufügen</strong>.</li>
+  <li>Eintragen:
+    <ul>
+      <li>Server: <code>{{ domain }}</code></li>
+      <li>Benutzername: Ihr Benutzername (<code>vorname.nachname</code>)</li>
+      <li>Passwort: Ihr Passwort aus dem Web-Frontend</li>
+      <li>Beschreibung: z. B. „Kalender FF KRZ“</li>
+    </ul>
+  </li>
+  <li><strong>Weiter</strong> tippen, Kalender eingeschaltet lassen, <strong>Sichern</strong>.</li>
+</ol>
+
+<h2>Gut zu wissen</h2>
+<ul>
+  <li>Abrufhäufigkeit: <strong>Einstellungen → Apps → Kalender → Kalender-Accounts → Datenabgleich</strong>, z. B. „Alle 15 Minuten“.</li>
+  <li>Einzelne Kalender lassen sich in der Kalender-App unter <strong>Kalender</strong> ein- und ausblenden.</li>
+  <li>Erinnerungen legen Sie bei Bedarf selbst fest (Einstellungen → Apps → Kalender → Standardhinweise).</li>
+  <li>Nach einem neuen Passwort: in den Kalender-Accounts den Account „Kalender FF KRZ“ öffnen und das Passwort ersetzen – oder das Profil löschen und neu laden.</li>
+  <li>Nach einer Umstellung des Benutzernamens: alten Account bzw. altes Profil löschen und neu einrichten.</li>
+</ul>
+{% endblock %}

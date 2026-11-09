@@ -1,0 +1,35 @@
+{% extends 'mail/_layout.twig' %}
+{% block subject %}{{ calendars|length == 1 ? 'Neuer Kalender: ' ~ calendars[0].display_name : calendars|length ~ ' neue Kalender für Sie' }}{% endblock %}
+{% block text %}{% autoescape false %}
+Hallo {{ user.first_name }},
+
+durch eine neue Mitgliedschaft in MP Feuer {{ calendars|length == 1 ? 'ist ein Kalender' : 'sind Kalender' }} für Sie hinzugekommen:
+
+{% for c in calendars %}- {{ c.display_name }}
+  Abo-Link für Outlook: {{ c.feed_url }}
+{% endfor %}
+Smartphone und Tablet zeigen {{ calendars|length == 1 ? 'den neuen Kalender' : 'die neuen Kalender' }} automatisch an.
+In Outlook bitte den Abo-Link einmalig zusätzlich abonnieren:
+{{ base_url }}/anleitung/outlook
+
+Der Abo-Link ist persönlich – bitte nicht weitergeben.
+Alle Ihre Kalender und Links: {{ login_url }}
+
+Viele Grüße
+Ihre FF KRZ
+{% endautoescape %}{% endblock %}
+{% block content %}
+<p>Hallo {{ user.first_name }},</p>
+<p>durch eine neue Mitgliedschaft in MP Feuer {{ calendars|length == 1 ? 'ist ein Kalender' : 'sind Kalender' }} für Sie hinzugekommen:</p>
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:8px 0 16px;">
+{% for c in calendars %}
+  <tr><td style="padding:6px 10px 6px 0;vertical-align:top;"><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:{{ c.color }};"></span></td>
+      <td style="padding:6px 0;"><strong>{{ c.display_name }}</strong><br>
+        <span style="font-size:12px;color:#5b6470;">Abo-Link für Outlook:</span><br>
+        <span style="font-family:Consolas,monospace;font-size:12px;word-break:break-all;">{{ c.feed_url }}</span></td></tr>
+{% endfor %}
+</table>
+<p>Smartphone und Tablet zeigen {{ calendars|length == 1 ? 'den neuen Kalender' : 'die neuen Kalender' }} automatisch an. In Outlook bitte den Abo-Link einmalig zusätzlich abonnieren (<a href="{{ base_url }}/anleitung/outlook">Anleitung</a>).</p>
+<p style="font-size:13px;color:#5b6470;">Der Abo-Link ist persönlich – bitte nicht weitergeben. Alle Ihre Kalender und Links finden Sie nach der <a href="{{ login_url }}">Anmeldung</a>.</p>
+<p>Viele Grüße<br>Ihre FF KRZ</p>
+{% endblock %}

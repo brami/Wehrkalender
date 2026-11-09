@@ -1,0 +1,29 @@
+{% macro run_status(s) %}
+  {% set labels = {'success': 'erfolgreich', 'failed': 'fehlgeschlagen', 'aborted': 'abgebrochen', 'running': 'läuft'} %}
+  <span class="badge b-{{ s }}">{{ labels[s] ?? s }}</span>
+{% endmacro %}
+
+{% macro user_status(s) %}
+  <span class="badge b-{{ s }}">{{ s == 'active' ? 'aktiv' : (s == 'locked_email' ? 'gesperrt' : s) }}</span>
+{% endmacro %}
+
+{% macro mail_status(s) %}
+  {% set labels = {'queued': 'offen', 'sent': 'versendet', 'failed': 'fehlgeschlagen', 'suppressed': 'nicht versendet (Testbetrieb)'} %}
+  <span class="badge b-{{ s }}">{{ labels[s] ?? s }}</span>
+{% endmacro %}
+
+{% macro mail_type(t) %}
+  {% set labels = {'welcome': 'Begrüßung', 'login_link': 'Anmeldelink', 'new_calendar': 'Neue Kalender', 'username_changed': 'Neuer Benutzername', 'admin_alert': 'Warnung an Admins'} %}
+  {{ labels[t] ?? t }}
+{% endmacro %}
+
+{% macro stats(data) %}
+  {% set labels = {
+    'members_total': 'Mitglieder im Export', 'users_created': 'neu angelegt', 'users_updated': 'aktualisiert',
+    'users_deleted': 'ausgeschieden/gelöscht', 'users_locked': 'gesperrt', 'users_unlocked': 'entsperrt',
+    'users_skipped_email': 'ohne gültige Adresse nicht übernommen', 'emails_changed': 'E-Mail geändert',
+    'memberships_changed': 'Mitgliedschaften geändert', 'events_total': 'Termine im Export', 'events_added': 'Termine neu',
+    'events_modified': 'Termine geändert', 'events_deleted': 'Termine entfernt', 'events_unmapped': 'Termine ohne Kalender',
+    'mails_queued': 'E-Mails eingereiht'} %}
+  {% for k, v in data %}{% if v is not iterable %}<span class="chip">{{ labels[k] ?? k }}: <b>{{ v }}</b></span> {% endif %}{% endfor %}
+{% endmacro %}

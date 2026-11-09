@@ -1,0 +1,9 @@
+[Unit]
+Description=Kalender: Aufräumen (Zeitplan)
+
+[Timer]
+OnCalendar=*-*-* 03:43
+Persistent=true
+
+[Install]
+WantedBy=timers.target

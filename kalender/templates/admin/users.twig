@@ -1,0 +1,81 @@
+{% extends 'layout.twig' %}
+{% import 'admin/_macros.twig' as m %}
+{% block title %}Nutzerübersicht – {{ app_name }}{% endblock %}
+{% macro th(key, label, q) %}
+  {% set dir = (q.sort == key and q.dir == 'asc') ? 'desc' : 'asc' %}
+  {% set params = q|merge({'sort': key, 'dir': dir})|filter(v => v is not same as('') and v is not null) %}
+  <th><a href="?{{ params|url_encode }}">{{ label }}{% if q.sort == key %} {{ q.dir == 'asc' ? '▲' : '▼' }}{% endif %}</a></th>
+{% endmacro %}
+{% block main_class %} wide{% endblock %}
+{% block content %}
+<h1>Nutzerübersicht</h1>
+{% include 'admin/_nav.twig' %}
+
+<form method="get" class="filters">
+  <div style="min-width:14rem">
+    <label for="q">Suche (Name, Benutzername)</label>
+    <input type="search" id="q" name="q" value="{{ q.q }}">
+  </div>
+  <div>
+    <label for="filter">Filter</label>
+    <select id="filter" name="filter">
+      <option value="">alle</option>
+      {% for k, label in filters %}<option value="{{ k }}" {% if q.filter == k %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+  </div>
+  <div>
+    <label for="tage">n (Tage)</label>
+    <input type="number" id="tage" name="tage" min="1" value="{{ q.tage }}">
+  </div>
+  <div>
+    <label for="kalender">Kalender</label>
+    <select id="kalender" name="kalender">
+      <option value="">alle</option>
+      {% for c in calendars %}<option value="{{ c.slug }}" {% if q.kalender == c.slug %}selected{% endif %}>{{ c.display_name }}</option>{% endfor %}
+    </select>
+  </div>
+  <input type="hidden" name="sort" value="{{ q.sort }}"><input type="hidden" name="dir" value="{{ q.dir }}">
+  <div><button class="btn btn-small" type="submit">Anwenden</button> <a class="small" href="/admin/benutzer">zurücksetzen</a></div>
+</form>
+
+<p class="small muted">{{ users|length }} von {{ total }} Mitgliedern</p>
+<div class="table-wrap">
+  <table>
+    <thead><tr>
+      {{ _self.th('name', 'Name', q) }}
+      {{ _self.th('username', 'Benutzername', q) }}
+      {{ _self.th('status', 'Status', q) }}
+      {{ _self.th('welcome_sent_at', 'Begrüßung', q) }}
+      {{ _self.th('welcome_used_at', 'Link aufgerufen', q) }}
+      {{ _self.th('first_web_login_at', 'Erste Anm.', q) }}
+      {{ _self.th('last_web_login_at', 'Letzte Anm.', q) }}
+      {{ _self.th('last_dav_at', 'Smartphone/Tablet', q) }}
+      {{ _self.th('last_feed_at', 'Abo-Link', q) }}
+      {{ _self.th('calendars', 'Kalender', q) }}
+    </tr></thead>
+    <tbody>
+    {% for u in users %}
+      <tr>
+        <td><a href="/admin/benutzer/{{ u.id }}{% if query %}?{{ query }}{% endif %}">{{ u.last_name }}, {{ u.first_name }}</a>{% if u.is_admin %} <span class="badge b-info">Admin</span>{% endif %}</td>
+        <td class="mono small">{{ u.username }}{% if username_outdated(u) %} <span class="badge b-warn" title="Benutzername passt nicht zum Namen">veraltet</span>{% endif %}</td>
+        <td>{{ m.user_status(u.status) }}</td>
+        <td class="nowrap small">{{ u.welcome_sent_at|lt }}</td>
+        <td class="nowrap small">{{ u.welcome_used_at|lt }}</td>
+        <td class="nowrap small">{{ u.first_web_login_at|lt }}</td>
+        <td class="nowrap small">{{ u.last_web_login_at|lt }}</td>
+        <td class="nowrap small">{% if u.last_dav_at %}{{ u.last_dav_at|lt }}<br><span class="muted">{{ u.last_dav_client|device }}</span>{% endif %}</td>
+        <td class="nowrap small">{{ u.last_feed_at|lt }}</td>
+        <td>
+          <div class="chips">
+            {% for c in u.calendars|slice(0, 3) %}<span class="chip"><span class="swatch" style="background: {{ c.color }}"></span>{{ c.display_name }}</span>{% endfor %}
+            {% if u.calendars|length > 3 %}<span class="chip" title="{{ u.calendars|slice(3)|map(c => c.display_name)|join(', ') }}">+{{ u.calendars|length - 3 }}</span>{% endif %}
+          </div>
+        </td>
+      </tr>
+    {% else %}
+      <tr><td colspan="10" class="muted">Keine Mitglieder für diese Auswahl.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

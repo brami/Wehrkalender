@@ -1,0 +1,52 @@
+{% extends 'layout.twig' %}
+{% import 'admin/_macros.twig' as m %}
+{% block title %}Import {{ run.id }} – {{ app_name }}{% endblock %}
+{% block content %}
+<h1>Import vom {{ run.started_at|lt }}</h1>
+{% include 'admin/_nav.twig' %}
+<div class="box">
+  <dl class="facts">
+    <dt>Status</dt><dd>{{ m.run_status(run.status) }}</dd>
+    <dt>Beginn / Ende</dt><dd>{{ run.started_at|lt('d.m.Y H:i:s') }} – {{ run.finished_at ? run.finished_at|lt('H:i:s') : 'läuft' }} ({{ run.duration|duration }})</dd>
+    <dt>Quelle</dt><dd class="mono small">{{ run.source_files ?: '–' }}</dd>
+    <dt>Zähler</dt><dd><div class="chips">{{ m.stats(run.stats_data) }}</div></dd>
+    {% if run.stats_data.events_by_calendar is defined %}
+      <dt>Termine je Kalender</dt>
+      <dd class="small">{% for cal, c in run.stats_data.events_by_calendar %}{{ cal }}: +{{ c.added ?? 0 }} / ~{{ c.modified ?? 0 }} / −{{ c.deleted ?? 0 }}{% if not loop.last %} · {% endif %}{% endfor %}</dd>
+    {% endif %}
+  </dl>
+</div>
+
+<h2>Meldungen</h2>
+<form method="get" class="filters">
+  <div>
+    <label for="typ">Typ</label>
+    <select id="typ" name="typ"><option value="">alle</option>
+      {% for t in types %}<option value="{{ t }}" {% if filter.typ == t %}selected{% endif %}>{{ t }}</option>{% endfor %}
+    </select>
+  </div>
+  <div>
+    <label for="stufe">Stufe</label>
+    <select id="stufe" name="stufe"><option value="">alle</option>
+      {% for s in ['info', 'warning', 'error'] %}<option value="{{ s }}" {% if filter.stufe == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+    </select>
+  </div>
+  <div><button class="btn btn-small" type="submit">Filtern</button></div>
+</form>
+{% if messages is empty %}<p class="muted">Keine Meldungen.</p>{% else %}
+<div class="table-wrap"><table>
+  <thead><tr><th>Stufe</th><th>Typ</th><th>Mitglied</th><th>Meldung</th></tr></thead>
+  <tbody>
+  {% for msg in messages %}
+    <tr>
+      <td><span class="badge b-{{ msg.level }}">{{ msg.level }}</span></td>
+      <td class="mono small">{{ msg.type }}</td>
+      <td>{% if msg.user_id and msg.username %}<a href="/admin/benutzer/{{ msg.user_id }}">{{ msg.last_name }}, {{ msg.first_name }}</a>{% endif %}</td>
+      <td>{{ msg.message }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% endif %}
+<p><a href="/admin">Zurück zum Status</a></p>
+{% endblock %}

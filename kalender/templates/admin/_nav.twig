@@ -1,0 +1,6 @@
+<nav class="subnav" aria-label="Verwaltung">
+  <a href="/admin" {% if current_path == '/admin' %}aria-current="page"{% endif %}>Status</a>
+  <a href="/admin/benutzer" {% if current_path starts with '/admin/benutzer' %}aria-current="page"{% endif %}>Nutzerübersicht</a>
+  <a href="/admin/mails" {% if current_path starts with '/admin/mails' %}aria-current="page"{% endif %}>E-Mails</a>
+  <a href="/admin/kalender" {% if current_path starts with '/admin/kalender' %}aria-current="page"{% endif %}>Kalender &amp; Zuordnungen</a>
+</nav>

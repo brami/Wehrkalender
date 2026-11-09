@@ -1,0 +1,38 @@
+{% extends 'layout.twig' %}
+{% block title %}Meine Mitgliedschaften – {{ app_name }}{% endblock %}
+{% block content %}
+<h1>Meine Mitgliedschaften</h1>
+<p>So sind Sie in MP Feuer geführt. Daraus ergibt sich, welche Kalender Sie sehen. Fehlt ein Kalender oder ist eine Angabe falsch, muss sie in MP Feuer geändert werden – nach dem nächsten Import passt sich alles automatisch an.</p>
+
+{% if memberships is empty %}
+  <div class="box"><p>Für Sie sind in MP Feuer keine Einheiten, Gruppen, Abteilungen oder Lehrgänge hinterlegt.</p></div>
+{% else %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Mitgliedschaft</th><th>Kalender</th></tr></thead>
+      <tbody>
+      {% for m in memberships %}
+        <tr>
+          <td>{{ m.label }}</td>
+          <td>
+            {% if m.calendar and m.active %}
+              <span class="swatch" style="background: {{ m.color }}"></span> {{ m.calendar }}
+            {% elseif m.calendar %}
+              <span class="muted">{{ m.calendar }} (derzeit nicht freigegeben)</span>
+            {% else %}
+              <span class="muted">kein eigener Kalender</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}
+
+{% if all_members is not empty %}
+  <p class="muted small" style="margin-top:1rem">Unabhängig von Mitgliedschaften sehen alle Mitglieder:
+    {% for c in all_members %}<span class="chip"><span class="swatch" style="background: {{ c.color }}"></span>{{ c.display_name }}</span> {% endfor %}
+  </p>
+{% endif %}
+{% endblock %}

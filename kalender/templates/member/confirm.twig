@@ -1,0 +1,47 @@
+{% extends 'layout.twig' %}
+{% block title %}Bestätigen – {{ app_name }}{% endblock %}
+{% block content %}
+<div class="narrow" style="max-width:36rem">
+{% if action == 'passwort' %}
+  <h1>Neues Passwort erzeugen?</h1>
+  <div class="box">
+    <p>Ihr bisheriges Passwort wird <strong>sofort ungültig</strong>. Smartphones und Tablets rufen danach keine Termine mehr ab, bis Sie dort das neue Passwort eintragen.</p>
+    <p>Benutzername und Abo-Links für Outlook bleiben unverändert.</p>
+    <form method="post" action="/konto/passwort" class="actions">
+      <input type="hidden" name="_csrf" value="{{ csrf }}">
+      <button class="btn" type="submit">Ja, neues Passwort erzeugen</button>
+      <a href="/geraete">Abbrechen</a>
+    </form>
+  </div>
+{% elseif action == 'abo-links' %}
+  <h1>Neue Abo-Links erzeugen?</h1>
+  <div class="box">
+    <p>Alle bisherigen Abo-Links werden <strong>sofort ungültig</strong>. Outlook (und andere Programme, die einen Link abonniert haben) erhalten danach keine Termine mehr, bis Sie dort die neuen Links abonnieren.</p>
+    <p>Benutzername und Passwort für Smartphone und Tablet bleiben unverändert.</p>
+    <form method="post" action="/konto/abo-links" class="actions">
+      <input type="hidden" name="_csrf" value="{{ csrf }}">
+      <button class="btn" type="submit">Ja, neue Abo-Links erzeugen</button>
+      <a href="/">Abbrechen</a>
+    </form>
+  </div>
+{% elseif action == 'benutzername' %}
+  <h1>Benutzername umstellen?</h1>
+  <div class="box">
+    <dl class="facts">
+      <dt>bisher</dt><dd class="mono">{{ current_user.username }}</dd>
+      <dt>neu</dt><dd class="mono"><strong>{{ suggestion }}</strong></dd>
+    </dl>
+    <div class="notice" style="margin-top:1rem">
+      <strong>Wichtig:</strong> Auf Smartphone und Tablet muss der Kalender-Account danach mit dem neuen Benutzernamen
+      <strong>neu eingerichtet</strong> werden. Bis dahin werden dort keine Termine mehr aktualisiert.
+    </div>
+    <p>Passwort, Abo-Links und Kalender bleiben unverändert; Outlook läuft ohne Anpassung weiter. Der bisherige Benutzername wird danach an niemanden sonst vergeben. Sie erhalten eine E-Mail mit dem neuen Benutzernamen.</p>
+    <form method="post" action="/konto/benutzername" class="actions">
+      <input type="hidden" name="_csrf" value="{{ csrf }}">
+      <button class="btn" type="submit">Ja, auf „{{ suggestion }}“ umstellen</button>
+      <a href="/">Abbrechen</a>
+    </form>
+  </div>
+{% endif %}
+</div>
+{% endblock %}

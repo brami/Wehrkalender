@@ -1,0 +1,10 @@
+{% extends 'layout.twig' %}
+{% block title %}Fehler {{ code }} – {{ app_name }}{% endblock %}
+{% block content %}
+<h1>{{ code == 404 ? 'Seite nicht gefunden' : (code == 403 ? 'Kein Zugriff' : 'Fehler') }}</h1>
+<div class="box">
+  <p>{{ message }}</p>
+  <p><a href="/">Zur Startseite</a></p>
+</div>
+{% if details is defined and details %}<pre class="mail">{{ details }}</pre>{% endif %}
+{% endblock %}

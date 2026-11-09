@@ -1,0 +1,42 @@
+{% extends 'mail/_layout.twig' %}
+{% block subject %}Willkommen beim Kalender der FF KRZ – Ihr Zugang{% endblock %}
+{% block text %}{% autoescape false %}
+Hallo {{ user.first_name }},
+
+ab sofort erhalten Sie die Termine der FF KRZ aus MP Feuer automatisch auf
+Ihrem Smartphone, Tablet und in Outlook – immer aktuell und nur lesend.
+
+Ihr Benutzername: {{ user.username }}
+{% if calendars is not empty %}Ihre Kalender: {{ calendars|join(', ') }}
+{% endif %}
+So geht es weiter:
+1. Über diesen persönlichen Link anmelden (gültig {{ valid_days }} Tage, nur einmal verwendbar):
+   {{ link }}
+2. Im Web-Frontend sehen Sie Ihr Passwort, die Abo-Links für Outlook und Ihre Kalender.
+3. Smartphone/Tablet oder Outlook mit den Anleitungen einrichten:
+   {{ base_url }}/anleitung/ios
+   {{ base_url }}/anleitung/android
+   {{ base_url }}/anleitung/outlook
+
+Das Passwort steht bewusst nicht in dieser E-Mail. Ist der Link abgelaufen,
+fordern Sie unter {{ base_url }}/login/link jederzeit einen neuen an.
+
+Hinweis zum Datenschutz: Gespeichert werden nur Ihr Name, Ihre E-Mail-Adresse,
+Ihre Mitgliedschaften sowie Zeitpunkte von Anmeldung und Abruf mit Gerätetyp.
+Details: {{ base_url }}/datenschutz
+
+Viele Grüße
+Ihre FF KRZ
+{% endautoescape %}{% endblock %}
+{% block content %}
+<p>Hallo {{ user.first_name }},</p>
+<p>ab sofort erhalten Sie die Termine der FF KRZ aus MP Feuer automatisch auf Ihrem Smartphone, Tablet und in Outlook – immer aktuell und nur lesend.</p>
+<p>Ihr Benutzername: <strong style="font-family:Consolas,monospace;">{{ user.username }}</strong>
+{% if calendars is not empty %}<br>Ihre Kalender: {{ calendars|join(', ') }}{% endif %}</p>
+<p style="margin:24px 0;"><a href="{{ link }}" style="background:#b91c1c;color:#ffffff;padding:12px 20px;border-radius:6px;text-decoration:none;font-weight:bold;">Jetzt anmelden</a></p>
+<p style="font-size:13px;color:#5b6470;">Der Link ist {{ valid_days }} Tage gültig und nur einmal verwendbar. Danach können Sie unter <a href="{{ base_url }}/login/link">{{ domain }}/login/link</a> jederzeit einen neuen anfordern.</p>
+<p>Im Web-Frontend sehen Sie Ihr Passwort, die Abo-Links für Outlook und Ihre Kalender. Anleitungen:
+<a href="{{ base_url }}/anleitung/ios">iPhone/iPad</a> · <a href="{{ base_url }}/anleitung/android">Android</a> · <a href="{{ base_url }}/anleitung/outlook">Outlook</a></p>
+<p style="font-size:13px;color:#5b6470;">Das Passwort steht bewusst nicht in dieser E-Mail. Datenschutz: Gespeichert werden nur Ihr Name, Ihre E-Mail-Adresse, Ihre Mitgliedschaften sowie Zeitpunkte von Anmeldung und Abruf mit Gerätetyp (<a href="{{ base_url }}/datenschutz">Details</a>).</p>
+<p>Viele Grüße<br>Ihre FF KRZ</p>
+{% endblock %}

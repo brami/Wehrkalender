@@ -1,0 +1,24 @@
+{% extends 'layout.twig' %}
+{% block title %}Benutzername umstellen – {{ app_name }}{% endblock %}
+{% block content %}
+<div style="max-width:38rem">
+<h1>Benutzername umstellen</h1>
+<div class="box">
+  <dl class="facts">
+    <dt>Mitglied</dt><dd>{{ u.first_name }} {{ u.last_name }}</dd>
+    <dt>bisher</dt><dd class="mono">{{ u.username }}</dd>
+    <dt>neu</dt><dd class="mono"><strong>{{ suggestion }}</strong></dd>
+  </dl>
+  <div class="notice" style="margin-top:1rem">
+    Smartphone und Tablet des Mitglieds funktionieren danach erst wieder, wenn der Kalender-Account mit dem neuen Benutzernamen neu eingerichtet wurde.
+    Passwort, Abo-Links und Kalender bleiben unverändert. Das Mitglied erhält eine E-Mail mit dem neuen Benutzernamen.
+  </div>
+  <form method="post" action="/admin/benutzer/{{ u.id }}/benutzername" class="actions">
+    <input type="hidden" name="_csrf" value="{{ csrf }}">
+    <input type="hidden" name="back" value="{{ query }}">
+    <button class="btn" type="submit">Ja, auf „{{ suggestion }}“ umstellen</button>
+    <a href="/admin/benutzer/{{ u.id }}{% if query %}?{{ query }}{% endif %}">Abbrechen</a>
+  </form>
+</div>
+</div>
+{% endblock %}

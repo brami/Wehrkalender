@@ -1,0 +1,34 @@
+{% extends 'layout.twig' %}
+{% block title %}Anmelden – {{ app_name }}{% endblock %}
+{% block content %}
+<div class="narrow">
+  {% if status == 'ok' %}
+    <h1>{{ purpose == 'welcome' ? 'Willkommen!' : 'Anmelden' }}</h1>
+    <div class="box">
+      <p>Sie melden sich als <strong class="mono">{{ username }}</strong> an.</p>
+      <form method="post" action="/login/link/{{ token }}">
+        <input type="hidden" name="_csrf" value="{{ csrf }}">
+        <button class="btn" type="submit">Jetzt anmelden</button>
+      </form>
+      <p class="muted small">Der Link ist nur einmal verwendbar.</p>
+    </div>
+  {% else %}
+    <h1>Link nicht mehr gültig</h1>
+    <div class="box">
+      {% if status == 'used' %}
+        <p>Dieser Anmeldelink wurde bereits verwendet. Jeder Link funktioniert nur einmal.</p>
+      {% elseif status == 'expired' %}
+        <p>Dieser Anmeldelink ist abgelaufen.</p>
+      {% elseif status == 'locked' %}
+        <p>Ihr Zugang ist derzeit gesperrt, weil die in MP Feuer hinterlegte E-Mail-Adresse ungültig ist. Bitte lassen Sie die Adresse in MP Feuer korrigieren.</p>
+      {% else %}
+        <p>Dieser Anmeldelink ist ungültig.</p>
+      {% endif %}
+      {% if status != 'locked' %}
+        <p>Sie können jederzeit einen neuen Link anfordern.</p>
+        <a class="btn" href="/login/link">Neuen Anmeldelink anfordern</a>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

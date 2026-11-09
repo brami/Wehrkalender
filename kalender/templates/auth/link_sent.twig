@@ -1,0 +1,12 @@
+{% extends 'layout.twig' %}
+{% block title %}Anmeldelink – {{ app_name }}{% endblock %}
+{% block content %}
+<div class="narrow">
+  <h1>Bitte E-Mails prüfen</h1>
+  <div class="box">
+    <p>Falls ein Zugang zu Ihren Angaben existiert, wurde soeben eine E-Mail mit einem Anmeldelink verschickt. Der Link ist 30 Minuten gültig und nur einmal verwendbar.</p>
+    <p class="muted small">Keine E-Mail erhalten? Bitte auch im Spam-Ordner nachsehen. Kommt weiterhin nichts an, ist in MP Feuer möglicherweise keine oder eine andere E-Mail-Adresse hinterlegt – bitte wenden Sie sich an die Verwaltung Ihrer Einheit.</p>
+  </div>
+  <p><a href="/login">Zurück zur Anmeldung</a></p>
+</div>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends 'layout.twig' %}
+{% import 'admin/_macros.twig' as m %}
+{% block title %}E-Mails – {{ app_name }}{% endblock %}
+{% block content %}
+<h1>E-Mails</h1>
+{% include 'admin/_nav.twig' %}
+{% if mail_mode == 'database' %}
+  <div class="testbanner small">Testbetrieb: E-Mails werden nicht verschickt (MAIL_DELIVERY=database). Hier sehen Sie, was verschickt würde.</div>
+{% endif %}
+<p class="filters">
+  <a href="/admin/mails" {% if status == '' %}aria-current="page"{% endif %}>alle</a> ·
+  <a href="?status=queued">offen ({{ counts.queued }})</a> ·
+  <a href="?status=failed">fehlgeschlagen ({{ counts.failed }})</a> ·
+  <a href="?status=sent">versendet ({{ counts.sent }})</a> ·
+  <a href="?status=suppressed">Testbetrieb ({{ counts.suppressed }})</a>
+</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Erstellt</th><th>Typ</th><th>Empfänger</th><th>Betreff</th><th>Status</th><th>Versuche</th></tr></thead>
+  <tbody>
+  {% for mail in mails %}
+    <tr>
+      <td class="nowrap small">{{ mail.created_at|lt }}</td>
+      <td class="small">{{ m.mail_type(mail.type) }}</td>
+      <td class="mono small">{{ mail.recipient }}{% if mail.username %}<br><span class="muted">{{ mail.username }}</span>{% endif %}</td>
+      <td><a href="/admin/mails/{{ mail.id }}">{{ mail.subject }}</a>{% if mail.last_error %}<br><span class="small warn">{{ mail.last_error }}</span>{% endif %}</td>
+      <td>{{ m.mail_status(mail.status) }}</td>
+      <td>{{ mail.attempts }}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="6" class="muted">Keine E-Mails.</td></tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% endblock %}

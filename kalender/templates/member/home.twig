@@ -1,0 +1,54 @@
+{% extends 'layout.twig' %}
+{% block content %}
+<h1>Hallo {{ current_user.first_name }}!</h1>
+
+{% if outdated %}
+  <div class="notice">
+    <h2>Ihr Benutzername passt nicht mehr zu Ihrem Namen</h2>
+    <p>Ihr Benutzername <strong class="mono">{{ current_user.username }}</strong> beruht auf einem früheren Namen. Sie können ihn auf <strong class="mono">{{ suggestion }}</strong> umstellen – müssen es aber nicht. Alles funktioniert auch mit dem bisherigen Benutzernamen weiter.</p>
+    <a class="btn btn-secondary" href="/konto/benutzername">Benutzername umstellen …</a>
+  </div>
+{% endif %}
+
+<h2>Meine Kalender</h2>
+{% if calendars is empty %}
+  <div class="box">
+    <p>Ihnen ist derzeit kein Kalender zugeordnet. Welche Kalender Sie sehen, ergibt sich aus Ihren Mitgliedschaften in MP Feuer.</p>
+    <p><a href="/mitgliedschaften">Meine Mitgliedschaften ansehen</a></p>
+  </div>
+{% else %}
+  <p class="muted">Auf <a href="/geraete">Smartphone und Tablet</a> erhalten Sie alle Kalender mit einem einzigen Zugang. Für <strong>Outlook</strong> (und Google Kalender) abonnieren Sie jeden Kalender einzeln über seinen persönlichen Abo-Link – <a href="/anleitung/outlook">so geht's</a>.</p>
+  {% for c in calendars %}
+    <div class="box cal">
+      <span class="swatch" style="background: {{ c.color }}"></span>
+      <div class="cal-body">
+        <h3>{{ c.display_name }}</h3>
+        {% if c.description %}<p class="muted small" style="margin:0 0 .25rem">{{ c.description }}</p>{% endif %}
+        <label for="feed-{{ c.id }}" class="small" style="margin-top:.5rem">Abo-Link für Outlook</label>
+        <div class="copy">
+          <input type="text" id="feed-{{ c.id }}" value="{{ c.feed_url }}" readonly>
+          <button type="button" class="btn btn-secondary btn-small" data-copy="feed-{{ c.id }}">Kopieren</button>
+        </div>
+        <p class="small muted" style="margin:0">
+          {% if c.last_access_at %}
+            Zuletzt erfolgreich abgerufen: {{ c.last_access_at|lt }} ({{ c.last_client|device }})
+          {% else %}
+            Über diesen Link wurde noch nie abgerufen.
+          {% endif %}
+          · <a href="{{ c.webcal_url }}">direkt abonnieren</a>
+        </p>
+      </div>
+    </div>
+  {% endfor %}
+  <p class="small muted">Der Abo-Link ist persönlich und geheim. Geben Sie ihn nicht weiter. Er gilt nur, solange Ihnen der Kalender zugeordnet ist.</p>
+{% endif %}
+
+<h2>Neu generieren</h2>
+<div class="box">
+  <p>Wenn ein Gerät verloren gegangen ist oder ein Link weitergegeben wurde, können Sie neue Zugangsdaten erzeugen. Die bisherigen werden dabei <strong>sofort ungültig</strong>.</p>
+  <div class="actions">
+    <a class="btn btn-secondary" href="/konto/passwort">Neues Passwort …</a>
+    <a class="btn btn-secondary" href="/konto/abo-links">Neue Abo-Links …</a>
+  </div>
+</div>
+{% endblock %}

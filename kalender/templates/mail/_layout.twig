@@ -1,0 +1,22 @@
+{#- HTML-Layout aller E-Mails. Kinder definieren die Blöcke subject, text (Textfassung) und content (HTML). -#}
+<!doctype html>
+<html lang="de">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>{{ block('subject') }}</title></head>
+<body style="margin:0;padding:0;background:#f5f6f8;font-family:Arial,Helvetica,sans-serif;color:#1f2328;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f6f8;padding:16px 0;">
+<tr><td align="center">
+  <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:8px;overflow:hidden;">
+    <tr><td style="background:#b91c1c;color:#ffffff;padding:14px 20px;font-size:18px;font-weight:bold;">{{ app_name }}</td></tr>
+    <tr><td style="padding:20px;font-size:15px;line-height:1.5;">
+      {% block content %}{% endblock %}
+    </td></tr>
+    <tr><td style="padding:12px 20px;background:#f5f6f8;color:#5b6470;font-size:12px;line-height:1.4;">
+      Diese E-Mail wurde automatisch vom Kalenderserver der Freiwilligen Feuerwehr KRZ verschickt.
+      Passwörter werden niemals per E-Mail versendet. Termine werden ausschließlich in MP Feuer gepflegt.<br>
+      <a href="{{ base_url }}" style="color:#8f1414;">{{ domain }}</a> · <a href="{{ base_url }}/datenschutz" style="color:#8f1414;">Datenschutz</a>
+    </td></tr>
+  </table>
+</td></tr>
+</table>
+</body>
+</html>

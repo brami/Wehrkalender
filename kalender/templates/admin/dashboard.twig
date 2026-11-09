@@ -1,0 +1,150 @@
+{% extends 'layout.twig' %}
+{% import 'admin/_macros.twig' as m %}
+{% block title %}Status – {{ app_name }}{% endblock %}
+{% block main_class %} wide{% endblock %}
+{% block content %}
+<h1>Status</h1>
+{% include 'admin/_nav.twig' %}
+
+{% if mail_mode == 'database' %}
+  <div class="testbanner small">Testbetrieb: E-Mails werden nicht verschickt, sondern nur gespeichert (MAIL_DELIVERY=database). Vorschau unter <a href="/admin/mails" style="color:#fff">E-Mails</a>.</div>
+{% endif %}
+
+{% for p in problems %}<div class="flash flash-error">{{ p }}</div>{% endfor %}
+
+<h2>Nutzung</h2>
+<div class="stats">
+  <div class="stat"><b>{{ usage.active }}</b>aktive Zugänge</div>
+  <div class="stat"><b>{{ usage.locked }}</b>gesperrt</div>
+  <div class="stat"><b>{{ usage.any_7 }} / {{ usage.any_30 }}</b>mit Abruf in 7 / 30 Tagen</div>
+  <div class="stat"><b>{{ usage.dav_7 }} / {{ usage.dav_30 }}</b>Smartphone/Tablet 7 / 30 Tage</div>
+  <div class="stat"><b>{{ usage.feed_7 }} / {{ usage.feed_30 }}</b>Abo-Links 7 / 30 Tage</div>
+</div>
+
+<h2>Import aus MP Feuer</h2>
+{% if last_run %}
+  <div class="box">
+    <p style="margin-top:0">Letzter Lauf: <strong>{{ last_run.started_at|lt }}</strong> {{ m.run_status(last_run.status) }}
+      · Dauer {{ last_run.duration|duration }} · {{ last_run.errors }} Fehler, {{ last_run.warnings }} Warnungen
+      · <a href="/admin/import/{{ last_run.id }}">Protokoll</a></p>
+    <div class="chips">{{ m.stats(last_run.stats_data) }}</div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Beginn</th><th>Status</th><th>Dauer</th><th>Fehler/Warnungen</th><th>Zähler</th><th></th></tr></thead>
+      <tbody>
+      {% for r in runs %}
+        <tr>
+          <td class="nowrap">{{ r.started_at|lt }}</td>
+          <td>{{ m.run_status(r.status) }}</td>
+          <td class="nowrap">{{ r.duration|duration }}</td>
+          <td>{{ r.errors }} / {{ r.warnings }}</td>
+          <td class="small">
+            {% set s = r.stats_data %}
+            {% if s.users_created is defined %}+{{ s.users_created }} / −{{ s.users_deleted ?? 0 }} Mitgl., {{ s.events_added ?? 0 }}/{{ s.events_modified ?? 0 }}/{{ s.events_deleted ?? 0 }} Termine (neu/geänd./entf.){% endif %}
+            {% if s.error is defined %}<span class="warn">{{ s.error }}</span>{% endif %}
+          </td>
+          <td><a href="/admin/import/{{ r.id }}">Details</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <p class="muted">Noch kein Import.</p>
+{% endif %}
+
+<h2>Gesperrte Mitglieder (ungültige E-Mail-Adresse)</h2>
+{% if locked is empty %}
+  <p class="muted">Keine.</p>
+{% else %}
+  <p class="small muted">Die Adresse muss in MP Feuer korrigiert werden; danach wird der Zugang beim nächsten Import automatisch entsperrt.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Name</th><th>Benutzername</th><th>Ungültige Adresse</th></tr></thead>
+    <tbody>
+    {% for u in locked %}
+      <tr><td><a href="/admin/benutzer/{{ u.id }}">{{ u.last_name }}, {{ u.first_name }}</a></td><td class="mono">{{ u.username }}</td><td class="mono">{{ u.email }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+{% endif %}
+
+<h2>Veraltete Benutzernamen</h2>
+{% if outdated is empty %}
+  <p class="muted">Alle Benutzernamen passen zum aktuellen Namen.</p>
+{% else %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Aktueller Name</th><th>Benutzername</th><th>Vorschlag</th><th></th></tr></thead>
+    <tbody>
+    {% for u in outdated %}
+      <tr>
+        <td><a href="/admin/benutzer/{{ u.id }}">{{ u.last_name }}, {{ u.first_name }}</a></td>
+        <td class="mono">{{ u.username }}</td>
+        <td class="mono">{{ u.suggestion }}</td>
+        <td><a class="btn btn-secondary btn-small" href="/admin/benutzer/{{ u.id }}/benutzername">Umstellen …</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+{% endif %}
+{% if history is not empty %}
+  <h3>Verlauf der Umstellungen</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Zeitpunkt</th><th>Mitglied</th><th>alt</th><th>neu</th><th>durch</th></tr></thead>
+    <tbody>
+    {% for h in history %}
+      <tr>
+        <td class="nowrap">{{ h.changed_at|lt }}</td>
+        <td><a href="/admin/benutzer/{{ h.user_id }}">{{ h.last_name }}, {{ h.first_name }}</a></td>
+        <td class="mono">{{ h.old_username }}</td><td class="mono">{{ h.new_username }}</td>
+        <td>{{ h.changed_by == h.user_id ? 'Mitglied selbst' : ('Admin ' ~ (h.changed_by_name ?? '?')) }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+{% endif %}
+
+<h2>Zuordnungsprobleme</h2>
+<div class="grid">
+  <div class="box">
+    <h3 style="margin-top:0">Termine ohne Kalender (letzter erfolgreicher Import)</h3>
+    {% if unmapped is empty %}<p class="muted">Keine.</p>{% else %}
+      <ul class="small">{% for u in unmapped %}<li>{{ u.message }}</li>{% endfor %}</ul>
+    {% endif %}
+  </div>
+  <div class="box">
+    <h3 style="margin-top:0">Bereiche aus MP Feuer ohne Kalender</h3>
+    {% if areas_without_calendar is empty %}<p class="muted">Keine.</p>{% else %}
+      <ul class="small">{% for a in areas_without_calendar %}<li><code>{{ a.mp_key }}</code> – {{ a.label }} ({{ a.members }} Mitgl.)</li>{% endfor %}</ul>
+      <p class="small"><a href="/admin/kalender">Zuordnung pflegen</a></p>
+    {% endif %}
+  </div>
+</div>
+
+<h2>Mail-Warteschlange</h2>
+<p>
+  <a href="/admin/mails?status=queued">{{ mail_counts.queued }} offen</a> ·
+  <a href="/admin/mails?status=failed">{{ mail_counts.failed }} fehlgeschlagen</a> ·
+  <a href="/admin/mails?status=sent">{{ mail_counts.sent }} versendet</a>
+  {% if mail_counts.suppressed %}· <a href="/admin/mails?status=suppressed">{{ mail_counts.suppressed }} nicht versendet (Testbetrieb)</a>{% endif %}
+</p>
+{% if mails_failed is not empty %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Erstellt</th><th>Typ</th><th>Empfänger</th><th>Versuche</th><th>Fehler</th><th></th></tr></thead>
+    <tbody>
+    {% for mail in mails_failed %}
+      <tr>
+        <td class="nowrap">{{ mail.created_at|lt }}</td><td>{{ m.mail_type(mail.type) }}</td><td class="mono">{{ mail.recipient }}</td>
+        <td>{{ mail.attempts }}</td><td class="small warn">{{ mail.last_error }}</td>
+        <td>
+          <form method="post" action="/admin/mails/{{ mail.id }}/erneut" class="inline">
+            <input type="hidden" name="_csrf" value="{{ csrf }}">
+            <button class="btn btn-secondary btn-small" type="submit">Erneut senden</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+{% endif %}
+{% endblock %}
