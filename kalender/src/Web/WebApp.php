@@ -149,7 +149,8 @@ final class WebApp
         $slim->addRoutingMiddleware();
 
         // Fehlerseiten
-        $errors = $slim->addErrorMiddleware($app->config->env() === 'dev', true, true);
+        // Fehlerdetails im Browser nur außerhalb der Produktion (APP_ENV=test oder dev)
+        $errors = $slim->addErrorMiddleware($app->config->env() !== 'prod', true, true);
         $errors->setDefaultErrorHandler(function (Request $request, Throwable $e, bool $displayDetails) use ($view, $app): Response {
             $code = $e instanceof \Slim\Exception\HttpException ? $e->getCode() : 500;
             if ($code >= 500) {

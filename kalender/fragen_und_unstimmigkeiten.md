@@ -1,6 +1,8 @@
 # Kalenderserver FF KRZ – Fragen und Unstimmigkeiten
 
-Stand: 08.11.2026 · gesammelt bei der Umsetzung der Anwendung (ohne Import aus MP Feuer)
+Stand: 09.11.2026 · gesammelt bei der Umsetzung der Anwendung (ohne Import aus MP Feuer)
+
+Entschieden am 09.11.2026 (M. Bramer): A1, A3, A6 – siehe dort. Offen: A2 und die übrigen Punkte.
 
 Grundlage: `implementierung_kalender_ff_krz.tex` (+ `_betrieb.tex`), `projektbeschreibung_kalender_ff_krz.tex`, `setup-server.sh`.
 
@@ -13,13 +15,13 @@ Wo eine Entscheidung nötig war, ist eine Lösung umgesetzt und hier als **Umges
 ### A1. Kalender „FF KRZ“ für alle Mitglieder
 Laut Projektbeschreibung sieht ein Mitglied der LG Drove auch den Kalender **FF KRZ**. Das Datenmodell ordnet Kalender aber nur über `memberships ⋈ calendar_sources` zu. FF KRZ erscheint also nur, wenn MP Feuer jedem Mitglied eine Mitgliedschaft „FF-KRZ“ exportiert.
 **Umgesetzt:** zusätzliche Spalte `calendars.all_members`. Ein so markierter Kalender ist für alle aktiven Mitglieder freigeschaltet. Die Einstellung lässt sich im Admin-Bereich unter „Kalender & Zuordnungen“ ändern.
-**Frage:** Liefert MP Feuer eine solche Mitgliedschaft für alle, oder bleibt es bei der Markierung?
+**Entschieden (09.11.2026):** Es bleibt vorerst bei der Markierung „für alle Mitglieder“.
 
 ### A2. Gleicher Schlüssel für Termin-Bereich und Mitgliedschaft?
 `calendar_sources` legt zwei Dinge zugleich fest: In welchen Kalender die Termine eines Bereichs kommen und welche Mitglieder den Kalender sehen. Das funktioniert nur, wenn `termine.bereich` und `mitgliedschaften.schluessel` dieselben Schlüssel verwenden.
 Beispiel: Betreuer der JF Gr1 sind in MP Feuer eventuell nicht als „JF-GR1“ geführt.
 **Umgesetzt:** Mehrere Schlüssel können auf denselben Kalender zeigen (Testdaten: `JF-GR1` und `JF-GR1-BETREUER` → JF Gr1).
-**Frage an MP Feuer:** Verwenden beide Exporte dieselben Schlüssel?
+**Frage an MP Feuer:** Verwenden beide Exporte dieselben Schlüssel? *(Stand 09.11.2026: noch offen)*
 
 ### A3. Mehrere Mitglieder mit derselben E-Mail-Adresse
 In der Kinder- und Jugendfeuerwehr ist oft bei Geschwistern die Adresse der Eltern hinterlegt. Die Anmeldung mit „E-Mail + Passwort“ ist dann nicht eindeutig.
@@ -28,7 +30,7 @@ In der Kinder- und Jugendfeuerwehr ist oft bei Geschwistern die Adresse der Elte
 - Bei „Anmeldelink anfordern“ geht je Konto eine eigene E-Mail raus.
 - Testfall: Mia und Noah Schulz.
 
-**Frage:** Ist das so gewollt? Und grundsätzlich: Sollen Kinder und Jugendliche überhaupt eigene Zugänge erhalten (Einwilligung der Eltern, Datenschutzbeauftragte)?
+**Entschieden (09.11.2026):** So gewollt. Jedes Mitglied mit hinterlegter E-Mail-Adresse erhält einen Zugang, auch Kinder und Jugendliche; mehrere Zugänge mit derselben Adresse sind in Ordnung.
 
 ### A4. Exportiert MP Feuer auch vergangene Termine?
 Die Regel „nicht mehr im Export → aus dem Kalender entfernen“ hat eine Folge: Exportiert MP Feuer nur künftige Termine, verschwinden vergangene Termine von allen Geräten.
@@ -41,8 +43,7 @@ Die Termin-UID enthält die Domain (`mp-<id>@<domain>`). Ändert sich die Domain
 
 ### A6. Abo-Link in der E-Mail „neuer Kalender“
 Laut Projektbeschreibung enthält diese E-Mail den Abo-Link. Der Link ist aber ein Geheimnis, gleichwertig zu einem Passwort für diesen einen Kalender. Laut Doku stehen Passwörter nie in E-Mails.
-**Umgesetzt:** Der Link steht in der E-Mail, wie in der Projektbeschreibung vorgesehen.
-**Frage:** Soll das so bleiben, oder soll die E-Mail nur auf das Web-Frontend verweisen?
+**Entschieden und umgesetzt (09.11.2026):** Abo-Links stehen nur im Web-Frontend. Die E-Mail nennt die neuen Kalender und enthält einen Anmeldelink, der 14 Tage gilt (neuer Token-Zweck `notice`, einmal verwendbar). Abweichung von der Projektbeschreibung, die den Abo-Link in der E-Mail vorsah – dort bei Gelegenheit anpassen.
 
 ### A7. Hinweis „neuer Kalender“ bei neuen Mitgliedern
 Ein neues Mitglied bekommt die Begrüßung. Soll es zusätzlich für jeden Kalender den Hinweis „neuer Kalender“ bekommen?
@@ -104,7 +105,7 @@ Im Compose von `setup-server.sh` hängt `db` nur am internen Netz `backend`. Das
 | `calendars` | `all_members`, `created_at`, `updated_at` | siehe A1 |
 | `mail_queue` | `next_attempt_at`, `created_at`, Status `suppressed` | Wiederholung mit wachsendem Abstand; Testbetrieb ohne Versand |
 | `login_attempts` | `throttle_key` statt `key` | `KEY` ist in MariaDB ein reserviertes Wort |
-| `login_tokens` | `created_at` | Nachvollziehbarkeit |
+| `login_tokens` | `created_at`, Zweck `notice` | Nachvollziehbarkeit; Anmeldelink in der E-Mail „neuer Kalender“ (14 Tage, siehe A6) |
 | `import_messages` | `created_at` | Nachvollziehbarkeit |
 | `users` | `created_at`, `updated_at` | Nachvollziehbarkeit |
 | neu: `app_state` | Schlüssel/Wert | siehe B5 |

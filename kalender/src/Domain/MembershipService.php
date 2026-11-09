@@ -22,6 +22,7 @@ final class MembershipService
         private Clock $clock,
         private Config $config,
         private MailQueue $mail,
+        private AccountService $accounts,
     ) {
     }
 
@@ -131,7 +132,11 @@ final class MembershipService
         return $token;
     }
 
-    /** Eine E-Mail je Mitglied, auch wenn mehrere Kalender hinzukommen */
+    /**
+     * Eine E-Mail je Mitglied, auch wenn mehrere Kalender hinzukommen.
+     * Die E-Mail enthält keine Abo-Links (die stehen nur im Web-Frontend),
+     * sondern einen Anmeldelink, der 14 Tage gilt.
+     */
     public function notifyNewCalendars(int $userId, array $calendarIds): void
     {
         $user = $this->db->one('SELECT * FROM users WHERE id = ?', [$userId]);
@@ -142,14 +147,15 @@ final class MembershipService
         foreach ($calendarIds as $calId) {
             $cal = $this->db->one('SELECT id, display_name, color FROM calendars WHERE id = ?', [$calId]);
             if ($cal !== null) {
-                $cal['feed_url'] = $this->config->baseUrl() . '/abo/' . $this->ensureFeedToken($userId, (int) $calId) . '.ics';
                 $calendars[] = $cal;
             }
         }
+        $token = $this->accounts->createLoginToken($userId, 'notice');
         $this->mail->enqueue('new_calendar', $user['email'], [
             'user' => $user,
             'calendars' => $calendars,
-            'login_url' => $this->config->baseUrl() . '/login',
+            'link' => $this->config->baseUrl() . '/login/link/' . $token,
+            'valid_days' => 14,
         ], $userId);
     }
 }

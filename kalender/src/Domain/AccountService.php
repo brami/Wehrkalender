@@ -111,6 +111,7 @@ final class AccountService
         });
     }
 
+    /** Zweck: welcome (Begrüßung, 14 Tage), notice (Hinweis-E-Mail, 14 Tage), request (angefordert, 30 Minuten) */
     public function createLoginToken(int $userId, string $purpose): string
     {
         $token = Tokens::random();
@@ -119,7 +120,7 @@ final class AccountService
             'token_hash' => Tokens::hash($token),
             'purpose' => $purpose,
             'created_at' => $this->clock->nowDb(),
-            'expires_at' => $this->clock->db($purpose === 'welcome' ? self::WELCOME_TTL : self::REQUEST_TTL),
+            'expires_at' => $this->clock->db(in_array($purpose, ['welcome', 'notice'], true) ? self::WELCOME_TTL : self::REQUEST_TTL),
         ]);
         return $token;
     }

@@ -10,6 +10,7 @@
   <script src="/assets/app.js" defer></script>
 </head>
 <body>
+{% if app_env != 'prod' %}<div class="envbanner" role="note">{{ app_env == 'test' ? 'Testumgebung' : 'Entwicklungsumgebung' }} – Daten können jederzeit zurückgesetzt werden, E-Mails werden ggf. nicht verschickt.</div>{% endif %}
 <header class="top">
   <div class="wrap top-inner">
     <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span>{{ app_name }}</a>

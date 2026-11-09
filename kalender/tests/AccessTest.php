@@ -128,6 +128,18 @@ final class AccessTest extends TestCase
         self::assertSame([$this->kf], $added);
         self::assertSame(200, $this->feed($token));
         self::assertSame(1, (int) $this->app->db()->value("SELECT COUNT(*) FROM mail_queue WHERE type = 'new_calendar'"));
+
+        // Hinweis-E-Mail: kein Abo-Link, aber ein Anmeldelink (14 Tage)
+        $mail = $this->app->db()->one("SELECT * FROM mail_queue WHERE type = 'new_calendar'");
+        self::assertStringNotContainsString('/abo/', $mail['body_text'] . $mail['body_html']);
+        self::assertSame(1, preg_match('#/login/link/([A-Za-z0-9_-]{43})#', $mail['body_text'], $m));
+        $check = $this->app->accounts()->checkLoginToken($m[1]);
+        self::assertSame('ok', $check['status']);
+        self::assertSame('notice', $check['token']['purpose']);
+        $this->clock->fix($this->clock->now()->modify('+13 days'));
+        self::assertSame('ok', $this->app->accounts()->checkLoginToken($m[1])['status']);
+        $this->clock->fix($this->clock->now()->modify('+2 days'));
+        self::assertSame('expired', $this->app->accounts()->checkLoginToken($m[1])['status']);
     }
 
     public function testRegeneratedFeedTokens(): void

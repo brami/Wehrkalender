@@ -117,3 +117,4 @@ ol.steps li { margin: .35rem 0; }
   dl.facts dt { margin-top: .4rem; }
 }
 main.wrap.wide { max-width: 96rem; }
+.envbanner { background: #1e40af; color: #fff; text-align: center; font-size: .85rem; padding: .3rem 1rem; }

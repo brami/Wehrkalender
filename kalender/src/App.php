@@ -130,7 +130,7 @@ final class App
 
     public function memberships(): MembershipService
     {
-        return $this->get(MembershipService::class, fn () => new MembershipService($this->db(), $this->clock(), $this->config, $this->mailQueue()));
+        return $this->get(MembershipService::class, fn () => new MembershipService($this->db(), $this->clock(), $this->config, $this->mailQueue(), $this->accounts()));
     }
 
     public function status(): StatusService

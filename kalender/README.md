@@ -100,7 +100,20 @@ TEST_DB_DSN="mysql:host=127.0.0.1;dbname=kalender_test;charset=utf8mb4" \
 TEST_DB_USER=kalender_test TEST_DB_PASSWORD=… vendor/bin/phpunit
 ```
 
-## Betrieb mit Docker (Server aus `setup-server.sh`)
+## Betrieb mit Docker (Server aus `setup-server-kalender-ff.sh`)
+
+Am einfachsten installiert das Einrichtungsskript die Anwendung selbst:
+ZIP neben das Skript legen und aufrufen, z. B. `-U -E test -X` (Testsystem mit
+Testdaten) bzw. `-U -E prod -Z ""` (nur auf Produktion umstellen). Die
+Umgebung steht in `/srv/kalender/.env` als `APP_ENV`:
+
+| APP_ENV | Wirkung |
+|---|---|
+| `test` | Hinweisband „Testumgebung“, Fehlerdetails im Browser, Testdaten erlaubt |
+| `prod` | keine Fehlerdetails, Testdaten nur mit `--yes` (Skript sperrt `-X`) |
+| `dev`  | lokale Entwicklung, zusätzlich sabre/dav-Browser unter `/dav/` |
+
+Von Hand:
 
 1. Repository nach `/srv/kalender/app` kopieren.
 2. `deploy/docker-compose.yml` nach `/srv/kalender/docker-compose.yml` und `deploy/Caddyfile` nach `/srv/kalender/caddy/Caddyfile` kopieren.
