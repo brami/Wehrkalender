@@ -31,7 +31,7 @@ final class Licenses
                 continue;
             }
             $url = (string) ($p['homepage'] ?? '');
-            if ($url === '' && isset($p['source']['url'])) {
+            if (!str_starts_with($url, 'https://') && isset($p['source']['url'])) {
                 $url = preg_replace('/\.git$/', '', (string) $p['source']['url']);
             }
             $list[] = [
