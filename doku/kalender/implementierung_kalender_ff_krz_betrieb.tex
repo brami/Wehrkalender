@@ -34,8 +34,9 @@ deutlich aus. Bei rund 200 Benutzern mit mehreren Geräten und Abrufen alle
 (\code{ADMIN\_ALERT\_EMAILS}) und die Hinweisseite für im Browser geöffnete
 Abo-Links (\code{FEED\_BROWSER\_NOTICE}, Standard \code{0}; erst nach dem
 Gerätetest auf \code{1} setzen und mit \code{-U -Z ""} übernehmen) sowie
-der Link zum Quellcode im Seitenfuß (\code{SOURCE\_URL}, siehe
-Abschnitt~\ref{sec:lizenz}). Alle Einträge sind in \code{.env.example} erläutert.
+der Link zum Quellcode im Seitenfuß (\code{SOURCE\_URL}) und die Angaben
+zum Betreiber für Impressum und Datenschutzhinweis (\code{BETREIBER\_*},
+\code{DATENSCHUTZ\_KONTAKT}), beides in Abschnitt~\ref{sec:lizenz}. Alle Einträge sind in \code{.env.example} erläutert.
 
 \subsection{Lizenz und Quellcode}\label{sec:lizenz}
 
@@ -52,6 +53,32 @@ Die AGPL verlangt in §\,13, den Nutzern eines Webdienstes den Quellcode
 anzubieten. Dafür in \code{/srv/kalender/.env} \code{SOURCE\_URL} auf die
 Adresse des Repositorys setzen und mit \code{-U -Z ""} übernehmen; der Link
 \enquote{Quellcode (AGPL-3.0)} erscheint dann im Seitenfuß.
+
+\textbf{Impressum.} Die Seite \code{/impressum} ist ohne Anmeldung erreichbar
+und im Seitenfuß verlinkt. Sie nennt den \emph{Betreiber} des Dienstes
+(§\,5 DDG) -- nicht den Urheber der Software -- und darunter unter
+\enquote{Über diese Software} Urheber, Lizenzen, den Link zum Quellcode und
+alle mitgelieferten Bibliotheken mit Version und Lizenz. Diese Liste liest die
+Anwendung aus \code{vendor/composer/installed.json}; sie ist damit immer auf
+dem Stand des gebauten Images. Die Betreiberangaben stehen in
+\code{/srv/kalender/.env}:
+
+\begin{tabular}{@{}ll@{}}
+\code{BETREIBER\_NAME} & Name, z.\,B. des Fördervereins (Pflicht)\\
+\code{BETREIBER\_ANSCHRIFT} & Anschrift, Zeilen mit \code{;} getrennt (Pflicht)\\
+\code{BETREIBER\_EMAIL} & Kontakt-E-Mail (Pflicht)\\
+\code{BETREIBER\_VERTRETEN\_DURCH} & z.\,B. \enquote{den Vorstand, dieser vertreten durch …}\\
+\code{BETREIBER\_TELEFON} & optional\\
+\code{BETREIBER\_REGISTER} & bei einem e.\,V.: Registergericht und Nummer\\
+\code{DATENSCHUTZ\_KONTAKT} & Datenschutzbeauftragte(r), optional\\
+\end{tabular}
+
+Dieselben Angaben erscheinen im Datenschutzhinweis als Verantwortlicher
+(Art.\,13 DSGVO). Solange Name, Anschrift oder E-Mail fehlen, zeigen die
+Statusseite der Verwaltung und das Impressum (für Admins) eine Warnung, und
+das Setup-Skript meldet es bei jedem Lauf. Übernehmen mit \code{-U -Z ""}.
+Die genauen Angaben stimmt der Betreiber ab (Vorstand,
+Datenschutzbeauftragte bzw. Datenschutzbeauftragter).
 
 \subsection{Einrichtung und Aktualisierung des Servers}
 

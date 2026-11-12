@@ -192,9 +192,19 @@ Ein `.ics`-Link kann abonniert oder importiert werden. Ein Import kopiert die Te
 
 ---
 
+### E5. Git-Repository, Lizenz, Impressum (12.11.2026)
+
+- Quellcode und Dokumentation liegen in einem Git-Repository. Die Stände vom 09.11. sind aus gesicherten Paketen rekonstruiert, die Arbeit vom 09.11. bis 12.11. ist in einem Commit zusammengefasst; ab jetzt wird jeder Schritt einzeln committet. `vendor/` gehört nicht dazu.
+- Lizenz: Code AGPL-3.0-or-later, Dokumentation CC BY-SA 4.0, Urheber Michael Bramer. Ausgenommen: `debsupport.sty` (Corporate Design). Alle Bibliotheken stehen unter MIT bzw. BSD-3-Clause.
+- Link „Quellcode (AGPL-3.0)“ im Seitenfuß über `SOURCE_URL` (AGPL §13).
+- Neue Seite **Impressum** (`/impressum`, ohne Anmeldung): Betreiber nach § 5 DDG aus `BETREIBER_*` in `.env`, darunter „Über diese Software“ mit Urheber, Lizenzen, Quellcode-Link und allen Bibliotheken (aus `vendor/composer/installed.json`). Der Datenschutzhinweis nennt jetzt den Verantwortlichen (dieselben Angaben, dazu `DATENSCHUTZ_KONTAKT`). Fehlen Pflichtangaben, warnen Verwaltung, Impressum (für Admins) und Setup-Skript.
+
 ## F. To-do / später
 
 - **`FEED_BROWSER_NOTICE=1` einschalten**, sobald der Gerätetest bestätigt, dass Outlook (klassisch, neu, Web, Mac) und der Google Kalender ihre Abos weiter mit Terminen füllen (siehe E4).
 
+- **Betreiber für Impressum und Datenschutz klären** (Förderverein, FF oder Stadt?) und `BETREIBER_*` sowie `DATENSCHUTZ_KONTAKT` in `/srv/kalender/.env` eintragen; Datenschutzhinweis mit der bzw. dem Datenschutzbeauftragten abstimmen (Seite ist noch als Entwurf markiert).
+- **`SOURCE_URL`** auf die Adresse des Git-Repositorys setzen, sobald es angelegt ist.
+- **`composer.lock`** ins Repository aufnehmen, damit jeder Docker-Build dieselben Bibliotheksversionen verwendet.
 - **Kalenderansicht im Web-Frontend** für Mitglieder: Monats- und Listenansicht mit Titel, Zeit und Ort, nur eigene Kalender, Filter je Kalender. Geschätzt etwa 1 Personentag. Vorgemerkt am 12.11.2026, zunächst nur das PDF (E2).
 - **Schulferien NRW ab 2030/31** in `src/Calendar/NrwSchoolHolidays.php` ergänzen, sobald veröffentlicht.

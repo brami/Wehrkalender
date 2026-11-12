@@ -4,7 +4,16 @@
 <h1>Hinweise zum Datenschutz</h1>
 <p class="muted small">Entwurf – Abstimmung mit der bzw. dem Datenschutzbeauftragten steht aus.</p>
 <div class="box">
-  <h2 style="margin-top:0">Welche Daten gespeichert werden</h2>
+  <h2 style="margin-top:0">Verantwortlich</h2>
+  {% if operator.name %}
+    <p><strong>{{ operator.name }}</strong><br>
+      {% for line in operator.address %}{{ line }}<br>{% endfor %}
+      {% if operator.email %}E-Mail: <a href="mailto:{{ operator.email }}">{{ operator.email }}</a>{% endif %}</p>
+  {% else %}
+    <p class="muted">Die Angaben zum Verantwortlichen werden zurzeit ergänzt (siehe <a href="/impressum">Impressum</a>).</p>
+  {% endif %}
+  {% if operator.privacy_officer %}<p>Datenschutzbeauftragte bzw. Datenschutzbeauftragter: {{ operator.privacy_officer }}</p>{% endif %}
+  <h2>Welche Daten gespeichert werden</h2>
   <ul>
     <li>aus MP Feuer: Name, E-Mail-Adresse, Mitgliedschaften (Einheit, Gruppen, Abteilungen, Lehrgänge) und die Termine der Bereiche,</li>
     <li>Ihr Benutzername und ein vom System erzeugtes Passwort (verschlüsselt gespeichert),</li>

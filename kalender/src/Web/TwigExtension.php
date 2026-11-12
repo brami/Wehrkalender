@@ -26,6 +26,7 @@ final class TwigExtension extends AbstractExtension implements GlobalsInterface
             'base_url' => $this->config->baseUrl(),
             'domain' => $this->config->domain(),
             'app_env' => $this->config->env(),
+            'operator' => $this->config->operator(),
         ];
     }
 

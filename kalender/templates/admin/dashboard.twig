@@ -10,6 +10,10 @@
   <div class="testbanner small">Testbetrieb: E-Mails werden nicht verschickt, sondern nur gespeichert (MAIL_DELIVERY=database). Vorschau unter <a href="/admin/mails" style="color:#fff">E-Mails</a>.</div>
 {% endif %}
 
+{% if not operator.complete %}
+  <div class="flash flash-error">Impressum unvollständig: Angaben zum Betreiber fehlen (<code>BETREIBER_NAME</code>, <code>BETREIBER_ANSCHRIFT</code>, <code>BETREIBER_EMAIL</code> in <code>/srv/kalender/.env</code>). <a href="/impressum">Impressum ansehen</a></div>
+{% endif %}
+
 {% for p in problems %}<div class="flash flash-error">{{ p }}</div>{% endfor %}
 
 <h2>Nutzung</h2>

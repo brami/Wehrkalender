@@ -493,6 +493,9 @@ apply_env() {
     log "Umgebung: ${old:-prod} -> $APP_ENV_SET"
   fi
   log "Umgebung der Anwendung: $(envval APP_ENV)$([[ "$(envval APP_ENV)" == test ]] && echo ' (Testsystem: Hinweisband, Fehlerdetails im Browser)')"
+  if [[ -z "$(envval BETREIBER_NAME)" || -z "$(envval BETREIBER_ANSCHRIFT)" || -z "$(envval BETREIBER_EMAIL)" ]]; then
+    log "WARNUNG: Impressum unvollständig – in $APP/.env BETREIBER_NAME, BETREIBER_ANSCHRIFT und BETREIBER_EMAIL eintragen."
+  fi
   if [[ "$(envval APP_ENV)" == prod && "$(envval MAIL_DELIVERY)" != smtp ]]; then
     log "WARNUNG: Produktion, aber MAIL_DELIVERY=$(envval MAIL_DELIVERY) – es werden keine E-Mails verschickt."
     log "         In $APP/.env MAILER_DSN eintragen, MAIL_DELIVERY=smtp setzen und erneut mit -U aufrufen."
@@ -1165,6 +1168,14 @@ phase_app() {
   ensure_env ADMIN_ALERT_EMAILS ""
   ensure_env FEED_BROWSER_NOTICE "0"         # 1 = Abo-Link im Browser zeigt Hinweisseite statt .ics (nach Gerätetest)
   ensure_env SOURCE_URL          ""          # Link zum Quellcode im Seitenfuß (AGPL-3.0), z. B. https://github.com/<besitzer>/<repo>
+  # Impressum und Datenschutz: Betreiber des Dienstes (Anschrift: Zeilen mit ; trennen)
+  ensure_env BETREIBER_NAME ""
+  ensure_env BETREIBER_ANSCHRIFT ""
+  ensure_env BETREIBER_VERTRETEN_DURCH ""
+  ensure_env BETREIBER_EMAIL ""
+  ensure_env BETREIBER_TELEFON ""
+  ensure_env BETREIBER_REGISTER ""
+  ensure_env DATENSCHUTZ_KONTAKT ""
   set_env DOMAIN "$DOMAIN"
   apply_env
   log "E-Mail-Versand: $(envval MAIL_DELIVERY)$([[ "$(envval MAIL_DELIVERY)" == database ]] && echo ' (Testbetrieb, nichts wird verschickt)')"
@@ -1209,6 +1220,13 @@ x-app: &app
     ADMIN_ALERT_EMAILS: ${ADMIN_ALERT_EMAILS:-}
     FEED_BROWSER_NOTICE: ${FEED_BROWSER_NOTICE:-0}
     SOURCE_URL: ${SOURCE_URL:-}
+    BETREIBER_NAME: ${BETREIBER_NAME:-}
+    BETREIBER_ANSCHRIFT: ${BETREIBER_ANSCHRIFT:-}
+    BETREIBER_VERTRETEN_DURCH: ${BETREIBER_VERTRETEN_DURCH:-}
+    BETREIBER_EMAIL: ${BETREIBER_EMAIL:-}
+    BETREIBER_TELEFON: ${BETREIBER_TELEFON:-}
+    BETREIBER_REGISTER: ${BETREIBER_REGISTER:-}
+    DATENSCHUTZ_KONTAKT: ${DATENSCHUTZ_KONTAKT:-}
   volumes:
     - app-storage:/srv/app/storage
   healthcheck:              # erkennt z. B. fehlerhafte Abhängigkeiten im Image

@@ -116,6 +116,30 @@ final class Config
         return $this->get('APP_NAME', 'Kalender FF KRZ');
     }
 
+    /**
+     * Angaben zum Betreiber des Dienstes für Impressum (§ 5 DDG) und
+     * Datenschutzhinweis (Verantwortlicher nach Art. 13 DSGVO).
+     * Anschrift: Zeilen durch Semikolon getrennt.
+     *
+     * @return array{name:string, address:list<string>, represented_by:string, email:string, phone:string, register:string, privacy_officer:string, complete:bool}
+     */
+    public function operator(): array
+    {
+        $g = fn (string $k) => trim($this->get($k, ''));
+        $address = array_values(array_filter(array_map('trim', explode(';', $g('BETREIBER_ANSCHRIFT'))), fn ($l) => $l !== ''));
+        $o = [
+            'name' => $g('BETREIBER_NAME'),
+            'address' => $address,
+            'represented_by' => $g('BETREIBER_VERTRETEN_DURCH'),
+            'email' => $g('BETREIBER_EMAIL'),
+            'phone' => $g('BETREIBER_TELEFON'),
+            'register' => $g('BETREIBER_REGISTER'),
+            'privacy_officer' => $g('DATENSCHUTZ_KONTAKT'),
+        ];
+        $o['complete'] = $o['name'] !== '' && $o['address'] !== [] && $o['email'] !== '';
+        return $o;
+    }
+
     /** Link zum Quellcode (AGPL-3.0 §13); leer = kein Link im Seitenfuß */
     public function sourceUrl(): string
     {

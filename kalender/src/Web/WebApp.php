@@ -58,6 +58,9 @@ final class WebApp
             }
             return $view->render($r, 'guide/' . $a['geraet'] . '.twig', ['guide' => $a['geraet'], 'guides' => self::GUIDES]);
         });
+        $slim->get('/impressum', fn (Request $q, Response $r) => $view->render($r, 'imprint.twig', [
+            'libraries' => Licenses::fromInstalled($app->config->baseDir() . '/vendor/composer/installed.json'),
+        ]));
         $slim->get('/datenschutz', fn (Request $q, Response $r) => $view->render($r, 'privacy.twig'));
 
         // ---------------------------------------------------- Mitglieder
