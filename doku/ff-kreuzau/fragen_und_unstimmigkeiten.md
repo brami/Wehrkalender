@@ -220,7 +220,12 @@ Die Software heißt jetzt **Wehrkalender** und ist für jede Feuerwehr nutzbar. 
 - Testdaten: Kreis-Feed befüllt TM1 2027 (Filter „TM1“, 2027), Abfallkalender Drove/Kreuzau/Stockheim (für alle, Vorgabe aus), Kreisfeuerwehrverband (Quelle meldet Fehler), gemischter Kalender LG Drove + Dorffest des Ortsvereins, einzelne Mitglieder mit eigener Wahl. 11 neue Tests (66 insgesamt).
 - Texte: „Termine werden in MP Feuer bzw. bei der jeweiligen Quelle gepflegt.“
 
-**Noch offen:** iCal-Importer (Abruf mit ETag, Serienauflösung, Filter anwenden, Löschen und Plausibilität je Befüllung, Hinweis „Quelle: …“), Überwachung externer Quellen in `/health` und per E-Mail.
+**Ergänzt (12.11.2026), abgestimmt mit M. Bramer:**
+- **iCal-Dateien hochladen** als dritte Quellenart: Upload auf der Seite „Quellen“ mit Vorschau (neu/geändert/entfernt je Befüllung) und „Übernehmen“; mehrere Dateien je Quelle (neue Fassung ersetzt nur ihre Termine, Datei des Folgejahres kommt dazu); Speicherung in der Datenbank (in der Sicherung enthalten); nur Admins, max. 2 MB; Warnung, wenn die Dateien bald enden. Option „Kennung aus Datum und Titel bilden“ für Dateien mit wechselnden UIDs. Verarbeitung gemeinsam mit dem iCal-Importer; Umsetzung beginnt mit dem Upload.
+- **Stand:** im Termin das Datum der letzten *inhaltlichen* Änderung („Quelle: … · Stand TT.MM.JJJJ“, je Befüllung schaltbar) – bewusst nicht der Sync-Zeitpunkt, sonst wäre jeder Termin bei jedem Abruf geändert. Beim Kalender der Stand der Quelle (letzter Abruf bzw. Upload) in der Kalenderbeschreibung und auf der Startseite, hervorgehoben wenn veraltet. Für MP Feuer nicht (Seitenfuß zeigt den Import).
+- Aufwand gesamt jetzt 6,5–8 PT, davon rund 3 PT umgesetzt.
+
+**Noch offen:** gemeinsame Verarbeitung für Feeds und Uploads (Abruf mit ETag bzw. Upload mit Vorschau, Serienauflösung, Filter anwenden, Löschen und Plausibilität je Befüllung, Hinweis „Quelle/Stand“), Stand beim Kalender, Überwachung externer Quellen in `/health` und per E-Mail.
 
 - **Drei getrennte Fragen:** *Freischaltung* (wer darf sehen – nur MP Feuer bzw. „für alle“), *Befüllung* (woher kommen die Termine – MP Feuer oder iCal-Feed mit Filter), *Auswahl* (will das Mitglied den Kalender – eigene Wahl, sonst Vorgabe des Admins).
 - **Benutzer und Mitgliedschaften** kommen weiterhin nur aus MP Feuer. Weitere Quellen liefern nur Termine (später evtl. Kontakte). Termine verschiedener Quellen überschneiden sich nicht.
@@ -239,7 +244,7 @@ Die Software heißt jetzt **Wehrkalender** und ist für jede Feuerwehr nutzbar. 
 - **Betreiber für Impressum und Datenschutz klären** (Förderverein, FF oder Stadt?) und `BETREIBER_*` sowie `DATENSCHUTZ_KONTAKT` in `/srv/kalender/.env` eintragen; Datenschutzhinweis mit der bzw. dem Datenschutzbeauftragten abstimmen (Seite ist noch als Entwurf markiert).
 - **`SOURCE_URL`** auf die Adresse des Git-Repositorys setzen, sobald es angelegt ist.
 - **`composer.lock`** ins Repository aufnehmen, damit jeder Docker-Build dieselben Bibliotheksversionen verwendet.
-- **iCal-Importer** für weitere Quellen umsetzen (E7); Adresse des Kreis-Feeds für Lehrgänge und der Abfallkalender der Gemeinde beschaffen.
+- **iCal-Importer und Datei-Upload** für weitere Quellen umsetzen, mit „Stand“ (E7); Adresse des Kreis-Feeds für Lehrgänge und der Abfallkalender der Gemeinde beschaffen.
 - **Anleitung für Mitglieder** um „Kalender ein- und ausschalten“ ergänzen (neue Screenshots der Startseite).
 - **Kalenderansicht im Web-Frontend** für Mitglieder: Monats- und Listenansicht mit Titel, Zeit und Ort, nur eigene Kalender, Filter je Kalender. Geschätzt etwa 1 Personentag. Vorgemerkt am 12.11.2026, zunächst nur das PDF (E2).
 - **Schulferien NRW ab 2030/31** in `src/Calendar/NrwSchoolHolidays.php` ergänzen, sobald veröffentlicht.

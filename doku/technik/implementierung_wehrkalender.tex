@@ -718,8 +718,11 @@ UID-Schema, Trennung von Freischaltung und Befüllung, Kalenderauswahl durch
 die Mitglieder vollständig, Verwaltung der Quellen und Befüllungen mit
 Filtern, Anzeige des Quellenzustands, Testdaten. \textbf{Noch offen:} der
 iCal-Importer (Abruf, Serienauflösung, Anwenden der Filter, Löschen und
-Plausibilität je Befüllung) sowie die Überwachung externer Quellen in
-\code{/health} und per E-Mail; die Status-Seite zeigt Probleme bereits an.
+Plausibilität je Befüllung), der Datei-Upload
+(Abschnitt~\ref{sec:quellen-upload}), der \glqq Stand\grqq\ in Terminen und
+Kalendern (Abschnitt~\ref{sec:quellen-stand}) sowie die Überwachung externer
+Quellen in \code{/health} und per E-Mail; die Status-Seite zeigt Probleme
+bereits an.
 \end{dshinweis}
 
 Neben MP Feuer sollen weitere Quellen Termine liefern können, z.\,B.\ die
@@ -798,7 +801,8 @@ unter \glqq Bereiche ohne Kalender\grqq\ erscheint.
 \midrule
 neu: \code{sources} & \code{source\_key} (kurz, eindeutig, Teil der UID,
   z.\,B.\ \code{mp}, \code{kreis}, \code{abfall-drove}), \code{type}
-  (\code{mpfeuer}, \code{ical}), \code{name}, \code{url},
+  (\code{mpfeuer}, \code{ical}, geplant \code{upload}), \code{name},
+  \code{url} (nur \code{ical}),
   \code{interval\_minutes}, \code{active}, Zustand des letzten Abrufs
   (\code{http\_etag}, \code{http\_last\_modified}, \code{last\_run\_at},
   \code{last\_success\_at}, \code{last\_error}). Die Quelle \code{mp} legt
@@ -807,7 +811,15 @@ neu: \code{sources} & \code{source\_key} (kurz, eindeutig, Teil der UID,
 neu: \code{calendar\_feeds} & Befüllung aus einer \emph{externen} Quelle:
   \code{calendar\_id}, \code{source\_id}, \code{filter} (JSON),
   \code{source\_note} (Hinweis \glqq Quelle: \dots\grqq),
-  \code{active}, \code{last\_match\_count} \\
+  \code{active}, \code{last\_match\_count}; geplant \code{show\_stand}
+  (\glqq Stand\grqq\ im Termin) \\
+\addlinespace
+geplant: \code{source\_files} & hochgeladene Dateien einer Quelle der Art
+  \code{upload}: \code{source\_id}, \code{name}, \code{ics} (Inhalt),
+  \code{sha256}, Zeitraum (\code{first\_start}, \code{last\_end}),
+  \code{event\_count}, \code{uploaded\_at}, \code{uploaded\_by},
+  \code{replaced\_at}; Termine verweisen über \code{events.file\_id} auf ihre
+  Datei \\
 \addlinespace
 \code{calendar\_sources} & Zuordnungen aus MP Feuer (Bereichsschlüssel
   $\rightarrow$ Kalender) mit \code{grants\_access} (\emph{freischalten})
@@ -875,6 +887,12 @@ iCal-Quellen ist \code{<id>} ein Hash aus der UID des Feeds und ggf.\
 Kollisionen, wenn ein Mitglied denselben Feed zusätzlich direkt abonniert
 hat. Quellenschlüssel werden nach der Einrichtung nicht mehr geändert.
 
+Für Quellen mit instabilen Kennungen (manche Programme vergeben bei jedem
+Export neue UIDs) ist je Quelle die Option \glqq Kennung aus Datum und Titel
+bilden\grqq\ vorgesehen: \code{<id>} ist dann ein Hash aus Beginn, Ende
+und Titel. Ein verschobener Termin erscheint dann als entfernt und neu; die
+Vorschau beim Upload zeigt, ob die Option nötig ist.
+
 \subsection{iCal-Quellen}
 
 \begin{itemize}
@@ -906,6 +924,80 @@ hat. Quellenschlüssel werden nach der Einrichtung nicht mehr geändert.
   \item \textbf{Nutzung fremder Daten:} Quellen werden bewusst vom Admin
         freigegeben und in Betriebshandbuch und Datenschutzhinweis
         aufgeführt.
+\end{itemize}
+
+\subsection{iCal-Dateien hochladen}\label{sec:quellen-upload}
+
+Neben Feeds kann eine Quelle aus \textbf{hochgeladenen iCal-Dateien}
+bestehen (Art \code{upload}), z.\,B.\ Abfallkalender, die die Gemeinde nur
+als Datei je Jahr anbietet, oder ein Lehrgangsplan, den der Kreis per E-Mail
+verschickt. Befüllungen, Filter, Kalenderauswahl und UID-Schema gelten
+unverändert; die Verarbeitung (Lesen, Serien auflösen, Filter anwenden,
+Abgleich neu/geändert/entfernt, Plausibilität) ist dieselbe wie beim
+iCal-Importer und wird einmal für beide gebaut.
+
+\begin{itemize}
+  \item \textbf{Hochladen mit Vorschau:} Auf der Seite \glqq Quellen\grqq\
+        wählt der Admin eine Datei. Vor der Übernahme zeigt die Vorschau je
+        Befüllung, was sich ändert, z.\,B.\ \glqq 42 Termine erkannt,
+        01.01.--31.12.2027; Abfall Drove: 38 neu, 2 geändert, 1 entfernt\grqq.
+        Erst mit \glqq Übernehmen\grqq\ ändern sich die Kalender. Bricht der
+        Admin ab, bleibt alles unverändert.
+  \item \textbf{Mehrere Dateien je Quelle:} Jede Datei ist eine eigene
+        Einheit. Eine \emph{neue Fassung} derselben Datei (z.\,B.\
+        korrigierter Plan 2027) ersetzt nur deren Termine; eine
+        \emph{weitere} Datei (z.\,B.\ 2028) kommt hinzu, die Termine von
+        2027 bleiben bis zum Jahresende erhalten. Entfernen einer Datei
+        entfernt nur ihre Termine. Angezeigt werden je Datei Name, Zeitraum,
+        Anzahl der Termine, hochgeladen am und von.
+  \item \textbf{Speicherung in der Datenbank} (\code{source\_files}),
+        nicht im Dateisystem: Die Dateien sind damit in der täglichen
+        Sicherung enthalten und nach einer Wiederherstellung sofort da.
+        Ersetzte Fassungen werden nach 90 Tagen gelöscht.
+  \item \textbf{Sicherheit:} nur Administratoren, höchstens 2\,MB, CSRF-Schutz,
+        die Datei muss ein gültiger \code{VCALENDAR} sein. Übernommen werden
+        nur Titel, Ort, Beschreibung, Beginn, Ende und Status; Anhänge,
+        Alarme und Teilnehmer werden verworfen.
+  \item \textbf{Keine automatische Aktualisierung:} Ändert der Anbieter einen
+        Termin, kommt das erst mit einer neuen Datei an. Die Status-Seite
+        warnt deshalb, wenn die Dateien einer Quelle in weniger als 30 Tagen
+        enden (\glqq Abfall Drove: Dateien enden am 31.12.2027\grqq), und
+        wenn ein befüllter Kalender in den nächsten 30 Tagen keine Termine
+        mehr hat.
+\end{itemize}
+
+\subsection{Stand der Termine und Kalender}\label{sec:quellen-stand}
+
+Damit Mitglieder sehen, wie aktuell Termine aus externen Quellen sind, gibt es
+den \glqq Stand\grqq\ auf zwei Ebenen. Ein Datum, das sich bei jedem Abruf
+ändert, wird bewusst \emph{nicht} in die Termine geschrieben: Jeder Termin
+wäre sonst bei jedem Abruf geändert, alle Geräte müssten alle Termine neu
+laden, und die Versionsnummer (\code{SEQUENCE}) stiege ständig.
+
+\begin{itemize}
+  \item \textbf{Im Termin:} das Datum der letzten \emph{inhaltlichen}
+        Änderung dieses Termins (neu, Zeit, Ort, Titel, Absage) am Ende der
+        Beschreibung, z.\,B.\ \glqq Quelle: Abfallkalender Drove · Stand
+        12.11.2026\grqq. Bei Feeds ist das der Abruf, mit dem die Änderung
+        ankam, bei Uploads das Hochladedatum der Datei, mit der der Termin
+        zuletzt geändert wurde. Ein unveränderter Termin behält sein Datum;
+        eine erneut hochgeladene, gleiche Datei ändert nichts. Je Befüllung
+        schaltbar (\code{show\_stand}, Vorgabe für externe Quellen: an),
+        zusammen mit dem Hinweis \glqq Quelle: \dots\grqq.
+  \item \textbf{Beim Kalender:} der Stand der Quelle (letzter erfolgreicher
+        Abruf bzw.\ letzter Upload, nur Datum) in der Kalenderbeschreibung,
+        die iPhone, Outlook und Google anzeigen (CalDAV
+        \code{calendar-description}, im Abo \code{X-WR-CALDESC}), z.\,B.\
+        \glqq Abfuhrtermine für Drove · Quelle: Abfallkalender der Gemeinde ·
+        Stand 12.11.2026\grqq. Die Beschreibung ist eine Eigenschaft des
+        Kalenders, nicht der Termine, und wird höchstens einmal täglich
+        aktualisiert. Auf der Startseite steht der Stand neben dem Kalender;
+        ist er älter als erwartet (zweifaches Abrufintervall, mindestens ein
+        Tag; bei Uploads: Dateien enden in weniger als 30 Tagen), wird der
+        Hinweis hervorgehoben.
+  \item \textbf{MP Feuer:} kein Stand in Terminen und Kalendern; der Seitenfuß
+        zeigt bereits den letzten Import. Bei Bedarf lässt es sich genauso
+        einschalten.
 \end{itemize}
 
 \subsection{Kalenderauswahl durch Mitglieder}
@@ -956,17 +1048,25 @@ Freischaltung und Befüllung trennen, Quellenmodell, UID-Schema, mehrere
   Befüllungen je Kalender & 1--1,5 PT \\
 iCal-Importer mit Filtern, Serienauflösung, Plausibilität, Tests & 2 PT \\
 Verwaltung \glqq Quellen\grqq\ mit Vorschau, Überwachung je Quelle & 1 PT \\
+Datei-Upload: Quellenart, Speicherung, mehrere Dateien, Vorschau und
+  Übernahme & 1--1,5 PT \\
+\glqq Stand\grqq\ in Terminen und Kalendern, Anzeige auf der Startseite &
+  0,5 PT \\
 Kalenderauswahl durch Mitglieder (Schalter, CalDAV, Feed, PDF, E-Mails) &
   1--1,5 PT \\
 \midrule
-\textbf{Summe} & \textbf{5--6 PT} \\
+\textbf{Summe} & \textbf{6,5--8 PT} \\
 \bottomrule
 \end{tabularx}
 \end{center}
 
 Der Import aus MP Feuer selbst ist darin nicht enthalten (Arbeitspakete 3
 und 3a). Sinnvolle Reihenfolge: Datenmodell und UID-Schema zusammen mit dem
-MP-Feuer-Import, danach Kalenderauswahl, danach iCal-Quellen.
+MP-Feuer-Import, danach Kalenderauswahl, danach iCal-Quellen. Umgesetzt sind
+(12.11.2026) Datenmodell, Kalenderauswahl und Verwaltung (rund 3 PT); offen
+sind die gemeinsame Verarbeitung von Feeds und Uploads, beginnend mit dem
+Upload (er lässt sich sofort mit echten Dateien testen), der Stand und die
+Überwachung (rund 3,5--5 PT).
 
 % ------------------------------------------------------------------
 \section{CalDAV-Server}
