@@ -2,7 +2,7 @@
 
 Stand: 09.11.2026 · gesammelt bei der Umsetzung der Anwendung (ohne Import aus MP Feuer)
 
-Entschieden am 09.11.2026 (M. Bramer): A1, A3, A6, A7, A8, A9, A10, A11 – siehe dort, eingepflegt in die technische Doku und die Projektbeschreibung. Ebenfalls am 09.11.2026: Anleitung zu B2 in die technische Umsetzung aufgenommen; Android-Anleitung um Abo-Links im Google Kalender ergänzt (E1). Am 12.11.2026: Terminübersicht als PDF (E2), Kalenderansicht im Web vorgemerkt (F). Offen: A2, A4, A5, A12.
+Entschieden am 09.11.2026 (M. Bramer): A1, A3, A6, A7, A8, A9, A10, A11 – siehe dort, eingepflegt in die technische Doku und die Projektbeschreibung. Ebenfalls am 09.11.2026: Anleitung zu B2 in die technische Umsetzung aufgenommen; Android-Anleitung um Abo-Links im Google Kalender ergänzt (E1). Am 12.11.2026: Terminübersicht als PDF (E2), Kalenderansicht im Web vorgemerkt (F), Startseite und „Kalender abonnieren“ (E3), Abonnieren statt importieren (E4), Git-Repository, Lizenz und Impressum (E5). Offen: A2, A4, A5, A12.
 
 Grundlage: `implementierung_kalender_ff_krz.tex` (+ `_betrieb.tex`), `projektbeschreibung_kalender_ff_krz.tex`, `setup-server-kalender-ff.sh` (vormals `setup-server.sh`).
 
@@ -190,8 +190,6 @@ Ein `.ics`-Link kann abonniert oder importiert werden. Ein Import kopiert die Te
 - **Stufe 1 – Hinweise:** Kasten „Abonnieren – nicht importieren“ auf der Seite „Outlook & Google Kalender“, in den Online-Anleitungen (Outlook, Android) und in der Anleitung für Mitglieder (Kapitel 6 und 7, neue häufige Frage „aus Versehen importiert“). „direkt abonnieren“ (webcal) wird unter Android ausgeblendet.
 - **Stufe 2 – Hinweisseite im Browser:** Wird ein Abo-Link im Browser geöffnet (`Accept` enthält `text/html`, aber nicht `text/calendar`), zeigt der Server eine Hinweisseite statt die Datei auszuliefern. Kalenderprogramme erhalten weiterhin die Termine. Eingebaut und getestet, aber **ausgeschaltet** (`FEED_BROWSER_NOTICE=0`); das Setup-Skript legt den Eintrag an und reicht ihn an den Container weiter.
 
----
-
 ### E5. Git-Repository, Lizenz, Impressum (12.11.2026)
 
 - Quellcode und Dokumentation liegen in einem Git-Repository. Die Stände vom 09.11. sind aus gesicherten Paketen rekonstruiert, die Arbeit vom 09.11. bis 12.11. ist in einem Commit zusammengefasst; ab jetzt wird jeder Schritt einzeln committet. `vendor/` gehört nicht dazu.
@@ -199,10 +197,11 @@ Ein `.ics`-Link kann abonniert oder importiert werden. Ein Import kopiert die Te
 - Link „Quellcode (AGPL-3.0)“ im Seitenfuß über `SOURCE_URL` (AGPL §13).
 - Neue Seite **Impressum** (`/impressum`, ohne Anmeldung): Betreiber nach § 5 DDG aus `BETREIBER_*` in `.env`, darunter „Über diese Software“ mit Urheber, Lizenzen, Quellcode-Link und allen Bibliotheken (aus `vendor/composer/installed.json`). Der Datenschutzhinweis nennt jetzt den Verantwortlichen (dieselben Angaben, dazu `DATENSCHUTZ_KONTAKT`). Fehlen Pflichtangaben, warnen Verwaltung, Impressum (für Admins) und Setup-Skript.
 
+---
+
 ## F. To-do / später
 
 - **`FEED_BROWSER_NOTICE=1` einschalten**, sobald der Gerätetest bestätigt, dass Outlook (klassisch, neu, Web, Mac) und der Google Kalender ihre Abos weiter mit Terminen füllen (siehe E4).
-
 - **Betreiber für Impressum und Datenschutz klären** (Förderverein, FF oder Stadt?) und `BETREIBER_*` sowie `DATENSCHUTZ_KONTAKT` in `/srv/kalender/.env` eintragen; Datenschutzhinweis mit der bzw. dem Datenschutzbeauftragten abstimmen (Seite ist noch als Entwurf markiert).
 - **`SOURCE_URL`** auf die Adresse des Git-Repositorys setzen, sobald es angelegt ist.
 - **`composer.lock`** ins Repository aufnehmen, damit jeder Docker-Build dieselben Bibliotheksversionen verwendet.
