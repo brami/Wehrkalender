@@ -33,8 +33,25 @@ deutlich aus. Bei rund 200 Benutzern mit mehreren Geräten und Abrufen alle
 \code{MAIL\_FROM\_NAME}), zusätzliche Empfänger für Warnungen
 (\code{ADMIN\_ALERT\_EMAILS}) und die Hinweisseite für im Browser geöffnete
 Abo-Links (\code{FEED\_BROWSER\_NOTICE}, Standard \code{0}; erst nach dem
-Gerätetest auf \code{1} setzen und mit \code{-U -Z ""} übernehmen). Alle
-Einträge sind in \code{.env.example} erläutert.
+Gerätetest auf \code{1} setzen und mit \code{-U -Z ""} übernehmen) sowie
+der Link zum Quellcode im Seitenfuß (\code{SOURCE\_URL}, siehe
+Abschnitt~\ref{sec:lizenz}). Alle Einträge sind in \code{.env.example} erläutert.
+
+\subsection{Lizenz und Quellcode}\label{sec:lizenz}
+
+Urheber ist Michael Bramer. Der Code (Anwendung und Setup-Skript) steht unter
+der GNU Affero General Public License v3.0 oder später
+(\code{AGPL-3.0-or-later}), die Dokumentation unter CC BY-SA 4.0; ausgenommen
+ist die Vorlage \code{debsupport.sty}. Alle verwendeten Bibliotheken (Slim,
+Twig, sabre/dav, Symfony, FPDF u.\,a.) stehen unter MIT- bzw.
+BSD-3-Clause-Lizenzen und sind mit der AGPL vereinbar. Quellcode und
+Dokumentation liegen in einem Git-Repository; \code{vendor/} gehört nicht
+dazu, der Docker-Build installiert die Abhängigkeiten selbst.
+
+Die AGPL verlangt in §\,13, den Nutzern eines Webdienstes den Quellcode
+anzubieten. Dafür in \code{/srv/kalender/.env} \code{SOURCE\_URL} auf die
+Adresse des Repositorys setzen und mit \code{-U -Z ""} übernehmen; der Link
+\enquote{Quellcode (AGPL-3.0)} erscheint dann im Seitenfuß.
 
 \subsection{Einrichtung und Aktualisierung des Servers}
 
