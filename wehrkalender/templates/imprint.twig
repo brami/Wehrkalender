@@ -1,0 +1,63 @@
+{% extends 'layout.twig' %}
+{% block title %}Impressum – {{ app_name }}{% endblock %}
+{% block content %}
+<h1>Impressum</h1>
+
+{% if not operator.complete and current_user and current_user.is_admin %}
+  <div class="flash flash-error">Impressum unvollständig: In <code>/srv/wehrkalender/.env</code> mindestens
+    <code>BETREIBER_NAME</code>, <code>BETREIBER_ANSCHRIFT</code> und <code>BETREIBER_EMAIL</code> eintragen
+    und mit <code>setup-server-wehrkalender.sh … -U -Z ""</code> übernehmen.</div>
+{% endif %}
+
+<div class="box">
+  <h2 style="margin-top:0">Anbieter</h2>
+  {% if operator.name %}
+    <p>
+      <strong>{{ operator.name }}</strong><br>
+      {% for line in operator.address %}{{ line }}<br>{% endfor %}
+    </p>
+    {% if operator.represented_by %}<p>Vertreten durch: {{ operator.represented_by }}</p>{% endif %}
+    <p>
+      {% if operator.email %}E-Mail: <a href="mailto:{{ operator.email }}">{{ operator.email }}</a><br>{% endif %}
+      {% if operator.phone %}Telefon: {{ operator.phone }}<br>{% endif %}
+    </p>
+    {% if operator.register %}<p>{{ operator.register }}</p>{% endif %}
+  {% else %}
+    <p class="muted">Die Angaben zum Anbieter werden zurzeit ergänzt.</p>
+  {% endif %}
+  <p class="small muted">Die Termine stammen aus MP Feuer und werden ausschließlich dort gepflegt.</p>
+</div>
+
+<div class="box">
+  <h2 style="margin-top:0">Über diese Software</h2>
+  <p><strong>Wehrkalender</strong> ist freie Software. © 2026 Michael Bramer.</p>
+  <ul>
+    <li><strong>Programm:</strong> GNU Affero General Public License, Version 3 oder später
+      (<a href="https://www.gnu.org/licenses/agpl-3.0.html">AGPL-3.0-or-later</a>).
+      Sie dürfen es nutzen, untersuchen, verändern und weitergeben; veränderte Fassungen, die als Webdienst
+      angeboten werden, müssen ihren Quellcode ebenfalls offenlegen.</li>
+    <li><strong>Dokumentation und Anleitungen:</strong>
+      <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.de">CC BY-SA 4.0</a>.</li>
+    <li><strong>Quellcode:</strong>
+      {% if source_url %}<a href="{{ source_url }}">{{ source_url }}</a>{% else %}auf Anfrage beim Anbieter{% endif %}</li>
+  </ul>
+  <p>Das Programm wird ohne Gewährleistung bereitgestellt, soweit gesetzlich zulässig (siehe Lizenz).</p>
+
+  {% if libraries %}
+    <h3>Verwendete Bibliotheken</h3>
+    <table class="small">
+      <thead><tr><th>Bibliothek</th><th>Version</th><th>Lizenz</th></tr></thead>
+      <tbody>
+      {% for l in libraries %}
+        <tr>
+          <td>{% if l.url %}<a href="{{ l.url }}">{{ l.name }}</a>{% else %}{{ l.name }}{% endif %}</td>
+          <td>{{ l.version }}</td>
+          <td>{{ l.license }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <p class="small muted">Außerdem im Einsatz: PHP, MariaDB, Caddy und supercronic – jeweils als eigenständige Programme unter ihren eigenen Lizenzen.</p>
+  {% endif %}
+</div>
+{% endblock %}

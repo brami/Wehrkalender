@@ -1,9 +1,9 @@
 # Abhängigkeiten und Laufzeitdaten (werden beim Docker-Build bzw. Start erzeugt)
-/kalender/vendor/
-/kalender/.env
-/kalender/storage/*
-!/kalender/storage/.gitkeep
-/kalender/.phpunit.cache
+/wehrkalender/vendor/
+/wehrkalender/.env
+/wehrkalender/storage/*
+!/wehrkalender/storage/.gitkeep
+/wehrkalender/.phpunit.cache
 # Erzeugte Dateien
 *.pdf
 *.aux

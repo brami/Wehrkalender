@@ -1,13 +1,13 @@
-# Kalender FF KRZ
+# Wehrkalender
 
-Kalenderserver für die Mitglieder der FF KRZ: CalDAV und iCal-Abos, Terminübersicht als PDF, Verwaltung.
+Bringt die Termine einer Feuerwehr aus MP Feuer nur lesend auf die Geräte der Mitglieder: CalDAV für Smartphone und Tablet, Abo-Links für Outlook und Google Kalender, Terminübersicht als PDF, Verwaltung mit Nutzungsübersicht. Erster Einsatz: Freiwillige Feuerwehr Kreuzau.
 
 | Verzeichnis | Inhalt |
 |---|---|
-| `kalender/` | Anwendung (PHP 8.3, Slim 4, Twig, sabre/dav, MariaDB, Docker) – siehe `kalender/README.md` |
-| `server/` | `setup-server-kalender-ff.sh`: Einrichtung und Updates des vServers |
-| `doku/kalender/` | Projektbeschreibung, Implementierung, Betrieb (LaTeX) |
-| `doku/anleitung/` | Bebilderte Anleitung für Mitglieder (LaTeX, Screenshots in `bilder/`) |
+| `wehrkalender/` | Anwendung (PHP 8.3, Slim 4, Twig, sabre/dav, MariaDB, Docker) – siehe `wehrkalender/README.md` |
+| `server/` | `setup-server-wehrkalender.sh`: Einrichtung des Servers, Installation und Updates der Anwendung |
+| `doku/technik/` | Technische Umsetzung und Betrieb (LaTeX) |
+| `doku/ff-kreuzau/` | Erster Einsatz: Projektbeschreibung, bebilderte Anleitung für Mitglieder, Fragen und Entscheidungen |
 | `doku/latex/` | Vorlage `debsupport.sty` |
 
 ## Paket für den Server bauen
@@ -15,25 +15,26 @@ Kalenderserver für die Mitglieder der FF KRZ: CalDAV und iCal-Abos, Terminüber
 `vendor/` ist nicht im Repository; der Docker-Build installiert die Abhängigkeiten selbst.
 
 ```sh
-zip -r kalender-ff-krz.zip kalender -x 'kalender/vendor/*' 'kalender/.env' 'kalender/storage/*'
-cp server/setup-server-kalender-ff.sh .
-./setup-server-kalender-ff.sh -H <server> -d <domain> -U
+zip -r wehrkalender.zip wehrkalender -x 'wehrkalender/vendor/*' 'wehrkalender/.env' 'wehrkalender/storage/*'
+cp server/setup-server-wehrkalender.sh .
+./setup-server-wehrkalender.sh -H <server> -d <domain>        # Erstinstallation
+./setup-server-wehrkalender.sh -H <server> -d <domain> -U     # Update
 ```
 
 ## Dokumentation übersetzen
 
 ```sh
-cd doku/kalender && TEXINPUTS=../latex: pdflatex projektbeschreibung_kalender_ff_krz.tex   # 2–3 Läufe
+cd doku/technik && TEXINPUTS=../latex: pdflatex implementierung_wehrkalender.tex   # 2–3 Läufe
 ```
 
 ## Lizenz
 
 © 2026 Michael Bramer
 
-- **Code** (`kalender/`, `server/`): GNU Affero General Public License v3.0 oder später
+- **Code** (`wehrkalender/`, `server/`): GNU Affero General Public License v3.0 oder später
   (`AGPL-3.0-or-later`), siehe [`LICENSE`](LICENSE).
   Wer die Anwendung als Webdienst betreibt, muss den Nutzern den Quellcode anbieten (AGPL §13).
-  Dafür in `/srv/kalender/.env` `SOURCE_URL` setzen; der Link erscheint dann im Seitenfuß.
+  Dafür in `/srv/wehrkalender/.env` `SOURCE_URL` setzen; der Link erscheint dann im Seitenfuß.
 - **Dokumentation** (`doku/`): Creative Commons Namensnennung – Weitergabe unter gleichen
   Bedingungen 4.0 International (`CC-BY-SA-4.0`), siehe [`doku/LICENSE`](doku/LICENSE).
   Ausgenommen ist die Vorlage `doku/latex/debsupport.sty` (siehe `doku/latex/HINWEIS.md`).

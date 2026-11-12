@@ -1,0 +1,9 @@
+[Unit]
+Description=Wehrkalender: Mail-Warteschlange
+After=network-online.target mariadb.service
+
+[Service]
+Type=oneshot
+User=wehrkalender
+WorkingDirectory=/srv/wehrkalender/current
+ExecStart=/usr/bin/php bin/console mail:send

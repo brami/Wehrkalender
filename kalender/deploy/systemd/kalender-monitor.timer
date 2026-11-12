@@ -1,9 +1,0 @@
-[Unit]
-Description=Kalender: Überwachung (Zeitplan)
-
-[Timer]
-OnCalendar=*-*-* 07:17
-Persistent=true
-
-[Install]
-WantedBy=timers.target
