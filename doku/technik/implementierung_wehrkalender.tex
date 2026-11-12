@@ -15,6 +15,7 @@
 \colorlet{grau}{dsgrau}
 
 \usepackage{listings}
+\usepackage{needspace}
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 
 \lstset{
@@ -709,6 +710,254 @@ wird erzeugt und die E-Mail eingereiht. Passwort und Abo-Links bleiben
 unverändert.
 
 % ------------------------------------------------------------------
+\section{Weitere Quellen und Kalenderauswahl (Konzept)}\label{sec:quellen}
+
+\begin{dshinweis}[title=Stand]
+Abgestimmt am 12.11.2026, \textbf{noch nicht umgesetzt}. Vor dem ersten
+Echtbetrieb festgelegt werden müssen das UID-Schema
+(Abschnitt~\ref{sec:quellen-uid}) und die Trennung von Freischaltung und
+Befüllung; alles Weitere lässt sich nachrüsten.
+\end{dshinweis}
+
+Neben MP Feuer sollen weitere Quellen Termine liefern können, z.\,B.\ die
+Lehrgangstermine des Kreises oder die Abfallkalender der Gemeinde. Außerdem
+kann jedes Mitglied jeden Kalender für sich abschalten.
+
+\subsection{Grundsatz: drei getrennte Fragen}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{L{3.0cm}L{4.6cm}X}
+\toprule
+\textbf{Frage} & \textbf{Antwort kommt aus} & \textbf{Bemerkung} \\
+\midrule
+\textbf{Freischaltung}: Wer darf den Kalender sehen? &
+nur aus MP Feuer (Mitgliedschaften) oder \glqq für alle Mitglieder\grqq &
+Benutzer und Mitgliedschaften kommen ausschließlich aus MP Feuer. \\
+\addlinespace
+\textbf{Befüllung}: Woher kommen die Termine? &
+eine oder mehrere \emph{Befüllungen} je Kalender: Quelle plus optionaler
+Filter &
+Quellen: MP Feuer (Bereich) oder ein externer iCal-Feed. Eine Quelle kann
+mehrere Kalender befüllen. \\
+\addlinespace
+\textbf{Auswahl}: Will das Mitglied ihn haben? &
+Wahl des Mitglieds, sonst Vorgabe des Kalenders &
+Jeder Kalender ist abschaltbar; der Admin legt die Vorgabe (an/aus) fest. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Heute legt \code{calendar\_sources} Freischaltung und Befüllung zugleich fest
+(ein Bereichsschlüssel bestimmt, wer den Kalender sieht \emph{und} welche
+Termine hineinkommen). Künftig sind das zwei Zuordnungen. Für Kalender aus MP
+Feuer ändert sich im Ergebnis nichts: Der Bereich \code{LG-DROVE} schaltet
+den Kalender frei und befüllt ihn.
+
+\subsection{Beispiele}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{L{3.0cm}L{4.3cm}L{4.5cm}X}
+\toprule
+\textbf{Kalender} & \textbf{Freischaltung} & \textbf{Befüllung} &
+\textbf{Vorgabe} \\
+\midrule
+LG Drove & Mitgliedschaft \code{LG-DROVE} & MP Feuer, Bereich
+  \code{LG-DROVE} & an \\
+\addlinespace
+TM1 2027 & Teilnahme \code{LEHRGANG-TM1-2027} (MP Feuer) & iCal des Kreises,
+  Filter: Titel enthält \glqq TM1\grqq, Zeitraum 2027 & an \\
+\addlinespace
+Abfall Drove & für alle Mitglieder & iCal der Gemeinde für Drove & aus \\
+\addlinespace
+Kreisfeuer\-wehr\-verband & für alle Mitglieder & iCal des Verbands & an \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Die Abfallkalender sind bewusst \glqq für alle\grqq\ mit Vorgabe
+\glqq aus\grqq: Jedes Mitglied schaltet den Kalender seines Ortes selbst ein.
+MP Feuer muss dafür keine Wohnorte liefern (Datensparsamkeit), und wer zwei
+Orte sehen möchte, kann beide einschalten. Kalender für Lehrgänge legt der
+Admin wie bisher an, wenn ein neuer Lehrgangsschlüssel auf der Status-Seite
+unter \glqq Bereiche ohne Kalender\grqq\ erscheint.
+
+\needspace{12\baselineskip}
+\subsection{Quellen und Befüllungen}
+
+Geplante Änderungen am Datenmodell:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{L{3.6cm}X}
+\toprule
+\textbf{Tabelle} & \textbf{Inhalt} \\
+\midrule
+neu: \code{sources} & \code{key} (kurz, eindeutig, Teil der UID, z.\,B.\
+  \code{mp}, \code{kreis}, \code{abfall-drove}), \code{type} (\code{mpfeuer},
+  \code{ical}), \code{name}, \code{url}, Abrufintervall, \code{active},
+  Zustand des letzten Abrufs (\code{etag}, \code{last\_modified},
+  \code{last\_success\_at}, \code{last\_error}) \\
+\addlinespace
+neu: \code{calendar\_feeds} & Befüllung: \code{calendar\_id},
+  \code{source\_id}, Bereichsschlüssel (nur MP Feuer) bzw.\ Filter (nur
+  iCal), Hinweis in der Beschreibung (\glqq Quelle: \dots\grqq, an/aus) \\
+\addlinespace
+\code{calendar\_sources} & bleibt für die \emph{Freischaltung}
+  (Mitgliedschaftsschlüssel $\rightarrow$ Kalender) \\
+\addlinespace
+\code{events} & zusätzlich \code{source\_id} und \code{feed\_id};
+  \code{mp\_event\_id} wird zu \code{external\_id} (eindeutig je Quelle) \\
+\addlinespace
+\code{calendars} & zusätzlich \code{default\_enabled} (Vorgabe an/aus) \\
+\addlinespace
+neu: \code{user\_calendar\_choice} & \code{user\_id}, \code{calendar\_id},
+  \code{enabled}: nur wenn das Mitglied selbst geschaltet hat \\
+\addlinespace
+\code{import\_runs} & zusätzlich \code{source\_id}; Protokolle und
+  Überwachung je Quelle \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Regeln, die je \textbf{Befüllung} gelten (nicht je Kalender):
+
+\begin{itemize}
+  \item \textbf{Löschen:} Ein Termin wird entfernt, wenn er im aktuellen
+        Abruf \emph{dieser Quelle} für \emph{diese Befüllung} nicht mehr
+        vorkommt. Termine anderer Quellen im selben Kalender bleiben
+        unberührt.
+  \item \textbf{Verschieben:} Der MP-Feuer-Import verschiebt nur eigene
+        Termine zwischen Kalendern.
+  \item \textbf{Plausibilität:} Liefert eine Befüllung plötzlich deutlich
+        weniger oder keine Termine mehr (z.\,B.\ Filter trifft nach einer
+        Umbenennung beim Anbieter nichts mehr), wird nicht gelöscht, sondern
+        abgebrochen und gewarnt.
+  \item \textbf{Überwachung:} Status-Seite, \code{/health} und Warnungen je
+        Quelle. Fällt eine Quelle aus, laufen die anderen weiter.
+        Zusätzlich Warnung, wenn ein Kalender mit externer Quelle in den
+        nächsten 30 Tagen keine Termine mehr hat (z.\,B.\ Abfallkalender zum
+        Jahreswechsel).
+\end{itemize}
+
+\textbf{Gemischte Kalender} (mehrere Befüllungen in einem Kalender, z.\,B.\
+LG Drove aus MP Feuer und das Dorffest des Ortsvereins aus einem iCal) sind
+technisch möglich, werden aber nur eingesetzt, wo es fachlich passt.
+Empfohlen sind eigene Kalender je Quelle, weil
+\begin{itemize}
+  \item ein Ausfall der Quelle sonst nicht auffällt (der Kalender wirkt
+        vollständig, ein Teil fehlt still),
+  \item die Zuständigkeit für Korrekturen unklar wird (bisher gilt:
+        Termine werden ausschließlich in MP Feuer gepflegt),
+  \item das Mitglied den fremden Anteil nicht getrennt abschalten kann,
+  \item die Terminübersicht (PDF) Termine nur nach Kalenderfarbe
+        unterscheidet.
+\end{itemize}
+Bei gemischten Kalendern zeigt die Verwaltung je Termin die Quelle; optional
+erhält die Beschreibung den Hinweis \glqq Quelle: \dots\grqq.
+
+\subsection{UID-Schema}\label{sec:quellen-uid}
+
+\code{UID} = \code{<quelle>-<id>@<domain>}. Für MP Feuer ist der
+Quellenschlüssel \code{mp}; die UIDs bleiben damit wie in
+Abschnitt~\ref{sec:importablauf} beschrieben (\code{mp-<id>@<domain>}). Für
+iCal-Quellen ist \code{<id>} ein Hash aus der UID des Feeds und ggf.\
+\code{RECURRENCE-ID}, \emph{nicht} die fremde UID selbst. Sonst gäbe es
+Kollisionen, wenn ein Mitglied denselben Feed zusätzlich direkt abonniert
+hat. Quellenschlüssel werden nach der Einrichtung nicht mehr geändert.
+
+\subsection{iCal-Quellen}
+
+\begin{itemize}
+  \item \textbf{Abruf} durch den Worker im eingestellten Intervall (Vorgabe
+        alle 6 Stunden) mit \code{If-None-Match}/\code{If-Modified-Since}.
+        Nur HTTPS, keine internen oder privaten IP-Adressen, höchstens
+        5\,MB, Zeitlimit 30\,s, Weiterleitungen begrenzt.
+  \item \textbf{Prüfung:} Antwort muss ein gültiger \code{VCALENDAR} sein.
+        Leere Antworten, HTML-Fehlerseiten oder Parserfehler führen zum
+        Abbruch ohne Löschen.
+  \item \textbf{Aufbereitung:} Serien (\code{RRULE}, \code{EXDATE},
+        geänderte Einzeltermine) werden mit sabre/vobject in Einzeltermine
+        aufgelöst, im Fenster 12 Monate zurück bis 18 Monate voraus.
+        Zeitzonen und ganztägige Termine wie beim MP-Feuer-Import.
+        Übernommen werden Titel, Ort, Beschreibung, Beginn, Ende, Status
+        (\code{CANCELLED}); Teilnehmer, Alarme und Anhänge nicht.
+  \item \textbf{Filter} je Befüllung: Bedingungen auf Titel, Ort, Kategorie
+        (\code{CATEGORIES}) und Beschreibung mit \glqq enthält\grqq,
+        \glqq beginnt mit\grqq\ oder regulärem Ausdruck (ohne Beachtung der
+        Groß-/Kleinschreibung), dazu ein Zeitraum von--bis. Alle
+        Bedingungen müssen zutreffen. Ein Feed (z.\,B.\ alle
+        Kreislehrgänge) wird einmal abgerufen und auf mehrere Kalender
+        verteilt; trifft ein Termin mehrere Filter, erscheint er in mehreren
+        Kalendern (Hinweis in der Vorschau).
+  \item \textbf{Verwaltung:} neue Seite \glqq Quellen\grqq: Quellen und
+        Befüllungen anlegen, \glqq Jetzt abrufen\grqq, Vorschau der
+        getroffenen und nicht getroffenen Termine, bevor eine Befüllung
+        aktiv wird; Protokoll der letzten Abrufe.
+  \item \textbf{Nutzung fremder Daten:} Quellen werden bewusst vom Admin
+        freigegeben und in Betriebshandbuch und Datenschutzhinweis
+        aufgeführt.
+\end{itemize}
+
+\subsection{Kalenderauswahl durch Mitglieder}
+
+\textbf{Wirksam} ist ein Kalender für ein Mitglied, wenn er freigeschaltet und
+aktiv ist und das Mitglied ihn eingeschaltet hat: eigene Wahl aus
+\code{user\_calendar\_choice}, sonst die Vorgabe \code{default\_enabled}.
+Ändert der Admin später die Vorgabe, folgen ihr alle, die selbst nie
+geschaltet haben.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{L{3.4cm}X}
+\toprule
+\textbf{Bereich} & \textbf{Verhalten bei abgeschaltetem Kalender} \\
+\midrule
+Startseite & alle freigeschalteten Kalender mit Schalter; abgeschaltete
+  grau unter \glqq Weitere Kalender\grqq \\
+\addlinespace
+Smartphone \& Tablet (CalDAV) & Kalender erscheint nicht; Ein- und
+  Abschalten wirkt beim nächsten Abgleich ohne Neueinrichtung \\
+\addlinespace
+Abo-Links (Outlook, Google) & kein Abo-Link auf der Seite; ein bestehendes
+  Abo erhält eine \emph{gültige, leere} Kalenderdatei (kein 404, damit Outlook
+  keine Fehler meldet und Google den Abruf nicht einstellt). Der Link wird
+  nicht widerrufen: Nach dem Einschalten liefert dasselbe Abo wieder Termine. \\
+\addlinespace
+Terminübersicht (PDF) & nicht vorausgewählt \\
+\addlinespace
+E-Mail \glqq neuer Kalender\grqq & nur bei Vorgabe \glqq an\grqq; Kalender
+  mit Vorgabe \glqq aus\grqq\ erscheinen nur auf der Startseite als
+  \glqq verfügbar\grqq \\
+\addlinespace
+Verwaltung & je Kalender Anzahl der Mitglieder, die ihn eingeschaltet haben;
+  in der Detailansicht des Mitglieds die abgeschalteten Kalender (hilft bei
+  \glqq mir fehlen Termine\grqq) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Aufwand}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{Xr}
+\toprule
+\textbf{Baustein} & \textbf{Schätzung} \\
+\midrule
+Freischaltung und Befüllung trennen, Quellenmodell, UID-Schema, mehrere
+  Befüllungen je Kalender & 1--1,5 PT \\
+iCal-Importer mit Filtern, Serienauflösung, Plausibilität, Tests & 2 PT \\
+Verwaltung \glqq Quellen\grqq\ mit Vorschau, Überwachung je Quelle & 1 PT \\
+Kalenderauswahl durch Mitglieder (Schalter, CalDAV, Feed, PDF, E-Mails) &
+  1--1,5 PT \\
+\midrule
+\textbf{Summe} & \textbf{5--6 PT} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Der Import aus MP Feuer selbst ist darin nicht enthalten (Arbeitspakete 3
+und 3a). Sinnvolle Reihenfolge: Datenmodell und UID-Schema zusammen mit dem
+MP-Feuer-Import, danach Kalenderauswahl, danach iCal-Quellen.
+
+% ------------------------------------------------------------------
 \section{CalDAV-Server}
 
 \subsection{Aufbau}
@@ -787,7 +1036,8 @@ Das VCALENDAR je Termin wird beim Speichern mit sabre/vobject erzeugt und in
 aus.
 
 \begin{itemize}
-  \item \code{UID}: \code{mp-<mp\_event\_id>@<domain>} (Domain ohne Port),
+  \item \code{UID}: \code{mp-<mp\_event\_id>@<domain>} (Domain ohne Port;
+        allgemein \code{<quelle>-<id>@<domain>}, siehe Abschnitt~\ref{sec:quellen-uid}),
         stabil über alle Änderungen.
   \item \code{DTSTART}/\code{DTEND} mit \code{TZID=Europe/Berlin} und
         zugehöriger \code{VTIMEZONE}. Ganztägig als \code{VALUE=DATE},

@@ -2,7 +2,7 @@
 
 Stand: 09.11.2026 · gesammelt bei der Umsetzung der Anwendung (ohne Import aus MP Feuer)
 
-Entschieden am 09.11.2026 (M. Bramer): A1, A3, A6, A7, A8, A9, A10, A11 – siehe dort, eingepflegt in die technische Doku und die Projektbeschreibung. Ebenfalls am 09.11.2026: Anleitung zu B2 in die technische Umsetzung aufgenommen; Android-Anleitung um Abo-Links im Google Kalender ergänzt (E1). Am 12.11.2026: Terminübersicht als PDF (E2), Kalenderansicht im Web vorgemerkt (F), Startseite und „Kalender abonnieren“ (E3), Abonnieren statt importieren (E4), Git-Repository, Lizenz und Impressum (E5), Umbenennung in „Wehrkalender“ (E6). Offen: A2, A4, A5, A12.
+Entschieden am 09.11.2026 (M. Bramer): A1, A3, A6, A7, A8, A9, A10, A11 – siehe dort, eingepflegt in die technische Doku und die Projektbeschreibung. Ebenfalls am 09.11.2026: Anleitung zu B2 in die technische Umsetzung aufgenommen; Android-Anleitung um Abo-Links im Google Kalender ergänzt (E1). Am 12.11.2026: Terminübersicht als PDF (E2), Kalenderansicht im Web vorgemerkt (F), Startseite und „Kalender abonnieren“ (E3), Abonnieren statt importieren (E4), Git-Repository, Lizenz und Impressum (E5), Umbenennung in „Wehrkalender“ (E6), Konzept weitere Quellen und Kalenderauswahl (E7). Offen: A2, A4, A5, A12.
 
 Grundlage: `doku/technik/implementierung_wehrkalender.tex` (+ `_betrieb.tex`), `doku/ff-kreuzau/projektbeschreibung_kalender_ff_krz.tex`, `server/setup-server-wehrkalender.sh`. Ältere Einträge nennen noch die früheren Namen (`implementierung_kalender_ff_krz.tex`, `setup-server-kalender-ff.sh`, `/srv/kalender`), siehe E6.
 
@@ -208,6 +208,19 @@ Die Software heißt jetzt **Wehrkalender** und ist für jede Feuerwehr nutzbar. 
 - **Umbenannt:** CalDAV-Backends ohne „Ff“-Präfix, Sitzungs-Cookie `wehrkalender_session`, iOS-Profil unter `/abonnieren/geraete/wehrkalender.mobileconfig`, `PRODID` „-//Wehrkalender//Wehrkalender//DE“.
 - **Dokumentation:** technische Doku als `doku/technik/implementierung_wehrkalender.tex` (allgemein); Projektbeschreibung, Anleitung für Mitglieder und diese Datei unter `doku/ff-kreuzau/`. Die Testdaten bleiben als Beispielwehr an der FF Kreuzau angelehnt.
 
+### E7. Weitere Quellen und Kalenderauswahl – Konzept (12.11.2026)
+
+**Abgestimmt mit M. Bramer, noch nicht umgesetzt.** Beschrieben in der technischen Doku, Kapitel „Weitere Quellen und Kalenderauswahl (Konzept)“; kurz auch in der Projektbeschreibung unter „Mögliche Erweiterungen“.
+
+- **Drei getrennte Fragen:** *Freischaltung* (wer darf sehen – nur MP Feuer bzw. „für alle“), *Befüllung* (woher kommen die Termine – MP Feuer oder iCal-Feed mit Filter), *Auswahl* (will das Mitglied den Kalender – eigene Wahl, sonst Vorgabe des Admins).
+- **Benutzer und Mitgliedschaften** kommen weiterhin nur aus MP Feuer. Weitere Quellen liefern nur Termine (später evtl. Kontakte). Termine verschiedener Quellen überschneiden sich nicht.
+- **Mehrere Befüllungen je Kalender** sind im Datenmodell erlaubt (z. B. LG Drove aus MP Feuer plus Dorffest aus einem iCal); empfohlen sind aber eigene Kalender je Quelle (Ausfälle fallen auf, klare Zuständigkeit, getrennt abschaltbar, PDF-Farben). Löschen, Plausibilität und Überwachung gelten je Befüllung.
+- **Filter** für Feeds mit vielen Terminen (Kreis liefert einen Feed mit allen Lehrgängen): Titel, Ort, Kategorie, Beschreibung (enthält / beginnt mit / regulärer Ausdruck) plus Zeitraum; Vorschau in der Verwaltung. Trifft ein Filter plötzlich nichts mehr, wird nicht gelöscht, sondern gewarnt. Der Kreis-Feed liegt noch nicht vor.
+- **Abfallkalender:** je Ort ein Kalender „für alle Mitglieder“ mit Vorgabe „aus“; jedes Mitglied schaltet seinen Ort selbst ein. MP Feuer muss keine Wohnorte liefern.
+- **Kalenderauswahl:** Jeder Kalender ist vom Mitglied abschaltbar (keine Pflichtkalender). Abgeschaltet: nicht auf CalDAV-Geräten, kein Abo-Link auf der Seite, bestehendes Abo erhält eine gültige, *leere* Kalenderdatei (kein 404; derselbe Link liefert nach dem Einschalten wieder Termine), nicht in der PDF-Vorauswahl. Der Admin legt je Kalender die Vorgabe fest; wer nie selbst geschaltet hat, folgt Änderungen der Vorgabe. E-Mail „neuer Kalender“ nur bei Vorgabe „an“.
+- **UID-Schema** `<quelle>-<id>@<domain>`, für MP Feuer `mp` (unverändert). Für iCal-Quellen ein Hash der fremden UID. **Vor dem ersten Echtbetrieb festlegen**, ebenso die Trennung von Freischaltung und Befüllung.
+- **Aufwand:** etwa 5–6 PT zusätzlich zum MP-Feuer-Import. Reihenfolge: Datenmodell und UID-Schema zusammen mit dem MP-Feuer-Import, dann Kalenderauswahl, dann iCal-Quellen.
+
 ---
 
 ## F. To-do / später
@@ -216,5 +229,6 @@ Die Software heißt jetzt **Wehrkalender** und ist für jede Feuerwehr nutzbar. 
 - **Betreiber für Impressum und Datenschutz klären** (Förderverein, FF oder Stadt?) und `BETREIBER_*` sowie `DATENSCHUTZ_KONTAKT` in `/srv/kalender/.env` eintragen; Datenschutzhinweis mit der bzw. dem Datenschutzbeauftragten abstimmen (Seite ist noch als Entwurf markiert).
 - **`SOURCE_URL`** auf die Adresse des Git-Repositorys setzen, sobald es angelegt ist.
 - **`composer.lock`** ins Repository aufnehmen, damit jeder Docker-Build dieselben Bibliotheksversionen verwendet.
+- **Weitere Quellen und Kalenderauswahl** umsetzen (E7); Adresse des Kreis-Feeds für Lehrgänge und der Abfallkalender der Gemeinde beschaffen.
 - **Kalenderansicht im Web-Frontend** für Mitglieder: Monats- und Listenansicht mit Titel, Zeit und Ort, nur eigene Kalender, Filter je Kalender. Geschätzt etwa 1 Personentag. Vorgemerkt am 12.11.2026, zunächst nur das PDF (E2).
 - **Schulferien NRW ab 2030/31** in `src/Calendar/NrwSchoolHolidays.php` ergänzen, sobald veröffentlicht.
