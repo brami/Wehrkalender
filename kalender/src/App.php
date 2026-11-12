@@ -93,6 +93,7 @@ final class App
                       'last_attempt' => null, 'current_path' => ''] as $k => $v) {
                 $twig->getEnvironment()->addGlobal($k, $v);
             }
+            $twig->getEnvironment()->addGlobal('source_url', $this->config->sourceUrl());
             return $twig;
         });
     }

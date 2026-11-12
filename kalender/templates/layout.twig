@@ -50,7 +50,7 @@
         <br><span class="warn">Der letzte Importversuch am {{ last_attempt.started_at|lt }} ist fehlgeschlagen; die Daten können veraltet sein.</span>
       {% endif %}
     </p>
-    <p class="muted"><a href="/anleitung/ios">Anleitungen</a> · <a href="/datenschutz">Datenschutz</a> · Termine werden ausschließlich in MP Feuer gepflegt.</p>
+    <p class="muted"><a href="/anleitung/ios">Anleitungen</a> · <a href="/datenschutz">Datenschutz</a> · Termine werden ausschließlich in MP Feuer gepflegt.{% if source_url %} · <a href="{{ source_url }}">Quellcode</a> (AGPL-3.0){% endif %}</p>
   </div>
 </footer>
 </body>

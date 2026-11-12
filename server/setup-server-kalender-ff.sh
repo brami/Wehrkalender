@@ -1164,6 +1164,7 @@ phase_app() {
   ensure_env MAIL_FROM_NAME     "Kalender FF KRZ"
   ensure_env ADMIN_ALERT_EMAILS ""
   ensure_env FEED_BROWSER_NOTICE "0"         # 1 = Abo-Link im Browser zeigt Hinweisseite statt .ics (nach Gerätetest)
+  ensure_env SOURCE_URL          ""          # Link zum Quellcode im Seitenfuß (AGPL-3.0), z. B. https://github.com/<besitzer>/<repo>
   set_env DOMAIN "$DOMAIN"
   apply_env
   log "E-Mail-Versand: $(envval MAIL_DELIVERY)$([[ "$(envval MAIL_DELIVERY)" == database ]] && echo ' (Testbetrieb, nichts wird verschickt)')"
@@ -1207,6 +1208,7 @@ x-app: &app
     MAIL_FROM_NAME: ${MAIL_FROM_NAME:-Kalender FF KRZ}
     ADMIN_ALERT_EMAILS: ${ADMIN_ALERT_EMAILS:-}
     FEED_BROWSER_NOTICE: ${FEED_BROWSER_NOTICE:-0}
+    SOURCE_URL: ${SOURCE_URL:-}
   volumes:
     - app-storage:/srv/app/storage
   healthcheck:              # erkennt z. B. fehlerhafte Abhängigkeiten im Image

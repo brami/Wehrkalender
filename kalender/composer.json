@@ -2,7 +2,7 @@
     "name": "ff-krz/kalender",
     "description": "Kalenderserver der FF KRZ: Termine aus MP Feuer per CalDAV und iCalendar-Abo, nur lesend",
     "type": "project",
-    "license": "proprietary",
+    "license": "AGPL-3.0-or-later",
     "require": {
         "ext-intl": "*",
         "ext-mbstring": "*",

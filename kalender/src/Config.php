@@ -116,6 +116,12 @@ final class Config
         return $this->get('APP_NAME', 'Kalender FF KRZ');
     }
 
+    /** Link zum Quellcode (AGPL-3.0 §13); leer = kein Link im Seitenfuß */
+    public function sourceUrl(): string
+    {
+        return trim($this->get('SOURCE_URL', ''));
+    }
+
     public function env(): string
     {
         return $this->get('APP_ENV', 'prod');
