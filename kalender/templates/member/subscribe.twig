@@ -1,0 +1,22 @@
+{% extends 'layout.twig' %}
+{% block title %}Kalender abonnieren – {{ app_name }}{% endblock %}
+{% block content %}
+<h1>Kalender abonnieren</h1>
+<p>Wählen Sie, wo die Termine erscheinen sollen. Sie können beides gleichzeitig nutzen, z.&nbsp;B. auf dem Smartphone und in Outlook.</p>
+
+<div class="grid grid-2col">
+  <a class="box tile" href="/abonnieren/geraete">
+    <h2>Smartphone &amp; Tablet</h2>
+    <p class="muted">iPhone, iPad und Android</p>
+    <p>Ein Zugang mit Benutzername und Passwort für <strong>alle</strong> Ihre Kalender. Neue Kalender kommen automatisch hinzu. Änderungen erscheinen meist innerhalb von 15 bis 60&nbsp;Minuten.</p>
+    <span class="btn">Weiter</span>
+  </a>
+  <a class="box tile" href="/abonnieren/outlook">
+    <h2>Outlook &amp; Google Kalender</h2>
+    <p class="muted">Windows, Mac, Web</p>
+    <p>Jeder Kalender wird einzeln über einen persönlichen Abo-Link abonniert. Outlook und Google aktualisieren seltener, teils nur alle paar Stunden.</p>
+    <span class="btn">Weiter</span>
+  </a>
+</div>
+<p class="small muted">Android ohne Zusatz-App: Abo-Links im Google Kalender abonnieren – siehe <a href="/anleitung/android">Anleitung für Android</a>.</p>
+{% endblock %}

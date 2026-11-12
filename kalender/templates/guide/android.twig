@@ -1,7 +1,7 @@
 {% extends 'guide/_base.twig' %}
 {% block heading %}Android-Smartphone und -Tablet{% endblock %}
 {% block guide %}
-<p>Android kann Kalender nach dem verwendeten Standard (CalDAV) nicht von Haus aus abrufen. Dafür wird einmalig die App <strong>DAVx⁵</strong> benötigt (Google Play, kostenpflichtig, oder kostenlos über F-Droid). Danach erscheinen die Kalender in jeder Kalender-App, z. B. Google Kalender oder Samsung Kalender.</p>
+<p>Android kann Kalender nach dem verwendeten Standard (CalDAV) nicht von Haus aus abrufen. Dafür wird einmalig die App <strong>DAVx⁵</strong> benötigt (im Google Play Store einmalig rund 5 €, gilt für alle Geräte mit demselben Google-Konto; kostenlos über F-Droid). Danach erscheinen die Kalender in jeder Kalender-App, z. B. Google Kalender oder Samsung Kalender.</p>
 
 <h2>Einrichten mit DAVx⁵</h2>
 <ol class="steps">
@@ -13,12 +13,32 @@
       <li>Benutzername: Ihr Benutzername (<code>vorname.nachname</code>)</li>
       <li>Passwort: Ihr Passwort aus dem Web-Frontend</li>
     </ul>
-    Klappt es damit nicht, als URL die vollständige Adresse von der Seite <a href="/geraete">Smartphone &amp; Tablet</a> verwenden.
+    Klappt es damit nicht, als URL die vollständige Adresse von der Seite <a href="/abonnieren/geraete">Smartphone &amp; Tablet</a> verwenden.
   </li>
   <li><strong>Anmelden</strong>. Als Kontoname z. B. „Kalender FF KRZ“ eintragen, <strong>Konto anlegen</strong>.</li>
   <li>Im Konto den Reiter <strong>CalDAV</strong> öffnen und die gewünschten Kalender <strong>ankreuzen</strong>.</li>
   <li>Die Kalender-App öffnen und dort ggf. die neuen Kalender einblenden (Google Kalender: Menü → Kalender des Kontos „Kalender FF KRZ“).</li>
 </ol>
+
+<h2>Alternative ohne Zusatz-App: Abo-Links im Google Kalender</h2>
+<div class="notice">
+  <strong>Abonnieren – nicht importieren.</strong> Im Google Kalender „Per URL“ wählen, nicht „Importieren“. Den Abo-Link nicht auf dem Smartphone antippen oder herunterladen: Android-Kalender-Apps <em>importieren</em> eine geöffnete .ics-Datei – die Termine würden dann nicht mehr aktualisiert.
+</div>
+<p>Wer DAVx⁵ nicht installieren möchte, kann die Kalender auch über die persönlichen <strong>Abo-Links</strong> (wie bei Outlook) im Google Kalender abonnieren. Sie erscheinen dann auf allen Geräten, die mit demselben Google-Konto verbunden sind.</p>
+<ol class="steps">
+  <li>Im Web-Frontend unter <a href="/abonnieren/outlook">Kalender abonnieren → Outlook &amp; Google Kalender</a> den Abo-Link des gewünschten Kalenders <strong>kopieren</strong>.</li>
+  <li>Im Browser (am einfachsten am PC) <strong>calendar.google.com</strong> öffnen und mit dem Google-Konto anmelden, das auch auf dem Smartphone verwendet wird. In der Google-Kalender-App auf dem Smartphone ist das Hinzufügen per Link nicht möglich.</li>
+  <li>Links neben <strong>Weitere Kalender</strong> auf <strong>+</strong> klicken und <strong>Per URL</strong> wählen.</li>
+  <li>Den Abo-Link einfügen und <strong>Kalender hinzufügen</strong> klicken. Für jeden weiteren Kalender wiederholen.</li>
+  <li>Auf dem Smartphone in der Google-Kalender-App: Menü → <strong>Einstellungen</strong> → den neuen Kalender antippen → <strong>Synchronisieren</strong> einschalten.</li>
+</ol>
+<p><strong>Bitte beachten:</strong></p>
+<ul>
+  <li>Google ruft abonnierte Kalender nur selten ab, oft nur alle 8 bis 24 Stunden. Der Zeitpunkt lässt sich nicht einstellen. Kurzfristige Änderungen und Absagen kommen deshalb verspätet an. Für aktuelle Termine ist DAVx⁵ die bessere Wahl.</li>
+  <li>Jeder Kalender wird einzeln abonniert. Kommt ein Kalender hinzu, muss sein Abo-Link einmalig zusätzlich hinzugefügt werden.</li>
+  <li>Nach dem Neu-Erzeugen der Abo-Links im Web-Frontend: alte Kalender im Google Kalender entfernen (Einstellungen → Kalender → <strong>Abo beenden</strong>) und mit den neuen Links erneut hinzufügen.</li>
+  <li>Der Abo-Link ist persönlich und wird bei Google gespeichert. Bitte nicht weitergeben.</li>
+</ul>
 
 <h2>Gut zu wissen</h2>
 <ul>

@@ -22,6 +22,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
     protected function setUp(): void
     {
+        $_SESSION = [];
         $base = dirname(__DIR__);
         $config = new Config([
             'BASE_DIR' => $base,

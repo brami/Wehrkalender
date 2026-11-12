@@ -91,6 +91,32 @@ final class MailSender
         ], ['id' => $id]);
     }
 
+    /**
+     * Test-E-Mail direkt über MAILER_DSN senden, unabhängig von MAIL_DELIVERY
+     * und ohne Warteschlange (bin/console mail:test). Wirft bei Fehlern.
+     */
+    public function sendTest(string $to): void
+    {
+        if (trim((string) $this->config->get('MAILER_DSN', '')) === '') {
+            throw new \RuntimeException('MAILER_DSN ist leer.');
+        }
+        $this->send([
+            'recipient' => $to,
+            'subject' => 'Test-E-Mail vom ' . $this->config->appName(),
+            'body_text' => "Diese E-Mail bestätigt, dass der Versand vom Kalenderserver funktioniert.\n\n"
+                . 'Server: https://' . $this->config->domain() . "\n",
+            'body_html' => '<p>Diese E-Mail bestätigt, dass der Versand vom Kalenderserver funktioniert.</p>'
+                . '<p>Server: https://' . htmlspecialchars($this->config->domain()) . '</p>',
+        ]);
+    }
+
+    /** MAILER_DSN mit ausgeblendetem Passwort, für Ausgaben */
+    public function maskedDsn(): string
+    {
+        $dsn = (string) $this->config->get('MAILER_DSN', '');
+        return preg_replace('#^([a-z+]+://[^:@/]*):[^@]*@#i', '$1:****@', $dsn) ?? '';
+    }
+
     /** @param array<string,mixed> $row */
     private function send(array $row): void
     {

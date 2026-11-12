@@ -10,7 +10,7 @@
     <form method="post" action="/konto/passwort" class="actions">
       <input type="hidden" name="_csrf" value="{{ csrf }}">
       <button class="btn" type="submit">Ja, neues Passwort erzeugen</button>
-      <a href="/geraete">Abbrechen</a>
+      <a href="/abonnieren/geraete">Abbrechen</a>
     </form>
   </div>
 {% elseif action == 'abo-links' %}
@@ -21,7 +21,7 @@
     <form method="post" action="/konto/abo-links" class="actions">
       <input type="hidden" name="_csrf" value="{{ csrf }}">
       <button class="btn" type="submit">Ja, neue Abo-Links erzeugen</button>
-      <a href="/">Abbrechen</a>
+      <a href="/abonnieren/outlook">Abbrechen</a>
     </form>
   </div>
 {% elseif action == 'benutzername' %}

@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Kalender\Web;
 
+use DateTimeImmutable;
+use Kalender\Calendar\YearPlanner;
+use Kalender\Clock;
 use Kalender\Domain\DeviceDetector;
+use Kalender\Pdf\YearPlannerPdf;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use RuntimeException;
@@ -12,15 +16,38 @@ use RuntimeException;
 /** Seiten für Mitglieder */
 final class MemberController extends Controller
 {
+    private const MONTH_NAMES = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli',
+        'August', 'September', 'Oktober', 'November', 'Dezember'];
+
     public function home(Request $request, Response $response): Response
     {
         $user = $this->currentUser($request);
         $accounts = $this->app->accounts();
         $outdated = $accounts->isUsernameOutdated($user);
+        $year = (int) $this->app->clock()->now()->setTimezone(Clock::localTz())->format('Y');
+        [$calendars, $unmapped] = $this->calendarsWithOrigin((int) $user['id'], $year);
         return $this->render($response, 'member/home.twig', [
-            'calendars' => $this->calendarsWithFeeds((int) $user['id']),
+            'calendars' => $calendars,
+            'unmapped' => $unmapped,
+            'year' => $year,
             'outdated' => $outdated,
             'suggestion' => $outdated ? $accounts->suggestedUsername($user) : null,
+        ]);
+    }
+
+    /** Übersicht „Kalender abonnieren“ */
+    public function subscribe(Request $request, Response $response): Response
+    {
+        return $this->render($response, 'member/subscribe.twig');
+    }
+
+    /** Abo-Links für Outlook und Google Kalender */
+    public function feeds(Request $request, Response $response): Response
+    {
+        $user = $this->currentUser($request);
+        return $this->render($response, 'member/feeds.twig', [
+            'calendars' => $this->calendarsWithFeeds((int) $user['id']),
+            'android' => stripos($request->getHeaderLine('User-Agent'), 'Android') !== false,
         ]);
     }
 
@@ -88,19 +115,57 @@ XML;
             ->withHeader('Cache-Control', 'no-store');
     }
 
-    public function memberships(Request $request, Response $response): Response
+    // ---------------------------------------------------- Terminübersicht (PDF)
+
+    public function plannerForm(Request $request, Response $response): Response
     {
         $user = $this->currentUser($request);
-        $rows = $this->app->db()->all(
-            'SELECT m.mp_key, m.label, c.display_name AS calendar, c.color, c.active
-               FROM memberships m
-               LEFT JOIN calendar_sources cs ON cs.mp_key = m.mp_key
-               LEFT JOIN calendars c ON c.id = cs.calendar_id
-              WHERE m.user_id = ? ORDER BY m.label',
-            [$user['id']]
+        $now = $this->app->clock()->now()->setTimezone(Clock::localTz());
+        $first = new DateTimeImmutable($now->format('Y-01-01'), Clock::localTz());
+        $options = [];
+        for ($i = -12; $i <= 35; $i++) {
+            $m = $first->modify(($i >= 0 ? '+' : '') . $i . ' months');
+            $options[] = ['value' => $m->format('Y-m'), 'label' => self::MONTH_NAMES[(int) $m->format('n') - 1] . ' ' . $m->format('Y')];
+        }
+        return $this->render($response, 'member/planner.twig', [
+            'calendars' => $this->app->yearPlanner()->calendarsFor((int) $user['id']),
+            'start_options' => $options,
+            'start' => $now->format('Y') . '-01',
+            'months' => YearPlanner::MAX_MONTHS,
+            'max_months' => YearPlanner::MAX_MONTHS,
+        ]);
+    }
+
+    public function plannerPdf(Request $request, Response $response): Response
+    {
+        $user = $this->currentUser($request);
+        $q = $request->getQueryParams();
+        $start = (string) ($q['start'] ?? '');
+        $months = filter_var($q['monate'] ?? '', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => YearPlanner::MAX_MONTHS]]);
+        $slugs = array_values(array_filter((array) ($q['k'] ?? []), 'is_string'));
+        $pages = ($q['seiten'] ?? '1') === '2' ? 2 : 1;
+        if (!preg_match('/^(20\d\d)-(0[1-9]|1[0-2])$/', $start) || $months === false) {
+            $this->session->flash('error', 'Bitte Startmonat und Zeitraum auswählen.');
+            return $this->redirect($response, '/terminuebersicht');
+        }
+        $planner = $this->app->yearPlanner();
+        $plan = $planner->build((int) $user['id'], new DateTimeImmutable($start . '-01', Clock::localTz()), $months, $slugs);
+        if ($plan['calendars'] === []) {
+            $this->session->flash('error', 'Bitte mindestens einen Kalender auswählen.');
+            return $this->redirect($response, '/terminuebersicht');
+        }
+        $pdf = YearPlannerPdf::render(
+            $plan,
+            trim($user['first_name'] . ' ' . $user['last_name']),
+            $this->app->clock()->now()->setTimezone(Clock::localTz()),
+            $this->app->config->appName(),
+            $pages
         );
-        $allMembers = $this->app->db()->all('SELECT display_name, color FROM calendars WHERE all_members = 1 AND active = 1 ORDER BY display_name');
-        return $this->render($response, 'member/memberships.twig', ['memberships' => $rows, 'all_members' => $allMembers]);
+        $response->getBody()->write($pdf);
+        return $response
+            ->withHeader('Content-Type', 'application/pdf')
+            ->withHeader('Content-Disposition', 'attachment; filename="' . YearPlannerPdf::fileName($plan['start'], $plan['end']) . '"')
+            ->withHeader('Cache-Control', 'no-store, private');
     }
 
     // ---------------------------------------------------- Neu generieren
@@ -126,14 +191,14 @@ XML;
     {
         $this->app->accounts()->regeneratePassword((int) $this->currentUser($request)['id']);
         $this->session->flash('success', 'Ein neues Passwort wurde erzeugt. Das alte Passwort gilt ab sofort nicht mehr – bitte auf Smartphone und Tablet ersetzen.');
-        return $this->redirect($response, '/geraete');
+        return $this->redirect($response, '/abonnieren/geraete');
     }
 
     public function regenerateFeeds(Request $request, Response $response): Response
     {
         $this->app->accounts()->regenerateFeedTokens((int) $this->currentUser($request)['id']);
-        $this->session->flash('success', 'Neue Abo-Links wurden erzeugt. Die bisherigen Links gelten ab sofort nicht mehr – bitte in Outlook ersetzen.');
-        return $this->redirect($response, '/');
+        $this->session->flash('success', 'Neue Abo-Links wurden erzeugt. Die bisherigen Links gelten ab sofort nicht mehr – bitte in Outlook bzw. im Google Kalender ersetzen.');
+        return $this->redirect($response, '/abonnieren/outlook');
     }
 
     public function changeUsername(Request $request, Response $response): Response
@@ -145,10 +210,72 @@ XML;
         } catch (RuntimeException $e) {
             $this->session->flash('error', $e->getMessage());
         }
-        return $this->redirect($response, '/geraete');
+        return $this->redirect($response, '/abonnieren/geraete');
     }
 
     // ---------------------------------------------------- Hilfen
+
+    /**
+     * Eigene Kalender mit Anzahl der Termine im Kalenderjahr (ohne abgesagte)
+     * @return list<array<string,mixed>>
+     */
+    private function calendarsWithCounts(int $userId, int $year): array
+    {
+        $tz = Clock::localTz();
+        $from = Clock::toDb(new DateTimeImmutable(sprintf('%04d-01-01', $year), $tz));
+        $to = Clock::toDb(new DateTimeImmutable(sprintf('%04d-01-01', $year + 1), $tz));
+        return $this->app->db()->all(
+            "SELECT c.id, c.slug, c.display_name, c.color, c.description,
+                    (SELECT COUNT(*) FROM events e
+                      WHERE e.calendar_id = c.id AND e.status <> 'CANCELLED'
+                        AND e.starts_at >= ? AND e.starts_at < ?) AS event_count
+               FROM user_calendars uc JOIN calendars c ON c.id = uc.calendar_id
+              WHERE uc.user_id = ? AND c.active = 1
+              ORDER BY c.display_name",
+            [$from, $to, $userId]
+        );
+    }
+
+    /**
+     * Kalender mit Terminanzahl und Herkunft (Mitgliedschaften bzw. „für alle Mitglieder“)
+     * sowie Mitgliedschaften ohne eigenen Kalender.
+     * @return array{0:list<array<string,mixed>>,1:list<string>}
+     */
+    private function calendarsWithOrigin(int $userId, int $year): array
+    {
+        $db = $this->app->db();
+        $calendars = $this->calendarsWithCounts($userId, $year);
+        $all = array_flip(array_map('intval', $db->column('SELECT id FROM calendars WHERE all_members = 1 AND active = 1')));
+        $rows = $db->all(
+            'SELECT m.label, c.id AS calendar_id
+               FROM memberships m
+               LEFT JOIN calendar_sources cs ON cs.mp_key = m.mp_key
+               LEFT JOIN calendars c ON c.id = cs.calendar_id AND c.active = 1
+              WHERE m.user_id = ?
+              ORDER BY m.label',
+            [$userId]
+        );
+        $origin = [];
+        $mapped = [];
+        foreach ($rows as $r) {
+            if ($r['calendar_id'] !== null) {
+                $origin[(int) $r['calendar_id']][$r['label']] = true;
+                $mapped[$r['label']] = true;
+            }
+        }
+        $unmapped = [];
+        foreach ($rows as $r) {
+            if ($r['calendar_id'] === null && !isset($mapped[$r['label']])) {
+                $unmapped[$r['label']] = true;
+            }
+        }
+        foreach ($calendars as &$c) {
+            $c['origins'] = array_keys($origin[(int) $c['id']] ?? []);
+            $c['all_members'] = isset($all[(int) $c['id']]);
+        }
+        unset($c);
+        return [$calendars, array_keys($unmapped)];
+    }
 
     /** @return list<array<string,mixed>> */
     private function calendarsWithFeeds(int $userId): array

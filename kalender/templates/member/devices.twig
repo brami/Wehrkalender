@@ -1,6 +1,7 @@
 {% extends 'layout.twig' %}
 {% block title %}Smartphone & Tablet – {{ app_name }}{% endblock %}
 {% block content %}
+<p class="small"><a href="/abonnieren">← Kalender abonnieren</a></p>
 <h1>Smartphone &amp; Tablet</h1>
 <p>Mit diesen Angaben richten Sie die Kalender auf iPhone, iPad oder Android ein. Ein Zugang genügt für alle Ihre Kalender und für beliebig viele Geräte.</p>
 
@@ -46,7 +47,7 @@
 </div>
 
 <h2>Einrichten</h2>
-<div class="grid">
+<div class="grid grid-2col">
   <div class="box">
     <h3 style="margin-top:0">iPhone und iPad</h3>
     <p>Am einfachsten mit dem Konfigurationsprofil: auf dem iPhone/iPad in Safari öffnen, laden und in den Einstellungen installieren.</p>
@@ -55,13 +56,14 @@
   </div>
   <div class="box">
     <h3 style="margin-top:0">Android</h3>
-    <p>Android braucht einmalig die App <strong>DAVx⁵</strong>. Danach erscheinen die Kalender in jeder Kalender-App.</p>
-    <p class="small"><a href="/anleitung/android">Anleitung für Android</a></p>
+    <p>Android braucht einmalig die App <strong>DAVx⁵</strong> (Google Play einmalig rund 5&nbsp;€, über F-Droid kostenlos). Danach erscheinen die Kalender in jeder Kalender-App.</p>
+    <p class="small"><a href="/anleitung/android">Anleitung für Android</a> · ohne Zusatz-App: <a href="/abonnieren/outlook">Abo-Links im Google Kalender</a></p>
   </div>
-  <div class="box">
-    <h3 style="margin-top:0">Outlook</h3>
-    <p>Outlook nutzt statt Benutzername und Passwort die persönlichen Abo-Links auf der <a href="/">Startseite</a>.</p>
-    <p class="small"><a href="/anleitung/outlook">Anleitung für Outlook</a></p>
-  </div>
+</div>
+
+<h2>Neues Passwort</h2>
+<div class="box">
+  <p>Ist ein Gerät verloren gegangen? Dann können Sie ein neues Passwort erzeugen. Das bisherige wird <strong>sofort ungültig</strong> und muss auf Ihren übrigen Geräten ersetzt werden. Outlook und Google Kalender sind davon nicht betroffen.</p>
+  <a class="btn btn-secondary" href="/konto/passwort">Neues Passwort …</a>
 </div>
 {% endblock %}

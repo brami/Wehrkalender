@@ -14,41 +14,38 @@
 {% if calendars is empty %}
   <div class="box">
     <p>Ihnen ist derzeit kein Kalender zugeordnet. Welche Kalender Sie sehen, ergibt sich aus Ihren Mitgliedschaften in MP Feuer.</p>
-    <p><a href="/mitgliedschaften">Meine Mitgliedschaften ansehen</a></p>
+    {% if unmapped is not empty %}<p class="muted small">Ihre Mitgliedschaften laut MP Feuer: {{ unmapped|join(', ') }}</p>{% endif %}
   </div>
 {% else %}
-  <p class="muted">Auf <a href="/geraete">Smartphone und Tablet</a> erhalten Sie alle Kalender mit einem einzigen Zugang. Für <strong>Outlook</strong> (und Google Kalender) abonnieren Sie jeden Kalender einzeln über seinen persönlichen Abo-Link – <a href="/anleitung/outlook">so geht's</a>.</p>
-  {% for c in calendars %}
-    <div class="box cal">
-      <span class="swatch" style="background: {{ c.color }}"></span>
-      <div class="cal-body">
-        <h3>{{ c.display_name }}</h3>
-        {% if c.description %}<p class="muted small" style="margin:0 0 .25rem">{{ c.description }}</p>{% endif %}
-        <label for="feed-{{ c.id }}" class="small" style="margin-top:.5rem">Abo-Link für Outlook</label>
-        <div class="copy">
-          <input type="text" id="feed-{{ c.id }}" value="{{ c.feed_url }}" readonly>
-          <button type="button" class="btn btn-secondary btn-small" data-copy="feed-{{ c.id }}">Kopieren</button>
-        </div>
-        <p class="small muted" style="margin:0">
-          {% if c.last_access_at %}
-            Zuletzt erfolgreich abgerufen: {{ c.last_access_at|lt }} ({{ c.last_client|device }})
-          {% else %}
-            Über diesen Link wurde noch nie abgerufen.
-          {% endif %}
-          · <a href="{{ c.webcal_url }}">direkt abonnieren</a>
-        </p>
-      </div>
-    </div>
-  {% endfor %}
-  <p class="small muted">Der Abo-Link ist persönlich und geheim. Geben Sie ihn nicht weiter. Er gilt nur, solange Ihnen der Kalender zugeordnet ist.</p>
-{% endif %}
-
-<h2>Neu generieren</h2>
-<div class="box">
-  <p>Wenn ein Gerät verloren gegangen ist oder ein Link weitergegeben wurde, können Sie neue Zugangsdaten erzeugen. Die bisherigen werden dabei <strong>sofort ungültig</strong>.</p>
-  <div class="actions">
-    <a class="btn btn-secondary" href="/konto/passwort">Neues Passwort …</a>
-    <a class="btn btn-secondary" href="/konto/abo-links">Neue Abo-Links …</a>
+  <p class="muted">Diese Kalender sind für Sie freigeschaltet. Sie ergeben sich aus Ihren Mitgliedschaften in MP Feuer.</p>
+  <div class="box">
+    <ul class="cal-list">
+    {% for c in calendars %}
+      <li>
+        <span class="swatch" style="background: {{ c.color }}"></span>
+        <span class="cal-name">
+          <strong>{{ c.display_name }}</strong>
+          {% if c.description %}<span class="muted small">{{ c.description }}</span>{% endif %}
+          <span class="muted small cal-origin">
+            {%- if c.all_members %}für alle Mitglieder{% if c.origins is not empty %} · {% endif %}{% endif -%}
+            {%- if c.origins is not empty %}aus: {{ c.origins|join(', ') }}{% endif -%}
+          </span>
+        </span>
+        <span class="cal-count">{{ c.event_count }} {{ c.event_count == 1 ? 'Termin' : 'Termine' }} in {{ year }}</span>
+      </li>
+    {% endfor %}
+    </ul>
+    {% if unmapped is not empty %}
+      <p class="small muted" style="margin:.75rem 0 0">Weitere Mitgliedschaften laut MP Feuer ohne eigenen Kalender: {{ unmapped|join(', ') }}</p>
+    {% endif %}
   </div>
-</div>
+  <p class="small muted">Fehlt ein Kalender oder stimmt eine Mitgliedschaft nicht, muss das in MP Feuer geändert werden. Nach dem nächsten Abgleich passt sich alles automatisch an.</p>
+
+  <div class="box callout">
+    <h2 style="margin-top:0">So kommen die Termine auf Ihr Gerät</h2>
+    <p>Richten Sie die Kalender einmalig auf Ihrem Smartphone, Tablet oder in Outlook ein. Danach werden die Termine automatisch aktuell gehalten.</p>
+    <a class="btn" href="/abonnieren">Kalender abonnieren</a>
+    <a class="btn btn-secondary" href="/terminuebersicht">Terminübersicht als PDF</a>
+  </div>
+{% endif %}
 {% endblock %}

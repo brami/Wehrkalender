@@ -22,6 +22,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  *   MembershipService::replaceMemberships(), ::recompute(notify: …)
  *   EventStore::save(), ::delete()
  *   StatusService::setState('import.last_export_seen_at', …), ::alertAdmins()
+ *   Import\EmailValidator::isValid() (wirft Import\DnsUnavailable bei DNS-Ausfall)
  *   Db::lock('kalender-import') / Db::transaction()
  */
 #[AsCommand(name: 'import:run', description: 'Import aus MP Feuer (noch nicht umgesetzt)')]

@@ -17,8 +17,8 @@
     {% if current_user %}
     <nav class="nav" aria-label="Hauptmenü">
       <a href="/" {% if current_path == '/' %}aria-current="page"{% endif %}>Meine Kalender</a>
-      <a href="/geraete" {% if current_path starts with '/geraete' %}aria-current="page"{% endif %}>Smartphone &amp; Tablet</a>
-      <a href="/mitgliedschaften" {% if current_path == '/mitgliedschaften' %}aria-current="page"{% endif %}>Mitgliedschaften</a>
+      <a href="/abonnieren" {% if current_path starts with '/abonnieren' %}aria-current="page"{% endif %}>Kalender abonnieren</a>
+      <a href="/terminuebersicht" {% if current_path starts with '/terminuebersicht' %}aria-current="page"{% endif %}>Terminübersicht</a>
       <a href="/anleitung/ios" {% if current_path starts with '/anleitung' %}aria-current="page"{% endif %}>Anleitungen</a>
       {% if current_user.is_admin %}<a href="/admin" {% if current_path starts with '/admin' %}aria-current="page"{% endif %}>Verwaltung</a>{% endif %}
       <form method="post" action="/logout" class="inline">

@@ -42,8 +42,8 @@ final class FfAuthBackend extends AbstractBasic
         }
         $user = $username === '' ? null : $this->db->one('SELECT * FROM users WHERE username = ?', [$username]);
         if ($user === null || $user['status'] !== 'active' || !$this->passwords->verify($user['password_enc'], (string) $password)) {
-            $this->throttle->hit($ipKey);
-            $this->throttle->hit($userKey);
+            $this->throttle->hit($ipKey, LoginThrottle::maskIp($this->clientIp));
+            $this->throttle->hit($userKey, $username);
             return false;
         }
         $this->user = $user;

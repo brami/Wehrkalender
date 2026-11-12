@@ -10,6 +10,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 /**
  * iCalendar-Feed für Outlook & Co.: GET /abo/<token>.ics
  * 404 bei unbekanntem/widerrufenem Token, gesperrtem Benutzer oder entzogener Zuordnung.
+ * Mit FEED_BROWSER_NOTICE=1 erhalten Browser eine Hinweisseite statt der Datei.
  */
 final class FeedController extends Controller
 {
@@ -29,6 +30,24 @@ final class FeedController extends Controller
         if ($row === null) {
             $response->getBody()->write("Dieser Abo-Link ist ungültig.\n");
             return $response->withStatus(404)->withHeader('Content-Type', 'text/plain; charset=utf-8');
+        }
+
+        // Im Browser geöffnet? Dann (wenn eingeschaltet) Hinweisseite statt Datei,
+        // damit niemand die .ics-Datei herunterlädt und versehentlich importiert.
+        if ($this->browserNoticeEnabled() && self::isBrowser($request)) {
+            $url = $this->app->config->baseUrl() . '/abo/' . $token . '.ics';
+            return $this->render($response, 'feed_notice.twig', [
+                'calendar' => $row['display_name'],
+                'color' => $row['color'],
+                'feed_url' => $url,
+                'webcal_url' => preg_replace('#^https?://#', 'webcal://', $url),
+                'android' => stripos($request->getHeaderLine('User-Agent'), 'Android') !== false,
+                'last_import' => $this->app->status()->lastSuccessfulRun(),
+                'last_attempt' => $this->app->status()->lastRun(),
+            ])->withHeader('Content-Type', 'text/html; charset=utf-8')
+              ->withHeader('Cache-Control', 'no-store')
+              ->withHeader('X-Robots-Tag', 'noindex')
+              ->withHeader('Vary', 'Accept');
         }
 
         $etag = '"feed-' . $row['calendar_id'] . '-' . $row['sync_token'] . '"';
@@ -58,6 +77,21 @@ final class FeedController extends Controller
             $response = $response->withHeader($k, $v);
         }
         return $response;
+    }
+
+    private function browserNoticeEnabled(): bool
+    {
+        return in_array(strtolower(trim((string) $this->app->config->get('FEED_BROWSER_NOTICE', '0'))), ['1', 'true', 'yes', 'on', 'ja'], true);
+    }
+
+    /**
+     * Browser verlangen ausdrücklich eine Webseite (Accept: text/html …).
+     * Kalenderprogramme fragen nach text/calendar oder nach beliebigen Inhalten (Stern/Stern).
+     */
+    public static function isBrowser(Request $request): bool
+    {
+        $accept = strtolower($request->getHeaderLine('Accept'));
+        return str_contains($accept, 'text/html') && !str_contains($accept, 'text/calendar');
     }
 
     private function touch(int $feedId, Request $request): void

@@ -2,9 +2,9 @@
 
 Stand: 09.11.2026 · gesammelt bei der Umsetzung der Anwendung (ohne Import aus MP Feuer)
 
-Entschieden am 09.11.2026 (M. Bramer): A1, A3, A6 – siehe dort. Offen: A2 und die übrigen Punkte.
+Entschieden am 09.11.2026 (M. Bramer): A1, A3, A6, A7, A8, A9, A10, A11 – siehe dort, eingepflegt in die technische Doku und die Projektbeschreibung. Ebenfalls am 09.11.2026: Anleitung zu B2 in die technische Umsetzung aufgenommen; Android-Anleitung um Abo-Links im Google Kalender ergänzt (E1). Am 12.11.2026: Terminübersicht als PDF (E2), Kalenderansicht im Web vorgemerkt (F). Offen: A2, A4, A5, A12.
 
-Grundlage: `implementierung_kalender_ff_krz.tex` (+ `_betrieb.tex`), `projektbeschreibung_kalender_ff_krz.tex`, `setup-server.sh`.
+Grundlage: `implementierung_kalender_ff_krz.tex` (+ `_betrieb.tex`), `projektbeschreibung_kalender_ff_krz.tex`, `setup-server-kalender-ff.sh` (vormals `setup-server.sh`).
 
 Wo eine Entscheidung nötig war, ist eine Lösung umgesetzt und hier als **Umgesetzt** vermerkt. Jede davon lässt sich ändern.
 
@@ -43,11 +43,12 @@ Die Termin-UID enthält die Domain (`mp-<id>@<domain>`). Ändert sich die Domain
 
 ### A6. Abo-Link in der E-Mail „neuer Kalender“
 Laut Projektbeschreibung enthält diese E-Mail den Abo-Link. Der Link ist aber ein Geheimnis, gleichwertig zu einem Passwort für diesen einen Kalender. Laut Doku stehen Passwörter nie in E-Mails.
-**Entschieden und umgesetzt (09.11.2026):** Abo-Links stehen nur im Web-Frontend. Die E-Mail nennt die neuen Kalender und enthält einen Anmeldelink, der 14 Tage gilt (neuer Token-Zweck `notice`, einmal verwendbar). Abweichung von der Projektbeschreibung, die den Abo-Link in der E-Mail vorsah – dort bei Gelegenheit anpassen.
+**Entschieden und umgesetzt (09.11.2026):** Abo-Links stehen nur im Web-Frontend. Die E-Mail nennt die neuen Kalender und enthält einen Anmeldelink, der 14 Tage gilt (neuer Token-Zweck `notice`, einmal verwendbar). Die Projektbeschreibung ist entsprechend angepasst.
 
 ### A7. Hinweis „neuer Kalender“ bei neuen Mitgliedern
 Ein neues Mitglied bekommt die Begrüßung. Soll es zusätzlich für jeden Kalender den Hinweis „neuer Kalender“ bekommen?
 **Umgesetzt (als Vorgabe für den Import):** nein. Die Begrüßung nennt die Kalender bereits (Parameter `notify` bei `MembershipService::recompute()`).
+**Entschieden (09.11.2026):** So in Ordnung. Neue Mitglieder erhalten nur die Begrüßungs-E-Mail mit dem Anmeldelink für das Web-Frontend; dort stehen Kalender und Abo-Links.
 
 ### A8. Reservierte Benutzernamen und Löschung ausgeschiedener Mitglieder
 Zwei Vorgaben der Doku widersprechen sich:
@@ -56,17 +57,17 @@ Zwei Vorgaben der Doku widersprechen sich:
 
 Durch die Löschung verschwindet auch der Eintrag in `username_history`, und der alte Name wird wieder frei. Ebenso wird der aktuelle Benutzername eines Ausgeschiedenen frei.
 **Umgesetzt:** Löschung wie in der Doku (Datenschutz hat Vorrang).
-**Frage:** Ist das so gewollt? Eine Alternative wäre eine Liste gesperrter Namen ohne Personenbezug.
+**Entschieden (09.11.2026):** So gewollt. Frühere Benutzernamen bleiben reserviert, solange das Mitglied geführt wird; scheidet es aus, werden sie mit allen Daten gelöscht und können wieder vergeben werden.
 Außerdem: **Umgesetzt** ist, dass ein Mitglied **seine eigenen** früheren Namen wieder erhalten kann, z. B. nach einer Scheidung. Sie werden ja nicht an jemand anderen vergeben.
 
 ### A9. Anmeldebegrenzung je IP-Adresse
 Die Grenze liegt bei 30 Fehlversuchen je IP und Stunde. Im Gerätehaus sind oft alle Mitglieder über **eine** IP-Adresse (WLAN/NAT) im Netz. Ein Einrichtungsabend mit vielen Tippfehlern oder einige Geräte mit altem Passwort (CalDAV wiederholt alle 15 Minuten) können dann die Anmeldung für alle sperren.
 **Umgesetzt:** wie in der Doku, und die Begrenzung gilt für Web und CalDAV.
-**Frage:** Soll die IP-Grenze höher werden, oder soll CalDAV nur je Benutzer begrenzt werden?
+**Entschieden und umgesetzt (09.11.2026):** Die Grenzen bleiben. Gesperrte Benutzer und IP-Adressen werden auf der Status-Seite unter „Gesperrte Anmeldungen“ (und in der Detailansicht des Mitglieds) mit Anzahl der Versuche und Ende der Sperre aufgeführt und lassen sich einzeln oder alle auf einmal aufheben. IP-Adressen werden nur gekürzt angezeigt (IPv4 /24, IPv6 /48); gespeichert wird zusätzlich nur ein HMAC. Dafür neue Spalte `login_attempts.info` (Migration 002).
 
 ### A10. Empfänger der Warnungen
 **Umgesetzt:** Warnungen gehen an `ADMIN_ALERT_EMAILS` aus der `.env` **und** an alle aktiven Administratoren.
-**Frage:** Ist das gewünscht?
+**Entschieden (09.11.2026):** So gewünscht.
 
 ### A11. Aufbewahrungsfristen, die in der Doku fehlen
 **Umgesetzt** in `cleanup:run`:
@@ -76,7 +77,7 @@ Die Grenze liegt bei 30 Fehlversuchen je IP und Stunde. Im Gerätehaus sind oft 
 - Anmeldeversuche nach 1 Tag.
 
 `calendar_changes` wird bewusst **nicht** gekürzt. Sonst bekämen Geräte mit altem Sync-Token unvollständige Änderungslisten. Die Tabelle wächst nur langsam.
-**Bitte bestätigen** bzw. mit der/dem Datenschutzbeauftragten abstimmen.
+**Entschieden (09.11.2026):** So in Ordnung.
 
 ### A12. Wer bekommt Administratorrechte, und wer betreut den Betrieb dauerhaft?
 Die Frage ist bereits in der Doku offen. Für den Test sind `michael.bramer` und `dieter.lang` Administratoren.
@@ -88,11 +89,13 @@ Die Frage ist bereits in der Doku offen. Für den Test sind `michael.bramer` und
 ### B1. `setup-server.sh` überschreibt die Anwendung
 Das Skript schreibt `docker-compose.yml`, `caddy/Caddyfile` und `www/index.html` bei **jedem** Lauf neu (nur Caddy-Testseite und MariaDB). Ein erneuter Lauf, etwa für `-B` (externes Backup-Ziel), entfernt also App und Worker aus Compose und Caddy.
 **Erledigt (09.11.2026):** Das Skript heißt jetzt `setup-server-kalender-ff.sh` und installiert die Anwendung selbst (ZIP neben dem Skript bzw. `-Z`, Aktualisierung mit `-U`). Ist die Anwendung installiert, lässt die Grundeinrichtung `docker-compose.yml` und `Caddyfile` unverändert. Die Compose-Datei des Skripts reicht nur die nötigen Umgebungsvariablen an die Container weiter (kein `DB_ROOT_PASSWORD`, kein `RESTIC_PASSWORD`) und ist damit maßgeblich; `deploy/docker-compose.yml` im ZIP ist nur noch ein Beispiel.
-Die technische Doku nennt an mehreren Stellen noch `setup-server.sh`.
+Die technische Doku ist auf den neuen Namen umgestellt (09.11.2026). Zusätzlich kennt das Skript `-E prod|test` zum Umschalten der Umgebung (`APP_ENV`).
 
 ### B2. Namen der Konfigurationswerte
 - Die Doku nennt `APP_DOMAIN`, `setup-server.sh` schreibt `DOMAIN`. **Umgesetzt:** Die Anwendung liest beides.
-- In der `.env` von `setup-server.sh` fehlen SMTP-Zugang, `MAIL_FROM` und `ADMIN_ALERT_EMAILS`. Diese müssen von Hand ergänzt werden (siehe `.env.example`).
+- In der `.env` von `setup-server.sh` fehlten SMTP-Zugang, `MAIL_FROM` und `ADMIN_ALERT_EMAILS`. `setup-server-kalender-ff.sh` legt diese Einträge an (leer bzw. mit Vorgabe), die Werte müssen aber von Hand eingetragen werden.
+
+**Erledigt (09.11.2026):** Anleitung „E-Mail-Versand einrichten“ in der technischen Umsetzung (Abschnitt Betrieb): SMTP-Zugang, SPF/DKIM/DMARC, Einträge in `/srv/kalender/.env` mit Beispiel und Hinweisen zur Kodierung von Sonderzeichen (auch `$` → `$$` wegen Docker Compose), Übernehmen mit `docker compose up -d`, Test, typische Fehlermeldungen, Umschalten auf `MAIL_DELIVERY=smtp`. Dafür neues Kommando `mail:test <adresse>`: Es zeigt die Einstellungen (Passwort ausgeblendet) und schickt eine Test-E-Mail direkt über `MAILER_DSN`, auch wenn `MAIL_DELIVERY` noch auf `database` steht.
 
 ### B3. Netzwerke in Compose
 Im Compose von `setup-server.sh` hängt `db` nur am internen Netz `backend`. Das passt. Der Worker braucht aber zusätzlich Internetzugang (SMTP-Relay, später HTTPS-API von MP Feuer).
@@ -104,7 +107,7 @@ Im Compose von `setup-server.sh` hängt `db` nur am internen Netz `backend`. Das
 | `events` | `sequence_no`, `created_at` | `SEQUENCE` soll bei jeder Änderung steigen und muss daher gespeichert werden. `CREATED` im iCalendar. (`sequence` ist in MariaDB ein Schlüsselwort.) |
 | `calendars` | `all_members`, `created_at`, `updated_at` | siehe A1 |
 | `mail_queue` | `next_attempt_at`, `created_at`, Status `suppressed` | Wiederholung mit wachsendem Abstand; Testbetrieb ohne Versand |
-| `login_attempts` | `throttle_key` statt `key` | `KEY` ist in MariaDB ein reserviertes Wort |
+| `login_attempts` | `throttle_key` statt `key`, `info` | `KEY` ist in MariaDB ein reserviertes Wort; `info` für die Sperrliste (siehe A9) |
 | `login_tokens` | `created_at`, Zweck `notice` | Nachvollziehbarkeit; Anmeldelink in der E-Mail „neuer Kalender“ (14 Tage, siehe A6) |
 | `import_messages` | `created_at` | Nachvollziehbarkeit |
 | `users` | `created_at`, `updated_at` | Nachvollziehbarkeit |
@@ -117,7 +120,7 @@ Ein Import-Lauf wird nur protokolliert, wenn sich die Daten geändert haben (Pr�
 
 ### B6. „Begrüßungs-E-Mail erneut senden“
 Laut Projektbeschreibung geht das „in der Nutzerübersicht mit einem Klick“, laut technischer Doku in der Detailansicht.
-**Umgesetzt:** in der Detailansicht. Die Übersicht verlinkt dorthin, ein Klick mehr.
+**Umgesetzt:** in der Detailansicht. Die Übersicht verlinkt dorthin, ein Klick mehr. Die Projektbeschreibung ist angepasst (09.11.2026).
 
 ### B7. Schutz der Kalender: CalDAV-Rechte
 Auf der Ebene einzelner Kalender meldet der Server nur Leserechte. Das ist korrekt, iOS und DAVx⁵ zeigen die Kalender als schreibgeschützt.
@@ -138,16 +141,60 @@ Das muss beim Gerätetest auf iOS beobachtet werden: Bietet iOS „Kalender hinz
 8. **Content-Security-Policy:** zusätzlich `style-src-attr 'unsafe-inline'`, nötig für die Kalenderfarben. Die Farbwerte werden auf `#RRGGBB` geprüft.
 9. **Gesperrte Mitglieder** sehen den Sperrhinweis nur bei **richtigem** Passwort. Sonst ließe sich ohne Passwort herausfinden, welche Konten gesperrt sind.
 10. **`import:run`** existiert als Platzhalter ohne Wirkung, damit die Zeitpläne schon eingerichtet werden können. Die Bausteine für den Import sind im Kopf von `src/Console/ImportRunCommand.php` aufgeführt.
+11. **E-Mail-Prüfung für den Import** (`Kalender\Import\EmailValidator`): Syntax per `filter_var`, Domain mit MX-, A- oder AAAA-Eintrag, Ergebnis je Domain und Lauf zwischengespeichert. Ist eine Domain nicht auflösbar, wird einmal eine Kontrolldomain abgefragt; scheitert auch diese, wird `DnsUnavailable` geworfen und der Import muss abbrechen, statt Adressen fälschlich zu sperren.
 
 ---
 
 ## D. Nicht geprüft bzw. später zu erledigen
 
-- **MariaDB:** In der Arbeitsumgebung lief nur SQLite (wie vereinbart). Das SQL ist auf beide ausgelegt (keine `NOW()`-Aufrufe, kein `ON DUPLICATE KEY`, Sperren gekapselt). Der echte Test steht noch aus: Die Tests können per `TEST_DB_DSN` gegen `kalender_test` laufen (siehe README).
-- **Docker-Image, Caddyfile und Log-Filter** konnten hier nicht gebaut bzw. gestartet werden. Die Syntax des Log-Filters setzt Caddy 2.8+ voraus.
+- **MariaDB:** Lokal mit MariaDB 10.11 (Migrationen, Seiten) geprüft; der Testserver läuft mit MariaDB 11.4 (seit 09.11.2026). Die Tests können per `TEST_DB_DSN` gegen `kalender_test` laufen (siehe README).
+- **Docker-Image, Caddyfile:** laufen auf dem Testserver (09.11.2026). Beim ersten Bau rutschten Bibliotheken für PHP 8.4 ins Image (Composer im Image `composer:2` mit neuerem PHP); behoben durch `config.platform.php = 8.3.0` in `composer.json` und einen Gesundheitscheck der Container.
 - **Bibliotheken:** Packagist war in der Arbeitsumgebung gesperrt. `vendor/` wurde aus den GitHub-Quellen gebaut, getestet mit Slim 4.15, Twig 3.30, sabre/dav 4.7.1, sabre/vobject 4.5, Symfony 7.4 und PHPUnit 11.5. Eine `composer.lock` liegt deshalb nicht bei. Das Dockerfile installiert die Pakete auf dem Server von Packagist.
 - **Gerätetests** (iOS, DAVx⁵, Outlook klassisch/neu/Web, Google) – Arbeitspaket 11.
 - **Anleitungen mit Screenshots** – derzeit nur Text, wie vereinbart.
 - **iOS-Profil unsigniert:** iOS zeigt „Nicht verifiziert“. Signieren wäre z. B. mit dem Zertifikat der Domain möglich.
-- **DNS:** SRV-Einträge `_caldavs._tcp` sowie SPF/DKIM/DMARC für die Absenderdomain. `setup-server.sh` prüft diese Einträge bisher nicht.
-- **Import aus MP Feuer** (Quellen, Mapper, `import:run`, E-Mail-/DNS-Prüfung, Plausibilitätsprüfung) – laut Auftrag nicht enthalten.
+- **DNS:** SRV-Einträge `_caldavs._tcp` sowie SPF/DKIM/DMARC für die Absenderdomain. `setup-server-kalender-ff.sh` prüft diese Einträge bisher nicht.
+- **Import aus MP Feuer** (Quellen, Mapper, `import:run`, Plausibilitätsprüfung) – laut Auftrag nicht enthalten. Die E-Mail-/DNS-Prüfung ist als Baustein vorhanden (C11).
+
+---
+
+## E. Ergänzungen
+
+### E1. Android ohne Zusatz-App: Abo-Links im Google Kalender
+**Umgesetzt (09.11.2026):** Die Android-Anleitung beschreibt neben DAVx⁵ als Alternative das Abonnieren der Abo-Links im Google Kalender (calendar.google.com → „Weitere Kalender“ → „Per URL“, danach in der App „Synchronisieren“ einschalten). Startseite und Seite „Smartphone & Tablet“ verweisen darauf. Hinweise in der Anleitung: Google aktualisiert abonnierte Kalender nur alle paar Stunden (nicht einstellbar), jeder Kalender wird einzeln abonniert, nach „Neue Abo-Links“ müssen die Abos ersetzt werden, und der Link wird bei Google gespeichert. Projektbeschreibung und technische Doku sind ergänzt, der Gerätetest um „Android ohne Zusatz-App“ erweitert.
+
+### E2. Terminübersicht als PDF (Jahreskalender)
+**Umgesetzt (12.11.2026)**, abgestimmt mit M. Bramer:
+- Nur für Mitglieder und nur für ihre eigenen Kalender. Administratoren haben keine Terminansicht.
+- Menüpunkt „Terminübersicht“: Startmonat (Vorgabe Januar des laufenden Jahres), Zeitraum 1–12 Monate (Vorgabe 12), eine oder zwei Seiten, Auswahl der Kalender.
+- A4 quer, je Monat eine Spalte. Termine als Oval in der Kalenderfarbe mit Startzeit; ganztägig leeres Oval; abgesagt leerer Kreis mit farbigem Rand. Passen nicht alle Ovale, nur farbige Punkte (ggf. „+n“). Keine Titel, Orte oder Beschreibungen; keine Kürzel.
+- Wochenenden und Feiertage NRW grau, Schulferien NRW als Streifen. Feiertage werden berechnet; die Ferien stehen als Tabelle aus der Ferienordnung NRW in der Anwendung (bis Sommer 2030, danach ergänzen). Bewegliche Ferientage einzelner Schulen sind nicht enthalten.
+- Neue Bibliothek: `setasign/fpdf` (klein, ohne weitere Abhängigkeiten).
+
+### E3. Startseite ohne Abo-Links, neuer Menüpunkt „Kalender abonnieren“
+**Umgesetzt (12.11.2026)**, abgestimmt mit M. Bramer:
+- Startseite „Meine Kalender“: nur noch Liste der Kalender mit Farbe, Beschreibung und Anzahl der Termine im laufenden Kalenderjahr (ohne abgesagte, ganzes Jahr). Hinweis mit Knöpfen „Kalender abonnieren“ und „Terminübersicht als PDF“.
+- Neuer Menüpunkt **Kalender abonnieren** (`/abonnieren`) mit zwei Unterseiten: **Smartphone & Tablet** (`/abonnieren/geraete`, CalDAV, inkl. „Neues Passwort“) und **Outlook & Google Kalender** (`/abonnieren/outlook`, Abo-Links, inkl. „Neue Abo-Links“). Der bisherige Menüpunkt „Smartphone & Tablet“ entfällt; `/geraete` leitet dauerhaft weiter.
+- E-Mail „neuer Kalender“ und Anleitungen verweisen auf die neuen Seiten. Kosten von DAVx⁵ in der Android-Anleitung: Google Play einmalig rund 5 € (ein Kauf für alle Geräte desselben Google-Kontos), F-Droid kostenlos.
+- Anleitung für Mitglieder (`anleitung_mitglieder_kalender_ff_krz.tex`): neue Screenshots, eigenes Kapitel „Android ohne Zusatz-App: über den Google Kalender“.
+
+**Nachtrag (12.11.2026):** Menüpunkt „Mitgliedschaften“ entfällt. Die Startseite zeigt bei jedem Kalender die Herkunft („aus: LG Drove“ bzw. „für alle Mitglieder“) und unter der Liste die Mitgliedschaften ohne eigenen Kalender. `/mitgliedschaften` leitet auf die Startseite weiter. Menü jetzt: Meine Kalender · Kalender abonnieren · Terminübersicht · Anleitungen.
+
+**Behoben (12.11.2026):** In der Umgebung `prod` lagen die kompilierten Twig-Vorlagen im dauerhaften Volume `app-storage`. Nach einem Update mit `-U` hätte der Server weiter die **alten** Seiten gezeigt (betraf auch das Update mit der Terminübersicht). Jetzt leert der Container `app` den Vorlagen-Cache bei jedem Start, zusätzlich ist `auto_reload` aktiv.
+
+**Behoben (12.11.2026):** Darstellungsfehler: „Kopieren“-Knöpfe brachen am PC um; nach „Passwort anzeigen“ war die Knopfbeschriftung unsichtbar.
+
+### E4. Abonnieren statt importieren
+Ein `.ics`-Link kann abonniert oder importiert werden. Ein Import kopiert die Termine einmalig – Änderungen und Absagen kommen nicht mehr an, ein zweiter Import erzeugt Doppel. Betrifft nur Abo-Links (Outlook, Google Kalender, Android ohne DAVx⁵), nicht CalDAV.
+**Umgesetzt (12.11.2026)**, abgestimmt mit M. Bramer:
+- **Stufe 1 – Hinweise:** Kasten „Abonnieren – nicht importieren“ auf der Seite „Outlook & Google Kalender“, in den Online-Anleitungen (Outlook, Android) und in der Anleitung für Mitglieder (Kapitel 6 und 7, neue häufige Frage „aus Versehen importiert“). „direkt abonnieren“ (webcal) wird unter Android ausgeblendet.
+- **Stufe 2 – Hinweisseite im Browser:** Wird ein Abo-Link im Browser geöffnet (`Accept` enthält `text/html`, aber nicht `text/calendar`), zeigt der Server eine Hinweisseite statt die Datei auszuliefern. Kalenderprogramme erhalten weiterhin die Termine. Eingebaut und getestet, aber **ausgeschaltet** (`FEED_BROWSER_NOTICE=0`); das Setup-Skript legt den Eintrag an und reicht ihn an den Container weiter.
+
+---
+
+## F. To-do / später
+
+- **`FEED_BROWSER_NOTICE=1` einschalten**, sobald der Gerätetest bestätigt, dass Outlook (klassisch, neu, Web, Mac) und der Google Kalender ihre Abos weiter mit Terminen füllen (siehe E4).
+
+- **Kalenderansicht im Web-Frontend** für Mitglieder: Monats- und Listenansicht mit Titel, Zeit und Ort, nur eigene Kalender, Filter je Kalender. Geschätzt etwa 1 Personentag. Vorgemerkt am 12.11.2026, zunächst nur das PDF (E2).
+- **Schulferien NRW ab 2030/31** in `src/Calendar/NrwSchoolHolidays.php` ergänzen, sobald veröffentlicht.

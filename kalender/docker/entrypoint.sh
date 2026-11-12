@@ -2,6 +2,11 @@
 # Startet php-fpm (app) bzw. supercronic (worker). Im app-Container werden vorher
 # die Datenbank-Migrationen ausgeführt (RUN_MIGRATIONS=1).
 set -e
+# Vorlagen-Cache leeren: storage/ liegt in einem dauerhaften Volume, nach einem
+# Update dürfen keine kompilierten Vorlagen der alten Version übrig bleiben.
+if [ "${RUN_MIGRATIONS:-0}" = "1" ]; then
+  rm -rf /srv/app/storage/cache/twig
+fi
 if [ "${RUN_MIGRATIONS:-0}" = "1" ]; then
   i=0
   until out=$(php /srv/app/bin/console db:migrate 2>&1); do

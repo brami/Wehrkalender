@@ -26,6 +26,7 @@
 #       /srv/kalender/app entpackt (Versionen unter /srv/kalender/releases),
 #       Docker-Image gebaut, app + worker gestartet, Datenbank migriert.
 #       Vorher wird automatisch eine Datensicherung erstellt.
+#       Umgebung umschalten mit -E prod|test (auch ohne neues ZIP).
 #    9. Abschlussprüfung und Zusammenfassung
 #
 #  Protokolle
@@ -39,12 +40,15 @@
 #    ./setup-server-kalender-ff.sh -H <server> -d <domain> -T <test-domain> -c
 #
 #  Beispiele
-#    Erstinstallation mit Anwendung und Testdaten:
+#    Erstinstallation als Testsystem mit Testdaten:
 #    ./setup-server-kalender-ff.sh -H 203.0.113.10 -d kalender.example.de \
-#                      -T kalender-test.example.de -n kalender -X -a michael.bramer
+#                      -T kalender-test.example.de -n kalender -E test -X -a michael.bramer
 #
 #    Nur eine neue Version der Anwendung einspielen:
 #    ./setup-server-kalender-ff.sh -H 203.0.113.10 -d kalender.example.de -U
+#
+#    Nur auf Produktion umstellen (ohne neues ZIP, ohne Neubau):
+#    ./setup-server-kalender-ff.sh -H 203.0.113.10 -d kalender.example.de -U -E prod -Z ""
 # =============================================================================
 set -Eeuo pipefail
 
@@ -62,9 +66,11 @@ SKIP_HARDEN=0
 ASSUME_YES=0
 CHECK_ONLY=0
 APP_ZIP=""            # leer = neueste kalender-ff-krz*.zip neben dem Skript
+APP_ZIP_GIVEN=0       # 1 = -Z angegeben (auch -Z "" = ausdrücklich kein ZIP)
 UPDATE_ONLY=0
 LOAD_TESTDATA=0
 APP_ADMIN=""
+APP_ENV_SET=""        # prod | test; leer = unverändert (neu: prod)
 
 usage() {
   cat <<EOF
@@ -77,12 +83,19 @@ Pflicht:
 Anwendung:
   -Z <datei.zip>  ZIP der Anwendung. Standard: die neueste Datei
                   kalender-ff-krz*.zip im Verzeichnis dieses Skripts.
+                  -Z "" = kein ZIP (z. B. nur Umgebung umstellen).
                   Ohne ZIP wird nur der Server eingerichtet (Platzhalterseite).
-  -U              Nur die Anwendung installieren/aktualisieren: überspringt
-                  Grundeinrichtung und SSH-Härtung (Server muss schon
-                  eingerichtet sein)
+  -U              Nur die Anwendung installieren/aktualisieren/umstellen:
+                  überspringt Grundeinrichtung und SSH-Härtung (Server muss
+                  schon eingerichtet sein)
+  -E <prod|test>  Umgebung der Anwendung (APP_ENV):
+                    test  Testsystem: Hinweisband "Testumgebung", Fehlerdetails
+                          im Browser, Testdaten (-X) erlaubt
+                    prod  Produktion: keine Fehlerdetails, -X gesperrt
+                  Ohne Angabe bleibt die Einstellung erhalten (neu: prod).
+                  Ohne neues ZIP werden nur die Container neu gestartet.
   -X              Testdaten laden – LÖSCHT ALLE DATEN der Datenbank kalender!
-                  Nur für den Testbetrieb. Rückfrage, außer mit -y.
+                  Nur in der Umgebung test. Rückfrage, außer mit -y.
   -a <benutzer>   Diesem Benutzer der Anwendung Administratorrechte geben,
                   z. B. michael.bramer (muss in der Datenbank existieren)
 
@@ -111,7 +124,7 @@ Optional:
 EOF
 }
 
-while getopts ":H:d:T:e:B:u:n:t:Z:a:cSUXyh" opt; do
+while getopts ":H:d:T:e:B:u:n:t:Z:a:E:cSUXyh" opt; do
   case "$opt" in
     H) SERVER="$OPTARG" ;;
     d) DOMAIN="$OPTARG" ;;
@@ -121,8 +134,9 @@ while getopts ":H:d:T:e:B:u:n:t:Z:a:cSUXyh" opt; do
     u) ADMIN_USER="$OPTARG" ;;
     n) NEW_HOSTNAME="$OPTARG" ;;
     t) TIMEZONE="$OPTARG" ;;
-    Z) APP_ZIP="$OPTARG" ;;
+    Z) APP_ZIP="$OPTARG"; APP_ZIP_GIVEN=1 ;;
     a) APP_ADMIN="$OPTARG" ;;
+    E) APP_ENV_SET="$OPTARG" ;;
     c) CHECK_ONLY=1 ;;
     S) SKIP_HARDEN=1 ;;
     U) UPDATE_ONLY=1 ;;
@@ -142,6 +156,12 @@ if [[ ! "$ADMIN_USER" =~ ^[a-z_][a-z0-9_-]{0,31}$ ]]; then
 fi
 if [[ -n "$APP_ADMIN" && ! "$APP_ADMIN" =~ ^[a-z0-9][a-z0-9.-]*$ ]]; then
   echo "Ungültiger Benutzername der Anwendung: $APP_ADMIN (Form vorname.nachname)" >&2; exit 2
+fi
+if [[ -n "$APP_ENV_SET" && ! "$APP_ENV_SET" =~ ^(prod|test)$ ]]; then
+  echo "Ungültige Umgebung für -E: $APP_ENV_SET (erlaubt: prod oder test)" >&2; exit 2
+fi
+if [[ "$APP_ENV_SET" == prod && $LOAD_TESTDATA -eq 1 ]]; then
+  echo "-X (Testdaten) ist mit -E prod nicht erlaubt." >&2; exit 2
 fi
 
 # ----------------------------- Lokale Voraussetzungen ------------------------
@@ -200,10 +220,13 @@ sha256_of() {
   elif command -v shasum >/dev/null 2>&1; then shasum -a 256 "$1" | cut -d' ' -f1
   else echo ""; fi
 }
-if [[ -z "$APP_ZIP" ]]; then
+if [[ -z "$APP_ZIP" && $APP_ZIP_GIVEN -eq 0 ]]; then
   APP_ZIP="$(ls -t "$SCRIPT_DIR"/kalender-ff-krz*.zip 2>/dev/null | head -n1 || true)"
 fi
 APP_SHA=""
+# Einstellungen der Anwendung ohne neues ZIP (Umgebung, Testdaten, Administrator)
+APP_SETTINGS=0
+[[ -n "$APP_ENV_SET" || $LOAD_TESTDATA -eq 1 || -n "$APP_ADMIN" ]] && APP_SETTINGS=1
 if [[ -n "$APP_ZIP" ]]; then
   [[ -f "$APP_ZIP" ]] || fail "ZIP nicht gefunden: $APP_ZIP"
   # Inhalt prüfen: erwartet wird das Verzeichnis kalender/ mit Dockerfile und public/index.php
@@ -222,11 +245,10 @@ if [[ -n "$APP_ZIP" ]]; then
   done
   APP_SHA="$(sha256_of "$APP_ZIP")"
   log "Anwendung: $APP_ZIP ($(du -h "$APP_ZIP" | cut -f1), SHA-256 ${APP_SHA:0:16}…)"
+elif [[ $APP_SETTINGS -eq 1 ]]; then
+  log "Kein neues ZIP – nur Einstellungen der installierten Anwendung:${APP_ENV_SET:+ Umgebung $APP_ENV_SET}$([[ $LOAD_TESTDATA -eq 1 ]] && echo ' Testdaten')${APP_ADMIN:+ Administrator $APP_ADMIN}"
 else
-  [[ $UPDATE_ONLY -eq 1 ]] && fail "-U angegeben, aber kein ZIP gefunden (kalender-ff-krz*.zip neben dem Skript oder -Z)."
-  if [[ $LOAD_TESTDATA -eq 1 || -n "$APP_ADMIN" ]]; then
-    fail "-X/-a brauchen die Anwendung, aber es wurde kein ZIP gefunden."
-  fi
+  [[ $UPDATE_ONLY -eq 1 ]] && fail "-U angegeben, aber kein ZIP gefunden und nichts umzustellen (kalender-ff-krz*.zip neben das Skript legen, -Z oder -E/-X/-a)."
   log "Kein ZIP der Anwendung gefunden – es wird nur der Server eingerichtet (Platzhalterseite)."
 fi
 
@@ -253,6 +275,7 @@ REMOTE_CHECK=$(ssh "${SSH_OPTS[@]}" "$TARGET" '
   timeout 10 bash -c "exec 3<>/dev/tcp/$mirror/80" 2>/dev/null || echo "fehlt=Internetzugang ($mirror:80)"
   command -v docker >/dev/null && docker compose version >/dev/null 2>&1 && echo "docker=ja"
   [ -f /srv/kalender/.env ] && echo "eingerichtet=ja"
+  [ -f /srv/kalender/app/Dockerfile ] && echo "anwendung=ja"
 ' 2>/dev/null || true)
 log "Server: $(grep '^os=' <<<"$REMOTE_CHECK" | cut -d= -f2)"
 case "$(grep '^os=' <<<"$REMOTE_CHECK" | cut -d= -f2)" in
@@ -265,6 +288,9 @@ if grep -q '^fehlt=' <<<"$REMOTE_CHECK"; then
 fi
 if [[ $UPDATE_ONLY -eq 1 ]] && ! { grep -q '^docker=ja' <<<"$REMOTE_CHECK" && grep -q '^eingerichtet=ja' <<<"$REMOTE_CHECK"; }; then
   fail "-U: Der Server ist noch nicht eingerichtet (Docker oder /srv/kalender/.env fehlt). Bitte zuerst ohne -U ausführen."
+fi
+if [[ -z "$APP_ZIP" && $APP_SETTINGS -eq 1 ]] && ! grep -q '^anwendung=ja' <<<"$REMOTE_CHECK"; then
+  fail "-E/-X/-a ohne ZIP: Auf dem Server ist noch keine Anwendung installiert. Bitte mit ZIP aufrufen."
 fi
 log "Server-Voraussetzungen erfüllt."
 
@@ -392,6 +418,10 @@ if [[ "$ASSUME_YES" -ne 1 ]]; then
     read -r -p "Zum Fortfahren 'testdaten' eintippen: " answer
     [[ "$answer" == testdaten ]] || { log "Testdaten abgelehnt – Abbruch."; exit 0; }
   fi
+  if [[ "$APP_ENV_SET" == prod ]]; then
+    echo "HINWEIS: -E prod schaltet auf Produktion um. Prüfe vorher in /srv/kalender/.env"
+    echo "         MAIL_DELIVERY=smtp und MAILER_DSN, sonst werden keine E-Mails verschickt."
+  fi
 fi
 
 # Hilfsfunktion: Remote-Skript mit Umgebungsvariablen ausführen
@@ -401,9 +431,9 @@ APP_ZIP_NAME="${APP_ZIP##*/}"
 run_remote() {  # $1 = Phase, Skript kommt über stdin
   local phase="$1"
   local envs
-  envs=$(printf 'PHASE=%q ADMIN_USER=%q TIMEZONE=%q NEW_HOSTNAME=%q DOMAIN=%q TEST_DOMAIN=%q ACME_EMAIL=%q BACKUP_REPO=%q STAMP=%q SSH_PORT=%q REMOTE_ZIP=%q APP_SHA=%q APP_ZIP_NAME=%q RELEASE=%q LOAD_TESTDATA=%q APP_ADMIN=%q' \
+  envs=$(printf 'PHASE=%q ADMIN_USER=%q TIMEZONE=%q NEW_HOSTNAME=%q DOMAIN=%q TEST_DOMAIN=%q ACME_EMAIL=%q BACKUP_REPO=%q STAMP=%q SSH_PORT=%q REMOTE_ZIP=%q APP_SHA=%q APP_ZIP_NAME=%q RELEASE=%q LOAD_TESTDATA=%q APP_ADMIN=%q APP_ENV_SET=%q' \
     "$phase" "$ADMIN_USER" "$TIMEZONE" "$NEW_HOSTNAME" "$DOMAIN" "$TEST_DOMAIN" "$ACME_EMAIL" "$BACKUP_REPO" "$STAMP" "$SSH_PORT" \
-    "$REMOTE_ZIP" "$APP_SHA" "$APP_ZIP_NAME" "$RELEASE" "$LOAD_TESTDATA" "$APP_ADMIN")
+    "$REMOTE_ZIP" "$APP_SHA" "$APP_ZIP_NAME" "$RELEASE" "$LOAD_TESTDATA" "$APP_ADMIN" "$APP_ENV_SET")
   # shellcheck disable=SC2029  # Variablen sollen lokal expandiert werden
   ssh "${SSH_OPTS[@]}" "$TARGET" "$SUDO env $envs bash -s"
 }
@@ -441,6 +471,90 @@ envval() { grep -m1 "^$1=" "$APP/.env" | cut -d= -f2-; }
 # Ist die Anwendung installiert? Dann gehören docker-compose.yml und Caddyfile
 # der Anwendungsphase und werden von der Grundeinrichtung nicht überschrieben.
 app_installed() { [[ -f "$APP/app/public/index.php" && -f "$APP/app/Dockerfile" ]]; }
+
+# Umgebung der Anwendung: -E (APP_ENV_SET) > Eintrag in .env > prod
+effective_env() {
+  local e="${APP_ENV_SET:-}"
+  [[ -n "$e" ]] || e="$(envval APP_ENV 2>/dev/null || true)"
+  echo "${e:-prod}"
+}
+# Testdaten nur außerhalb der Produktion
+guard_testdata() {
+  if [[ "$LOAD_TESTDATA" == 1 && "$(effective_env)" == prod ]]; then
+    log "FEHLER: -X (Testdaten) ist in der Umgebung prod gesperrt. Zuerst mit -E test umstellen."
+    exit 1
+  fi
+}
+# -E übernehmen und Hinweise ausgeben
+apply_env() {
+  if [[ -n "${APP_ENV_SET:-}" ]]; then
+    local old; old="$(envval APP_ENV || true)"
+    set_env APP_ENV "$APP_ENV_SET"
+    log "Umgebung: ${old:-prod} -> $APP_ENV_SET"
+  fi
+  log "Umgebung der Anwendung: $(envval APP_ENV)$([[ "$(envval APP_ENV)" == test ]] && echo ' (Testsystem: Hinweisband, Fehlerdetails im Browser)')"
+  if [[ "$(envval APP_ENV)" == prod && "$(envval MAIL_DELIVERY)" != smtp ]]; then
+    log "WARNUNG: Produktion, aber MAIL_DELIVERY=$(envval MAIL_DELIVERY) – es werden keine E-Mails verschickt."
+    log "         In $APP/.env MAILER_DSN eintragen, MAIL_DELIVERY=smtp setzen und erneut mit -U aufrufen."
+  fi
+}
+# Testdaten und Administrator (nach dem Start der Container)
+post_start_tasks() {
+  cd "$APP"
+  if [[ "$LOAD_TESTDATA" == 1 ]]; then
+    step "Anwendung: Testdaten laden (Datenbank kalender wird geleert)"
+    if systemctl cat kalender-backup.service >/dev/null 2>&1; then
+      systemctl start kalender-backup.service || log "WARNUNG: Sicherung vor den Testdaten fehlgeschlagen."
+    fi
+    # Ausgabe ohne Zugangsdaten (die stehen nur in der Datei im Container)
+    docker compose exec -T app php bin/console testdata:load --yes </dev/null \
+      | grep -E '^(Testdaten in|Umfang|Gespeichert)' | sed 's/^/    /' || true
+    docker compose exec -T app test -s storage/testdaten-zugaenge.txt </dev/null \
+      || { log "FEHLER: Testdaten konnten nicht geladen werden."; exit 1; }
+    log "Zugangsdaten der Testbenutzer anzeigen (enthält Passwörter):"
+    log "    cd $APP && docker compose exec app cat storage/testdaten-zugaenge.txt"
+  fi
+  if [[ -n "$APP_ADMIN" ]]; then
+    step "Anwendung: Administrator $APP_ADMIN"
+    if docker compose exec -T app php bin/console user:admin "$APP_ADMIN" </dev/null; then
+      :
+    else
+      log "WARNUNG: $APP_ADMIN existiert (noch) nicht in der Datenbank. Später erneut: docker compose exec app php bin/console user:admin $APP_ADMIN"
+    fi
+  fi
+}
+# Erreichbarkeit über Caddy prüfen
+check_health() {
+  step "Anwendung: Erreichbarkeit"
+  cd "$APP"
+  local code
+  code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 --resolve "$DOMAIN:443:127.0.0.1" "https://$DOMAIN/health" || true)
+  case "$code" in
+    200) log "https://$DOMAIN/health: in Ordnung." ;;
+    503) log "https://$DOMAIN/health antwortet (503: noch kein Import aus MP Feuer – bis zum Import erwartet)." ;;
+    502|504)
+         docker compose ps
+         docker compose logs --tail 40 app || true
+         log "FEHLER: Caddy erreicht die Anwendung nicht (HTTP $code). Protokoll des app-Containers siehe oben."
+         exit 1 ;;
+    *)   log "WARNUNG: https://$DOMAIN/health nicht erreichbar (HTTP ${code:-–}). Meist fehlt noch das Zertifikat (DNS prüfen)."
+         log "         Test im Container: docker compose exec app php bin/console list" ;;
+  esac
+}
+# Container starten bzw. mit geänderter Konfiguration neu erzeugen
+start_containers() {
+  cd "$APP"
+  if ! docker compose up -d --remove-orphans --wait --wait-timeout 300; then
+    docker compose ps
+    docker compose logs --tail 60 app worker || true
+    log "FEHLER: Container sind nicht sauber gestartet (Protokolle siehe oben)."
+    exit 1
+  fi
+  docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile </dev/null >/dev/null 2>&1 \
+    || docker compose restart caddy
+  docker compose ps --format 'table {{.Name}}\t{{.Status}}' | sed 's/^/    /'
+  log "Datenbank: $(docker compose exec -T app php bin/console db:migrate </dev/null)"
+}
 
 # --------------------------------------------------------------- Phase base
 phase_base() {
@@ -1012,6 +1126,8 @@ EOF
 phase_app() {
   local compose_bak caddy_bak
   step "Anwendung: Paket prüfen"
+  [[ -f "$APP/.env" ]] || { log "FEHLER: $APP/.env fehlt – Server zuerst ohne -U einrichten."; exit 1; }
+  guard_testdata
   [[ -f "$REMOTE_ZIP" ]] || { log "FEHLER: Hochgeladenes ZIP fehlt: $REMOTE_ZIP"; exit 1; }
   if [[ -n "$APP_SHA" ]]; then
     [[ "$(sha256sum "$REMOTE_ZIP" | cut -d' ' -f1)" == "$APP_SHA" ]] \
@@ -1019,7 +1135,6 @@ phase_app() {
     log "Prüfsumme in Ordnung."
   fi
   command -v unzip >/dev/null || { apt-get update -q && apt_install unzip; }
-  [[ -f "$APP/.env" ]] || { log "FEHLER: $APP/.env fehlt – Server zuerst ohne -U einrichten."; exit 1; }
 
   step "Anwendung: entpacken (Version $RELEASE)"
   local rel="$APP/releases/$RELEASE"
@@ -1048,7 +1163,9 @@ phase_app() {
   ensure_env MAIL_FROM          "kalender@$DOMAIN"
   ensure_env MAIL_FROM_NAME     "Kalender FF KRZ"
   ensure_env ADMIN_ALERT_EMAILS ""
+  ensure_env FEED_BROWSER_NOTICE "0"         # 1 = Abo-Link im Browser zeigt Hinweisseite statt .ics (nach Gerätetest)
   set_env DOMAIN "$DOMAIN"
+  apply_env
   log "E-Mail-Versand: $(envval MAIL_DELIVERY)$([[ "$(envval MAIL_DELIVERY)" == database ]] && echo ' (Testbetrieb, nichts wird verschickt)')"
 
   compose_bak="$APP/docker-compose.yml.bak-$STAMP"
@@ -1089,6 +1206,7 @@ x-app: &app
     MAIL_FROM: ${MAIL_FROM:-}
     MAIL_FROM_NAME: ${MAIL_FROM_NAME:-Kalender FF KRZ}
     ADMIN_ALERT_EMAILS: ${ADMIN_ALERT_EMAILS:-}
+    FEED_BROWSER_NOTICE: ${FEED_BROWSER_NOTICE:-0}
   volumes:
     - app-storage:/srv/app/storage
   healthcheck:              # erkennt z. B. fehlerhafte Abhängigkeiten im Image
@@ -1226,51 +1344,23 @@ CADDY
   fi
 
   step "Anwendung: Container starten"
-  if ! docker compose up -d --remove-orphans --wait --wait-timeout 300; then
-    docker compose ps
-    docker compose logs --tail 60 app worker || true
-    log "FEHLER: Container sind nicht sauber gestartet (Protokolle siehe oben)."
-    exit 1
-  fi
-  docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile </dev/null >/dev/null 2>&1 \
-    || docker compose restart caddy
-  docker compose ps --format 'table {{.Name}}\t{{.Status}}' | sed 's/^/    /'
-  log "Datenbank: $(docker compose exec -T app php bin/console db:migrate </dev/null)"
+  start_containers
+  post_start_tasks
+  check_health
+}
 
-  if [[ "$LOAD_TESTDATA" == 1 ]]; then
-    step "Anwendung: Testdaten laden (Datenbank kalender wird geleert)"
-    # Ausgabe ohne Zugangsdaten (die stehen nur in der Datei im Container)
-    docker compose exec -T app php bin/console testdata:load --yes </dev/null \
-      | grep -E '^(Testdaten in|Umfang|Gespeichert)' | sed 's/^/    /' || true
-    docker compose exec -T app test -s storage/testdaten-zugaenge.txt </dev/null \
-      || { log "FEHLER: Testdaten konnten nicht geladen werden."; exit 1; }
-    log "Zugangsdaten der Testbenutzer anzeigen (enthält Passwörter):"
-    log "    cd $APP && docker compose exec app cat storage/testdaten-zugaenge.txt"
-  fi
-
-  if [[ -n "$APP_ADMIN" ]]; then
-    step "Anwendung: Administrator $APP_ADMIN"
-    if docker compose exec -T app php bin/console user:admin "$APP_ADMIN" </dev/null; then
-      :
-    else
-      log "WARNUNG: $APP_ADMIN existiert (noch) nicht in der Datenbank. Später erneut: docker compose exec app php bin/console user:admin $APP_ADMIN"
-    fi
-  fi
-
-  step "Anwendung: Erreichbarkeit"
-  local code
-  code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 --resolve "$DOMAIN:443:127.0.0.1" "https://$DOMAIN/health" || true)
-  case "$code" in
-    200) log "https://$DOMAIN/health: in Ordnung." ;;
-    503) log "https://$DOMAIN/health antwortet (503: noch kein Import aus MP Feuer – bis zum Import erwartet)." ;;
-    502|504)
-         docker compose ps
-         docker compose logs --tail 40 app || true
-         log "FEHLER: Caddy erreicht die Anwendung nicht (HTTP $code). Protokoll des app-Containers siehe oben."
-         exit 1 ;;
-    *)   log "WARNUNG: https://$DOMAIN/health nicht erreichbar (HTTP ${code:-–}). Meist fehlt noch das Zertifikat (DNS prüfen)."
-         log "         Test im Container: docker compose exec app php bin/console list" ;;
-  esac
+# ---------------------------------------------------------- Phase settings
+# Einstellungen der installierten Anwendung ohne neues ZIP:
+# Umgebung (-E), Testdaten (-X), Administrator (-a)
+phase_settings() {
+  step "Anwendung: Einstellungen"
+  app_installed || { log "FEHLER: Keine Anwendung installiert – bitte mit ZIP aufrufen."; exit 1; }
+  guard_testdata
+  apply_env
+  step "Anwendung: Container mit neuer Konfiguration starten"
+  start_containers
+  post_start_tasks
+  check_health
 }
 
 # ------------------------------------------------------------ Phase summary
@@ -1286,7 +1376,8 @@ phase_summary() {
   log "Docker:       $(docker --version)"
   if app_installed && [[ -f "$APP/app/.release" ]]; then
     log "Anwendung:    $(grep '^Version' "$APP/app/.release" | cut -d: -f2- | xargs) aus $(grep '^Paket' "$APP/app/.release" | cut -d: -f2- | xargs)"
-    log "              E-Mail-Versand: $(envval MAIL_DELIVERY) · Anwendungs-Admins: docker compose exec app php bin/console user:admin <benutzer>"
+    log "              Umgebung: $(effective_env) · E-Mail-Versand: $(envval MAIL_DELIVERY)"
+    log "              Anwendungs-Admins: docker compose exec app php bin/console user:admin <benutzer>"
   else
     log "Anwendung:    noch nicht installiert (Platzhalterseite)"
   fi
@@ -1313,10 +1404,11 @@ phase_summary() {
 }
 
 case "$PHASE" in
-  base)    phase_base ;;
-  harden)  phase_harden ;;
-  app)     phase_app ;;
-  summary) phase_summary ;;
+  base)     phase_base ;;
+  harden)   phase_harden ;;
+  app)      phase_app ;;
+  settings) phase_settings ;;
+  summary)  phase_summary ;;
   *) echo "Unbekannte Phase: $PHASE"; exit 2 ;;
 esac
 REMOTE
@@ -1362,6 +1454,9 @@ if [[ -n "$APP_ZIP" ]]; then
   ssh "${SSH_OPTS[@]}" "$TARGET" "umask 077; cat > '$REMOTE_ZIP'" < "$APP_ZIP" \
     || fail "Hochladen des ZIP fehlgeschlagen."
   run_remote app <<<"$REMOTE_SCRIPT"
+elif [[ $APP_SETTINGS -eq 1 ]]; then
+  log "Phase 4: Einstellungen der Anwendung (ohne neues ZIP)"
+  run_remote settings <<<"$REMOTE_SCRIPT"
 else
   log "Phase 4: Anwendung übersprungen (kein ZIP)."
 fi
@@ -1377,7 +1472,7 @@ for d in "$DOMAIN" $TEST_DOMAIN; do
   fi
 done
 
-if [[ -n "$APP_ZIP" ]]; then
+if [[ -n "$APP_ZIP" || $APP_SETTINGS -eq 1 ]]; then
   log "Anwendung: https://$DOMAIN   (Verwaltung: https://$DOMAIN/admin)"
   log "Nächste Version einspielen: ZIP neben das Skript legen und mit -U erneut aufrufen."
 fi

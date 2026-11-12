@@ -74,6 +74,7 @@ Bei `APP_ENV=prod` startet das Programm nur mit `--yes`.
 | `db:migrate` | Datenbank-Migrationen |
 | `user:admin <benutzer> [--revoke]` | Administratorrechte vergeben bzw. entziehen |
 | `mail:send` | Mail-Warteschlange abarbeiten (60 je Lauf, 5 Versuche) |
+| `mail:test <adresse>` | Test-E-Mail direkt über `MAILER_DSN` senden (auch bei `MAIL_DELIVERY=database`); Anleitung „E-Mail-Versand einrichten“ in der technischen Doku |
 | `monitor:check [--force]` | Warnung bei ausbleibendem oder fehlerhaftem Import |
 | `cleanup:run` | Einmal-Links, alte Protokolle, E-Mails und Archivdateien löschen |
 | `import:run` | **Platzhalter**, Import noch nicht umgesetzt |
@@ -125,6 +126,7 @@ Von Hand:
    MAILER_DSN=smtp://user:pass@relay.example.de:587
    MAIL_FROM=kalender@<domain>
    ADMIN_ALERT_EMAILS=…
+   FEED_BROWSER_NOTICE=0         # 1 = Abo-Link im Browser zeigt Hinweisseite statt .ics (nach Gerätetest)
    ```
 4. Starten: `cd /srv/kalender && docker compose up -d --build`. Die Migrationen laufen beim Start des app-Containers.
 5. Testdaten (nur auf dem Testsystem):
@@ -142,7 +144,10 @@ public/index.php         Einstieg: /dav/ → sabre/dav, sonst Slim
 src/App.php              Dienst-Container
 src/Database/            PDO-Schicht (MariaDB/SQLite), Migrator
 src/Domain/              Benutzernamen, Konten, Mitgliedschaften, Status/Überwachung
-src/Calendar/            iCalendar-Erzeugung, Termine + Sync-Protokoll
+src/Calendar/            iCalendar-Erzeugung, Termine + Sync-Protokoll,
+                         Terminübersicht (Daten), Feiertage/Schulferien NRW
+src/Pdf/                 Terminübersicht als PDF (FPDF)
+src/Import/              Bausteine für den Import (E-Mail-Prüfung)
 src/Dav/                 CalDAV: Auth-, Principal-, Kalender-Backend, Server
 src/Web/                 Controller, Sitzung, Routen
 src/Mail/                Warteschlange, Versand

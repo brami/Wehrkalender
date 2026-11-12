@@ -1,0 +1,47 @@
+{% extends 'layout.twig' %}
+{% block title %}Terminübersicht – {{ app_name }}{% endblock %}
+{% block content %}
+<h1>Terminübersicht als PDF</h1>
+<p>Eine Seite zum Ausdrucken oder Aufhängen: je Monat eine Spalte, je Termin ein farbiger Punkt mit der Startzeit. Titel, Orte und Beschreibungen stehen nicht im PDF – die Einzelheiten sehen Sie wie gewohnt auf Smartphone, Tablet oder in Outlook. Wochenenden, Feiertage und Schulferien in NRW sind markiert.</p>
+
+{% if calendars is empty %}
+  <div class="box"><p>Für Sie sind derzeit keine Kalender freigeschaltet.</p></div>
+{% else %}
+<form method="get" action="/terminuebersicht.pdf" class="box">
+  <div class="grid-2">
+    <div>
+      <label for="start">Ab Monat</label>
+      <select id="start" name="start">
+        {% for o in start_options %}
+          <option value="{{ o.value }}" {% if o.value == start %}selected{% endif %}>{{ o.label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="monate">Zeitraum</label>
+      <select id="monate" name="monate">
+        {% for n in 1..max_months %}
+          <option value="{{ n }}" {% if n == months %}selected{% endif %}>{{ n }} {{ n == 1 ? 'Monat' : 'Monate' }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <fieldset class="plain">
+    <legend>Aufteilung</legend>
+    <label class="check"><input type="radio" name="seiten" value="1" checked> Eine Seite (alle Monate nebeneinander)</label>
+    <label class="check"><input type="radio" name="seiten" value="2"> Zwei Seiten (z.&nbsp;B. Januar–Juni und Juli–Dezember, größere Felder)</label>
+  </fieldset>
+
+  <fieldset class="plain">
+    <legend>Kalender</legend>
+    {% for c in calendars %}
+      <label class="check"><input type="checkbox" name="k[]" value="{{ c.slug }}" checked> <span class="swatch" style="background: {{ c.color }}"></span> {{ c.display_name }}</label>
+    {% endfor %}
+  </fieldset>
+
+  <div class="actions"><button class="btn" type="submit">PDF herunterladen</button></div>
+  <p class="muted small">Passen an einem Tag nicht alle Termine mit Uhrzeit in das Feld, werden nur farbige Punkte gezeigt. Abgesagte Termine erscheinen als leerer Kreis. Das PDF zeigt den Stand beim Herunterladen.</p>
+</form>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends 'layout.twig' %}
+{% block title %}Abo-Link – {{ app_name }}{% endblock %}
+{% block content %}
+<div class="narrow" style="max-width:40rem">
+  <h1>Dies ist ein Abo-Link</h1>
+  <div class="box">
+    <p><span class="swatch" style="background: {{ color }}"></span> <strong>{{ calendar }}</strong></p>
+    <p>Dieser Link ist zum <strong>Abonnieren</strong> in Outlook oder im Google Kalender gedacht. Bitte die Datei <strong>nicht herunterladen und öffnen</strong> – dann würden die Termine nur einmalig kopiert und spätere Änderungen und Absagen kämen nicht an.</p>
+    <label for="feed">Abo-Link</label>
+    <div class="copy">
+      <input type="text" id="feed" value="{{ feed_url }}" readonly>
+      <button type="button" class="btn btn-secondary btn-small" data-copy="feed">Kopieren</button>
+    </div>
+    <ul>
+      <li><strong>Outlook:</strong> Kalender hinzufügen → <em>Aus dem Internet</em> (abonnieren) → Link einfügen.</li>
+      <li><strong>Google Kalender</strong> (im Browser): Weitere Kalender → + → <em>Per URL</em> → Link einfügen.</li>
+    </ul>
+    {% if not android %}
+      <p><a class="btn" href="{{ webcal_url }}">Direkt abonnieren</a> <span class="small muted">(iPhone, iPad, Mac, Outlook am PC)</span></p>
+    {% endif %}
+    <p class="small muted">Für Smartphone und Tablet ist die Einrichtung mit Benutzername und Passwort meist besser – siehe <a href="/abonnieren">Kalender abonnieren</a>. <a href="/anleitung/outlook">Anleitung für Outlook</a> · <a href="/anleitung/android">Anleitung für Google Kalender</a></p>
+  </div>
+</div>
+{% endblock %}

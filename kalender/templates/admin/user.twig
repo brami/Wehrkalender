@@ -25,6 +25,13 @@
   </div>
 </div>
 
+{% if blocked is not empty %}
+  <div class="notice">
+    <h3>Anmeldung derzeit gesperrt (zu viele Fehlversuche)</h3>
+    {{ m.blocked_table(blocked, csrf, '/admin/benutzer/' ~ u.id ~ (query ? '?' ~ query : '')) }}
+  </div>
+{% endif %}
+
 <h2>Nutzung</h2>
 <div class="box">
   <dl class="facts">

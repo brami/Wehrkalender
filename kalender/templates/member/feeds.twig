@@ -1,0 +1,50 @@
+{% extends 'layout.twig' %}
+{% block title %}Outlook & Google Kalender – {{ app_name }}{% endblock %}
+{% block content %}
+<p class="small"><a href="/abonnieren">← Kalender abonnieren</a></p>
+<h1>Outlook &amp; Google Kalender</h1>
+<p>Kopieren Sie den Abo-Link eines Kalenders und fügen Sie ihn in Outlook bzw. im Google Kalender ein. Jeder Kalender wird <strong>einzeln</strong> abonniert. Anleitung für <a href="/anleitung/outlook">Outlook</a> · <a href="/anleitung/android">Google Kalender</a>.</p>
+
+<div class="notice">
+  <h2>Abonnieren – nicht importieren</h2>
+  <p>Nur ein <strong>Abo</strong> hält die Termine aktuell. Wird der Kalender <strong>importiert</strong>, werden die Termine einmalig kopiert: Änderungen und Absagen kommen danach nicht mehr an.</p>
+  <ul>
+    <li><strong>Outlook:</strong> „Kalender hinzufügen“ → <strong>„Aus dem Internet“</strong> (abonnieren) – nicht „Aus Datei“.</li>
+    <li><strong>Google Kalender:</strong> „Weitere Kalender“ → + → <strong>„Per URL“</strong> – nicht „Importieren“.</li>
+    <li>Den Link <strong>nicht im Browser öffnen</strong> und keine .ics-Datei herunterladen und öffnen – das wäre ein Import.</li>
+  </ul>
+  <p class="small" style="margin:0">So erkennen Sie ein Abo: Der Kalender steht unter „Abonnierte Kalender“ bzw. „Weitere Kalender“, und die Termine lassen sich nicht bearbeiten. Versehentlich importiert? Die importierten Termine löschen und den Kalender neu abonnieren.</p>
+</div>
+{% if calendars is empty %}
+  <div class="box"><p>Ihnen ist derzeit kein Kalender zugeordnet.</p></div>
+{% else %}
+  {% for c in calendars %}
+    <div class="box cal">
+      <span class="swatch" style="background: {{ c.color }}"></span>
+      <div class="cal-body">
+        <h3>{{ c.display_name }}</h3>
+        <label for="feed-{{ c.id }}" class="small" style="margin-top:.25rem">Abo-Link</label>
+        <div class="copy">
+          <input type="text" id="feed-{{ c.id }}" value="{{ c.feed_url }}" readonly>
+          <button type="button" class="btn btn-secondary btn-small" data-copy="feed-{{ c.id }}">Kopieren</button>
+        </div>
+        <p class="small muted" style="margin:0">
+          {% if c.last_access_at %}
+            Zuletzt erfolgreich abgerufen: {{ c.last_access_at|lt }} ({{ c.last_client|device }})
+          {% else %}
+            Über diesen Link wurde noch nie abgerufen.
+          {% endif %}
+          {% if not android %}· <a href="{{ c.webcal_url }}" title="Startet das Abo in Outlook am PC, auf dem iPhone, iPad oder Mac">direkt abonnieren</a>{% endif %}
+        </p>
+      </div>
+    </div>
+  {% endfor %}
+  <p class="small muted">Der Abo-Link ist persönlich und geheim. Geben Sie ihn nicht weiter. Er gilt nur, solange Ihnen der Kalender zugeordnet ist. Kommt ein Kalender hinzu, erhalten Sie eine E-Mail und abonnieren den neuen Link einmalig zusätzlich.</p>
+{% endif %}
+
+<h2>Neue Abo-Links</h2>
+<div class="box">
+  <p>Wurde ein Link weitergegeben? Dann können Sie neue Abo-Links erzeugen. Die bisherigen werden <strong>sofort ungültig</strong> und müssen in Outlook bzw. im Google Kalender ersetzt werden. Smartphone und Tablet sind davon nicht betroffen.</p>
+  <a class="btn btn-secondary" href="/konto/abo-links">Neue Abo-Links …</a>
+</div>
+{% endblock %}

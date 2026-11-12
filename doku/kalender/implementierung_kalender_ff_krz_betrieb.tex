@@ -1,0 +1,621 @@
+% Teil 2 von implementierung_kalender_ff_krz.tex (wird per \input eingebunden)
+% ------------------------------------------------------------------
+\section{Betrieb}
+
+\subsection{Bereitstellung mit Docker}
+
+\begin{lstlisting}
+docker-compose.yml (vereinfacht)
+
+services:
+  caddy:    # HTTPS, Reverse Proxy, Ports 80/443
+  app:      # PHP 8.3 FPM: CalDAV, iCal-Feed, Web-Frontend
+  worker:   # gleiches Image, supercronic: import:run, mail:send, ...
+  db:       # MariaDB 11.4 LTS, Volume db-data, nur internes Netz
+  sftp:     # nur bei Push per SFTP: Eingang, Volume import-inbox
+\end{lstlisting}
+
+\code{app} und \code{worker} haben einen Healthcheck, der beim Start prüft,
+ob die Abhängigkeiten der Anwendung zur PHP-Version passen. Der Worker hängt
+zusätzlich an einem Netz mit Internetzugang (SMTP-Relay, später HTTPS-API von
+MP Feuer); die Datenbank nur am internen Netz.
+
+\textbf{Server:} ein kleiner VPS (2 vCPU, 4 GB RAM, 40 GB SSD) bei einem
+Anbieter mit Rechenzentrum in Deutschland reicht für die erwartete Last
+deutlich aus. Bei rund 200 Benutzern mit mehreren Geräten und Abrufen alle
+15 bis 60 Minuten sind etwa 20 bis 50 Anfragen pro Minute zu erwarten.
+
+\textbf{Konfiguration} über Umgebungsvariablen in
+\code{/srv/kalender/.env} (nicht im Repository, Rechte 0600):
+\code{APP\_ENV}, \code{APP\_KEY}, \code{DOMAIN} (die Anwendung liest
+\code{APP\_DOMAIN} oder \code{DOMAIN}), Datenbank-Zugang, E-Mail-Versand
+(\code{MAIL\_DELIVERY}, \code{MAILER\_DSN}, \code{MAIL\_FROM},
+\code{MAIL\_FROM\_NAME}), zusätzliche Empfänger für Warnungen
+(\code{ADMIN\_ALERT\_EMAILS}) und die Hinweisseite für im Browser geöffnete
+Abo-Links (\code{FEED\_BROWSER\_NOTICE}, Standard \code{0}; erst nach dem
+Gerätetest auf \code{1} setzen und mit \code{-U -Z ""} übernehmen). Alle
+Einträge sind in \code{.env.example} erläutert.
+
+\subsection{Einrichtung und Aktualisierung des Servers}
+
+Das Skript \code{setup-server-kalender-ff.sh} (früher \code{setup-server.sh})
+richtet den Server ein und installiert die Anwendung aus dem ZIP
+\code{kalender-ff-krz*.zip}, das neben dem Skript liegt. Es wird auf dem
+eigenen Rechner aufgerufen und arbeitet per SSH.
+
+\begin{lstlisting}
+# Erstinstallation: Server einrichten und Anwendung installieren
+./setup-server-kalender-ff.sh -H <server> -d kalender.example.de -E test
+
+# Neue Version der Anwendung (neuestes ZIP neben dem Skript)
+./setup-server-kalender-ff.sh -H <server> -d kalender.example.de -U
+
+# Nur die Umgebung umstellen, ohne neues ZIP
+./setup-server-kalender-ff.sh -H <server> -d kalender.example.de -U -Z "" -E prod
+
+# Testsystem: Testdaten laden und Administrator festlegen
+./setup-server-kalender-ff.sh -H <server> -d kalender.example.de -U -X -a michael.bramer
+\end{lstlisting}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{L{2.6cm}X}
+\toprule
+\textbf{Option} & \textbf{Bedeutung} \\
+\midrule
+\code{-Z <zip>} & ZIP der Anwendung; Standard: neueste Datei
+  \code{kalender-ff-krz*.zip} neben dem Skript; \code{-Z ""} = ohne ZIP \\
+\code{-U} & nur Anwendung installieren, aktualisieren oder umstellen
+  (Grundeinrichtung und SSH-Härtung werden übersprungen) \\
+\code{-E prod|test} & Umgebung der Anwendung (\code{APP\_ENV}), siehe unten;
+  ohne Angabe bleibt die Einstellung erhalten \\
+\code{-X} & Testdaten laden; \textbf{löscht alle Daten}, nur in der
+  Umgebung \code{test} \\
+\code{-a <benutzer>} & diesem Benutzer Administratorrechte geben \\
+\code{-c} & nur prüfen (SSH, DNS, ZIP), nichts ändern \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Bei jeder Installation legt das Skript die Version unter
+\code{/srv/kalender/releases/} ab, kopiert sie nach \code{/srv/kalender/app},
+baut das Image und startet die Container neu. Fehlende Einträge in der
+\code{.env} werden ergänzt, vorhandene nicht verändert. Datenbank-Migrationen
+laufen beim Start des Containers \code{app} automatisch. Danach prüft das
+Skript, ob die Seite antwortet (kein 502), und zeigt bei Fehlern die
+Container-Protokolle.
+
+\subsubsection*{Umgebungen (\code{APP\_ENV})}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Wert} & \textbf{Verhalten} \\
+\midrule
+\code{prod} & Produktion: keine Fehlerdetails im Browser; Testdaten nur mit
+  ausdrücklicher Bestätigung (\code{-{}-yes}), über das Skript gesperrt \\
+\code{test} & Testsystem: Hinweisband \glqq Testumgebung\grqq\ auf jeder
+  Seite, Fehlerdetails im Browser, Testdaten erlaubt \\
+\code{dev} & lokale Entwicklung: wie \code{test}, zusätzlich der
+  sabre/dav-Browser unter \code{/dav/} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Die Umgebung und der E-Mail-Versand sind getrennt einstellbar. Nach der
+Installation gilt \code{MAIL\_DELIVERY=database}: Es werden keine E-Mails
+verschickt. Beim Umstellen auf \code{prod} warnt das Skript, wenn der
+Versand noch nicht eingerichtet ist.
+
+\subsection{E-Mail-Versand einrichten}\label{sec:mailsetup}
+
+Nach der Installation verschickt der Kalenderserver keine E-Mails, sondern
+legt sie nur als Vorschau ab (Admin-Bereich $\rightarrow$ E-Mails, Status
+\glqq nicht versendet\grqq). Für den echten Versand sind ein SMTP-Zugang und
+einige Einträge in der \code{.env} nötig. Die Einträge sind nach dem ersten
+Lauf des Skripts bereits vorhanden, aber noch leer.
+
+\subsubsection*{1. SMTP-Zugang beschaffen}
+
+Benötigt wird ein SMTP-Relay, über das der Server E-Mails mit der Absender\-adresse
+\code{kalender@<domain-der-ff>} verschicken darf, z.\,B.\ ein Postfach beim
+Mail-Anbieter der Feuerwehr oder ein Versanddienst. Notieren:
+
+\begin{itemize}
+  \item Server und Port: in der Regel Port 587 (STARTTLS) oder 465 (SSL/TLS),
+  \item Benutzername und Passwort,
+  \item erlaubte Absenderadresse(n).
+\end{itemize}
+
+Viele VPS-Anbieter sperren ausgehenden Verkehr auf Port 25. Der Versand
+direkt an die Mailserver der Empfänger ist daher nicht vorgesehen.
+
+\subsubsection*{2. DNS-Einträge für die Absender-Domain}
+
+Damit die E-Mails nicht im Spam landen, werden für die Domain der
+Absenderadresse eingerichtet (genaue Werte nennt der Mail-Anbieter):
+
+\begin{itemize}
+  \item \textbf{SPF}: TXT-Eintrag, der den Mailserver des Anbieters erlaubt,
+        z.\,B.\ \code{v=spf1 include:<anbieter> -all},
+  \item \textbf{DKIM}: Schlüssel des Anbieters als TXT- oder CNAME-Eintrag,
+  \item \textbf{DMARC}: TXT-Eintrag \code{\_dmarc}, z.\,B.\
+        \code{v=DMARC1; p=quarantine; rua=mailto:<adresse>}.
+\end{itemize}
+
+\subsubsection*{3. Einträge in der \code{.env}}
+
+Auf dem Server \code{sudo nano /srv/kalender/.env} öffnen und eintragen:
+
+\begin{lstlisting}
+MAILER_DSN=smtp://kalender%40ff-krz.de:GEHEIM@smtp.example.de:587
+MAIL_FROM=kalender@ff-krz.de
+MAIL_FROM_NAME=Kalender FF KRZ
+ADMIN_ALERT_EMAILS=wehrleitung@ff-krz.de,it@ff-krz.de
+MAIL_DELIVERY=database        # erst nach dem Test auf smtp umstellen
+\end{lstlisting}
+
+\begin{itemize}
+  \item \code{MAILER\_DSN} hat die Form
+        \code{smtp://<benutzer>:<passwort>@<server>:<port>}. Bei Port 587
+        wird STARTTLS automatisch genutzt; für Port 465 \code{smtps://}
+        statt \code{smtp://} schreiben.
+  \item Sonderzeichen in Benutzername oder Passwort müssen URL-kodiert
+        werden: \code{@} $\rightarrow$ \code{\%40}, \code{:} $\rightarrow$
+        \code{\%3A}, \code{/} $\rightarrow$ \code{\%2F}, \code{\#}
+        $\rightarrow$ \code{\%23}, \code{?} $\rightarrow$ \code{\%3F},
+        \code{\%} $\rightarrow$ \code{\%25}. Ein \code{\$} im Passwort
+        wird von Docker Compose als Variable gelesen und muss als
+        \code{\$\$} geschrieben werden.
+  \item \code{MAIL\_FROM} muss beim SMTP-Anbieter als Absender erlaubt sein.
+        Leer bedeutet \code{kalender@<domain>}.
+  \item \code{ADMIN\_ALERT\_EMAILS}: zusätzliche Empfänger für Warnungen,
+        durch Komma getrennt. Alle Benutzer mit Administratorrechten
+        erhalten Warnungen ohnehin.
+\end{itemize}
+
+\subsubsection*{4. Übernehmen und testen}
+
+Geänderte Werte in der \code{.env} werden erst mit neu erstellten Containern
+wirksam:
+
+\begin{lstlisting}
+cd /srv/kalender
+sudo docker compose up -d
+sudo docker compose exec worker php bin/console mail:test ihre.adresse@example.de
+\end{lstlisting}
+
+\code{mail:test} zeigt die verwendeten Einstellungen (Passwort ausgeblendet)
+und schickt eine Test-E-Mail direkt über \code{MAILER\_DSN}, auch wenn
+\code{MAIL\_DELIVERY} noch auf \code{database} steht. Typische Fehler:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{L{5.4cm}X}
+\toprule
+\textbf{Meldung} & \textbf{Ursache} \\
+\midrule
+\code{MAILER\_DSN ist leer} & Eintrag fehlt oder Container nicht neu
+  erstellt (\code{docker compose up -d}) \\
+\code{Connection could not be established} & Server oder Port falsch,
+  Port vom Anbieter gesperrt, \code{smtp://} statt \code{smtps://} bei
+  Port 465 \\
+\code{Failed to authenticate} / \code{535} & Benutzername oder Passwort
+  falsch, Sonderzeichen nicht kodiert \\
+\code{Sender address rejected} / \code{553} & \code{MAIL\_FROM} beim
+  Anbieter nicht als Absender erlaubt \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Kommt die Test-E-Mail an, aber im Spam-Ordner, die DNS-Einträge aus Schritt~2
+prüfen (z.\,B.\ im Quelltext der E-Mail: \code{spf=pass},
+\code{dkim=pass}).
+
+\subsubsection*{5. Versand einschalten}
+
+In der \code{.env} \code{MAIL\_DELIVERY=smtp} setzen und die Container neu
+erstellen (\code{sudo docker compose up -d}). Alternativ beides über das
+Skript mit Umstellung auf Produktion:
+
+\begin{lstlisting}
+./setup-server-kalender-ff.sh -H <server> -d kalender.example.de -U -Z "" -E prod
+\end{lstlisting}
+
+E-Mails, die vorher im Testbetrieb abgelegt wurden (Status
+\glqq nicht versendet\grqq), werden \emph{nicht} automatisch nachträglich
+verschickt; einzelne lassen sich über \glqq Erneut senden\grqq\ verschicken.
+Im Admin-Bereich unter \glqq E-Mails\grqq\ ist der Status jeder E-Mail zu
+sehen; fehlgeschlagene E-Mails zeigen die Fehlermeldung und lassen sich
+erneut senden. Die Ausgaben des Mail-Jobs stehen im Protokoll des Workers
+(\code{sudo docker compose logs worker}).
+
+\subsection{Zeitgesteuerte Jobs}
+
+Mit Docker laufen die Jobs über supercronic im Worker-Container, ohne Docker
+als systemd-Timer (siehe Abschnitt~\ref{sec:nodocker}).
+
+\begin{center}
+\begin{tabularx}{\textwidth}{L{4.6cm}L{3.0cm}X}
+\toprule
+\textbf{Kommando} & \textbf{Intervall} & \textbf{Zweck} \\
+\midrule
+\code{import:run} & alle 15 min & Import, falls neue Dateien vorliegen
+  (noch Platzhalter) \\
+\code{mail:send} & jede Minute & Mail-Warteschlange abarbeiten \\
+\code{monitor:check} & täglich 06:17 & Warnung bei fehlendem/fehlerhaftem
+  Import an Administratoren und \code{ADMIN\_ALERT\_EMAILS} \\
+\code{cleanup:run} & täglich 02:43 & abgelaufene Einmal-Links,
+  Anmeldeversuche, alte Protokolle, E-Mails und Archivdateien löschen \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Weitere Kommandos für die Wartung (im Container \code{app} oder
+\code{worker} mit \code{php bin/console <kommando>}):
+\code{db:migrate}, \code{user:admin <benutzer>} (mit \code{-{}-revoke}
+entziehen), \code{mail:test <adresse>} und \code{testdata:load} (nur Test).
+
+\subsection{Datensicherung}
+
+Alle Termine und Mitglieder lassen sich jederzeit aus MP Feuer neu
+importieren. Das Backup dient vor allem dem Erhalt von Benutzernamen,
+Passwörtern, Abo-Links und Nutzungsdaten. Die Sicherung wird vom
+Einrichtungsskript \code{setup-server-kalender-ff.sh} eingerichtet und läuft
+als systemd-Timer auf dem Server, unabhängig von den Anwendungscontainern.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{L{3.2cm}X}
+\toprule
+\textbf{Punkt} & \textbf{Umsetzung} \\
+\midrule
+Inhalt & Dump der Datenbank \code{kalender} (\code{mariadb-dump
+  -{}-single-transaction}, konsistent und ohne Sperre) sowie die
+  Konfiguration (\code{Caddyfile}, \code{docker-compose.yml},
+  MariaDB-Einstellungen). Die \code{.env} mit den Schlüsseln wird
+  bewusst \emph{nicht} gesichert. \\
+\addlinespace
+Zeitpunkt & täglich gegen 03:15 Uhr (\code{kalender-backup.timer});
+  verpasste Läufe, z.\,B.\ nach einem Neustart, werden nachgeholt. \\
+\addlinespace
+Einfache Dumps & \code{/var/backups/kalender}, nur für \code{root}
+  lesbar, 7 Tage. \\
+\addlinespace
+Versioniert & \code{restic}-Repository, verschlüsselt, 30 tägliche Stände.
+  Sonntags werden 5\,\% der gesicherten Daten gelesen und geprüft.
+  \textbf{Vorerst lokal} im eigenen Verzeichnis
+  \code{/var/backups/kalender-restic}. Später extern (Option \code{-B}),
+  z.\,B.\ per SFTP auf einer Storage-Box oder S3-kompatiblem Speicher in
+  Deutschland; dann erfolgt die Verschlüsselung vor der Übertragung. \\
+\addlinespace
+Überwachung & Protokoll im Systemjournal (\code{journalctl -u
+  kalender-backup}). Optional meldet eine Ping-Adresse
+  (\code{BACKUP\_PING\_URL}) Start, Erfolg und Fehler an einen
+  Überwachungsdienst, der bei ausbleibender Meldung warnt. \\
+\addlinespace
+Wiederherstellung & \code{kalender-restore} spielt einen lokalen oder
+  externen Stand ein. Standardziel ist die Testdatenbank
+  \code{kalender\_test}. Die Produktivdatenbank nur mit \code{-t kalender},
+  ausdrücklicher Bestätigung und automatischer Sicherung des aktuellen
+  Stands vorher. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{itemize}
+  \item \textbf{Schlüssel:} \code{APP\_KEY} und \code{RESTIC\_PASSWORD}
+        werden getrennt vom Server sicher verwahrt (Passwort-Manager,
+        mindestens zwei Administratoren). Ohne \code{RESTIC\_PASSWORD} sind
+        die externen Sicherungen nicht lesbar. Ohne \code{APP\_KEY} können
+        gespeicherte Passwörter nicht wiederhergestellt werden; im Notfall
+        genügt es, für alle Benutzer neue Passwörter zu erzeugen.
+  \item \textbf{Wiederherstellungstest:} vierteljährlich
+        \code{kalender-restore -r latest} in die Testdatenbank einspielen
+        und das Ergebnis kurz festhalten.
+\end{itemize}
+
+\subsubsection*{Neuaufbau nach Totalausfall}
+
+Setzt ein externes Backup-Ziel voraus. Solange nur lokal gesichert wird,
+schützt das Backup vor Bedienfehlern und fehlerhaften Importen, nicht aber
+vor dem Verlust des Servers. Dann bleibt nur der Neuimport aus MP Feuer mit
+neuen Passwörtern und Abo-Links für alle Mitglieder.
+
+\begin{enumerate}
+  \item Neuen Server mit \code{setup-server-kalender-ff.sh} einrichten, mit
+        derselben Domain und demselben Backup-Ziel (\code{-B}). Den
+        angezeigten öffentlichen Schlüssel beim Backup-Ziel hinterlegen,
+        falls der alte verloren ist.
+  \item In \code{/srv/kalender/.env} die verwahrten Werte für
+        \code{APP\_KEY} und \code{RESTIC\_PASSWORD} eintragen, ebenso die
+        Einträge für den E-Mail-Versand (Abschnitt~\ref{sec:mailsetup}). Die
+        Datenbank-Passwörter dürfen neu sein, weil der Dump keine
+        Datenbank-Benutzer enthält.
+  \item \code{sudo kalender-restore -r latest -t kalender}
+  \item Anwendung mit \code{-U} ausliefern und DNS prüfen. Die Geräte der
+        Mitglieder arbeiten danach ohne Änderung weiter.
+\end{enumerate}
+
+\subsection{Überwachung}
+
+\begin{itemize}
+  \item Endpunkt \code{/health} für einen externen Uptime-Dienst. Antwort
+        \code{200} mit \code{\{"status":"ok"\}}, wenn die Datenbank erreichbar
+        ist und innerhalb der letzten 24 Stunden ein Export gesehen wurde
+        (auch ohne Änderungen) und der letzte Import nicht fehlgeschlagen
+        ist; sonst \code{503} mit \code{"status":"warning"} und der Liste der
+        Probleme.
+  \item E-Mail an alle Administratoren und an \code{ADMIN\_ALERT\_EMAILS}
+        bei fehlgeschlagenem oder abgebrochenem Import und bei ausbleibenden
+        Exporten (\code{monitor:check}, höchstens einmal täglich).
+  \item Gesperrte Anmeldungen (zu viele Fehlversuche) sind auf der
+        Status-Seite sichtbar und können dort aufgehoben werden.
+\end{itemize}
+
+\subsection{Alternative: Installation ohne Docker}\label{sec:nodocker}
+
+Die Anwendung kann ebenso direkt auf einem Linux-Server installiert werden.
+Code, Datenmodell und Funktionen bleiben identisch; es ändert sich nur, wie
+die Komponenten installiert und gestartet werden. Beispieldateien für
+systemd liegen im ZIP unter \code{deploy/systemd/}.
+
+\subsubsection*{Gegenüberstellung}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{L{3.2cm}L{4.4cm}X}
+\toprule
+\textbf{Komponente} & \textbf{Mit Docker} & \textbf{Ohne Docker} \\
+\midrule
+Betriebssystem & beliebig mit Docker & Debian 13 oder Ubuntu 24.04 LTS \\
+HTTPS / Proxy & Container \code{caddy} & Paket \code{caddy} (systemd-Dienst) \\
+PHP & Container \code{app} & Pakete \code{php-fpm} (8.3 bzw.\ 8.4 aus der
+  Distribution) mit \code{php-mysql}, \code{php-intl}, \code{php-mbstring},
+  \code{php-xml}, \code{php-curl}; Composer \\
+Datenbank & Container \code{db} & Paket \code{mariadb-server}, nur an
+  \code{127.0.0.1} gebunden \\
+Jobs & supercronic im \code{worker} & systemd-Timer \\
+SFTP-Eingang (nur bei Push) & Container \code{sftp} & OpenSSH mit eigenem
+  Benutzer und \code{ChrootDirectory} \\
+Konfiguration & \code{.env} im Compose-Verzeichnis & \code{.env} im
+  Anwendungsverzeichnis \\
+Updates System & Images neu bauen & \code{unattended-upgrades} \\
+Updates Anwendung & neues Image & Deploy-Skript (siehe unten) \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsubsection*{Verzeichnisse und Benutzer}
+
+\begin{lstlisting}
+/srv/kalender/
+  releases/2027-01-15_1/   # ausgelieferte Versionen
+  current -> releases/...  # Symlink auf die aktive Version
+  shared/.env              # Konfiguration, Rechte 0640
+  shared/storage/          # Logs, Archiv der Exportdateien
+/srv/import/inbox/         # Eingang der Exporte (SFTP)
+\end{lstlisting}
+
+\begin{itemize}
+  \item Systembenutzer \code{kalender}: Eigentümer der Anwendung; unter ihm
+        laufen PHP-FPM-Pool und Jobs.
+  \item Systembenutzer \code{mpexport} (nur bei Push per SFTP): nur SFTP, keine Shell, Anmeldung
+        nur per SSH-Schlüssel, eingesperrt auf \code{/srv/import}.
+  \item Caddy leitet \code{kalender.<domain>} per \code{php\_fastcgi} an
+        den PHP-FPM-Pool weiter; Dokumentwurzel ist
+        \code{/srv/kalender/current/public}.
+\end{itemize}
+
+\subsubsection*{SFTP-Zugang, nur bei Push (Auszug \code{sshd\_config})}
+
+\begin{lstlisting}
+Match User mpexport
+    ChrootDirectory /srv/import
+    ForceCommand internal-sftp
+    PasswordAuthentication no
+    AllowTcpForwarding no
+    X11Forwarding no
+\end{lstlisting}
+
+\code{/srv/import} gehört \code{root}; nur \code{inbox/} ist für
+\code{mpexport} beschreibbar und für \code{kalender} lesbar (gemeinsame
+Gruppe).
+
+\subsubsection*{Zeitgesteuerte Jobs (Beispiel Import)}
+
+\begin{lstlisting}
+# /etc/systemd/system/kalender-import.service
+[Unit]
+Description=Kalender: Import aus MP Feuer
+[Service]
+Type=oneshot
+User=kalender
+WorkingDirectory=/srv/kalender/current
+ExecStart=/usr/bin/php bin/console import:run
+
+# /etc/systemd/system/kalender-import.timer
+[Timer]
+OnCalendar=*:0/15
+Persistent=true
+[Install]
+WantedBy=timers.target
+\end{lstlisting}
+
+Entsprechend gibt es Timer für \code{mail:send} (jede Minute),
+\code{monitor:check} und \code{cleanup:run} (täglich). Ausgaben landen im
+Systemjournal (\code{journalctl -u kalender-import}). Der E-Mail-Versand
+wird wie in Abschnitt~\ref{sec:mailsetup} eingerichtet; statt
+\code{docker compose exec worker} wird \code{php bin/console mail:test}
+direkt im Anwendungsverzeichnis aufgerufen und PHP-FPM nach Änderungen an
+der \code{.env} neu geladen.
+
+\subsubsection*{Auslieferung neuer Versionen}
+
+Ein Deploy-Skript führt folgende Schritte aus:
+
+\begin{enumerate}
+  \item Neue Version nach \code{releases/<datum>\_<nr>/} kopieren (aus dem
+        Git-Repository).
+  \item \code{composer install -{}-no-dev -{}-optimize-autoloader}.
+  \item \code{shared/.env} und \code{shared/storage} verlinken.
+  \item Datenbank-Migrationen ausführen
+        (\code{bin/console db:migrate}).
+  \item Symlink \code{current} auf die neue Version umstellen und
+        PHP-FPM neu laden (\code{systemctl reload php*-fpm}).
+  \item Die letzten drei Versionen behalten. Zurück auf die vorige Version
+        durch Umstellen des Symlinks.
+\end{enumerate}
+
+\subsubsection*{Nachvollziehbare Einrichtung}
+
+Da die Einrichtung ohne Docker nicht in einer einzelnen Datei beschrieben
+ist, wird sie als Skript im Repository abgelegt (Shell-Skript oder
+Ansible-Playbook): Pakete, Benutzer, Verzeichnisse, Caddy-, PHP-FPM- und
+SSH-Konfiguration, systemd-Timer, Firewall (nur Ports 22, 80, 443),
+\code{unattended-upgrades} und Backup-Cronjob. Damit lässt sich der Server
+bei einem Umzug oder Ausfall in kurzer Zeit neu aufbauen.
+
+\subsubsection*{Bewertung}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{XX}
+\toprule
+\textbf{Vorteile ohne Docker} & \textbf{Nachteile ohne Docker} \\
+\midrule
+Keine zusätzliche Technik-Schicht; für Linux-Administratoren
+unmittelbar verständlich. &
+Einrichtung steckt im Server; ohne Skript ist ein Umzug aufwendig. \\
+\addlinespace
+Sicherheitsupdates von PHP, MariaDB und Caddy kommen automatisch über die
+Paketverwaltung. &
+PHP-Version hängt an der Distribution; ein Upgrade des Betriebssystems muss
+getestet werden. \\
+\addlinespace
+Logs, Dateien und Dienste direkt mit Bordmitteln einsehbar
+(\code{journalctl}, \code{systemctl}). &
+Entwicklungs- und Produktionsumgebung können leichter auseinanderlaufen. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+% ------------------------------------------------------------------
+\section{Tests}
+
+\begin{itemize}
+  \item \textbf{Automatisiert} (PHPUnit, \code{vendor/bin/phpunit}, läuft mit
+        SQLite ohne weitere Dienste): Benutzernamen-Erzeugung und
+        -Umstellung (Ziffer-Suffix, Umlaute, gesperrte und wieder freie
+        alte Namen), E-Mail-Prüfung (Syntax, DNS, DNS-Ausfall),
+        Passwörter und Tokens, iCalendar-Erzeugung inkl.\
+        Sommer-/Winterzeit, ganztägiger und abgesagter Termine,
+        Sync-Token und \code{calendar\_changes}, Zugriffsschutz von
+        CalDAV und Feed (fremde Kalender, entzogene Zuordnung, widerrufene
+        Tokens, gesperrte Benutzer), Schreibversuche (403),
+        Kalender \glqq für alle Mitglieder\grqq, gemeinsame
+        E-Mail-Adressen, Einmal-Links (Bestätigung vor Verbrauch, Ablauf),
+        Hinweis-E-Mail mit Anmeldelink ohne Abo-Links, Begrenzung von
+        Anmeldeversuchen sowie Anzeigen und Aufheben der Sperren,
+        Terminübersicht (Feiertage und Ferien NRW, nur eigene Kalender,
+        mehrtägige, abgesagte und vor dem Zeitraum begonnene Termine, eine und
+        zwei Seiten, ungültige Eingaben, Anmeldung erforderlich),
+        Vollständigkeit der Testdaten. Der Import-Abgleich (neu, geändert,
+        gelöscht, gesperrt, Plausibilitätsabbruch) wird mit dem Import
+        ergänzt.
+  \item \textbf{Testdaten} (\code{testdata:load}, auf dem Server über
+        \code{-X}): rund 30 Mitglieder und 350 Termine, die alle
+        Anwendungsfälle abdecken, u.\,a.\ gesperrte Adresse, gemeinsame
+        Adresse, veralteter Benutzername, Administrator, abgesagte und
+        ganztägige Termine, nicht zugeordnete Termine, fehlgeschlagener
+        Import und gesperrte Anmeldungen.
+  \item \textbf{Manuell mit echten Geräten} vor dem Start und nach größeren
+        Updates:
+\end{itemize}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Client} & \textbf{Prüfung} \\
+\midrule
+iPhone / iPad (aktuelles iOS) & Einrichtung, Konfigurationsprofil,
+  schreibgeschützt, Änderungen, entzogener Kalender \\
+Android mit DAVx\textsuperscript{5} & wie oben, Google Kalender als
+  Anzeige-App \\
+Android ohne Zusatz-App & Abo-Link im Google Kalender (Web) hinzufügen,
+  Synchronisation in der App einschalten, Aktualisierung \\
+Outlook klassisch (Windows) & Abo, Aktualisierung, widerrufener Link \\
+Neues Outlook / Outlook im Web & Abo, Aktualisierung \\
+Google Kalender (Web) & Abo per URL, widerrufener Link \\
+Abonnieren statt importieren & mit \code{FEED\_BROWSER\_NOTICE=1}: Abo in
+  Outlook klassisch/neu/Web/Mac und Google Kalender liefert weiterhin Termine;
+  Abo-Link im Browser (PC, iPhone, Android) zeigt die Hinweisseite;
+  \glqq direkt abonnieren\grqq\ (\code{webcal://}) startet ein Abo. Danach
+  dauerhaft einschalten. \\
+E-Mail-Versand & \code{mail:test}, Begrüßung, Anmeldelink, Zustellung
+  ohne Spam-Einstufung \\
+Terminübersicht (PDF) & Ausdruck in Farbe und S/W, eine und zwei Seiten,
+  Download auf iPhone und Android \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+% ------------------------------------------------------------------
+\section{Arbeitspakete}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{rXr}
+\toprule
+\textbf{Nr.} & \textbf{Arbeitspaket} & \textbf{Schätzung} \\
+\midrule
+1 & Abstimmung Exportformat mit MP Feuer, Testdaten & 1--2 PT \\
+2 & Projektgerüst, Datenmodell, Migrationen, Docker-Setup & 2 PT \\
+3 & Import inkl.\ Prüfungen, Protokoll, Tests & 3 PT \\
+3a & Zweite Import-Quelle (SFTP und HTTPS-API) und Mapper & 1--2 PT \\
+4 & CalDAV-Backends, iCalendar-Erzeugung, Tests & 3 PT \\
+5 & iCal-Feed & 1 PT \\
+6 & Web-Frontend Mitglieder inkl.\ Anmeldung und
+    Benutzernamen-Umstellung & 3--4 PT \\
+7 & Status-Seite Administratoren & 2 PT \\
+8 & E-Mail-Versand und Templates & 1 PT \\
+9 & Anleitungen mit Screenshots, iOS-Profil & 1--2 PT \\
+10 & Server, Domain, DNS, Backups, Überwachung & 1--2 PT \\
+11 & Gerätetests, Pilotbetrieb, Korrekturen & 2--3 PT \\
+\midrule
+ & \textbf{Summe} & \textbf{21--27 PT} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+PT = Personentage. Die Schätzung ist eine grobe Orientierung und hängt vor
+allem davon ab, wie gut sich der Export aus MP Feuer automatisieren lässt.
+\textbf{Stand:} Die Pakete 2 und 4 bis 8 sind umgesetzt, ebenso die
+Bausteine für Paket 3. Offen sind die Pakete 1, 3 und 3a (Import), die
+Screenshots aus Paket 9 sowie 10 und 11.
+
+Nachträglich umgesetzt wurde die Terminübersicht als PDF (rund 1 PT). Als
+spätere Erweiterung vorgemerkt ist eine Kalenderansicht im Web-Frontend
+(Monats- und Listenansicht für Mitglieder, geschätzt 1 PT).
+
+% ------------------------------------------------------------------
+\section{Offene technische Punkte}
+
+\begin{enumerate}
+  \item Exportmöglichkeiten von MP Feuer: Datei-Export per SFTP oder
+        HTTPS-API; Datenformat, Authentifizierung, Paginierung,
+        Änderungserkennung (\code{ETag}) und Abruflimits der API.
+  \item Stabile, eindeutige Kennungen für Mitglieder, Bereiche und Termine
+        im Export. Insbesondere darf sich die Kennung eines Mitglieds bei
+        einer Namensänderung nicht ändern und nie neu vergeben werden.
+  \item Verwenden Termine und Mitgliedschaften dieselben Schlüssel für
+        Bereiche? Davon hängt ab, ob eine Zuordnung je Bereich genügt.
+  \item Zeitraum der exportierten Termine (wie weit zurück und voraus).
+  \item Liefert MP Feuer Serientermine als Einzeltermine? Dieses Dokument
+        geht davon aus.
+  \item Auswahl von Hosting-Anbieter und SMTP-Relay; Zugriff auf die
+        DNS-Verwaltung der Domain (SPF, DKIM, DMARC).
+  \item Externes Backup-Ziel (Anbieter, Zugang) und optional ein
+        Überwachungsdienst für die Ping-Adresse der Sicherung.
+  \item Wer übernimmt Betrieb und Updates dauerhaft (mindestens zwei
+        Administratoren)?
+  \item Bereitstellung mit Docker oder direkte Installation? Entscheidend
+        ist, womit die künftigen Betreuer besser vertraut sind.
+  \item Schulferien NRW ab dem Schuljahr 2030/31 ergänzen, sobald das
+        Ministerium sie veröffentlicht.
+\end{enumerate}
+

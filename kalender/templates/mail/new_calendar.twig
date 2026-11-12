@@ -11,7 +11,7 @@ durch eine neue Mitgliedschaft in MP Feuer {{ calendars|length == 1 ? 'ist ein K
 Smartphone und Tablet zeigen {{ calendars|length == 1 ? 'den neuen Kalender' : 'die neuen Kalender' }} automatisch an.
 
 Für Outlook {{ calendars|length == 1 ? 'muss der neue Kalender' : 'müssen die neuen Kalender' }} einmalig zusätzlich abonniert werden.
-Den persönlichen Abo-Link finden Sie nach der Anmeldung auf der Startseite.
+Den persönlichen Abo-Link finden Sie nach der Anmeldung unter „Kalender abonnieren → Outlook & Google Kalender“.
 Mit diesem Link melden Sie sich direkt an (gültig {{ valid_days }} Tage, nur einmal verwendbar):
 
 {{ link }}
@@ -31,7 +31,7 @@ Ihre FF KRZ
 {% endfor %}
 </table>
 <p>Smartphone und Tablet zeigen {{ calendars|length == 1 ? 'den neuen Kalender' : 'die neuen Kalender' }} automatisch an.</p>
-<p>Für <strong>Outlook</strong> {{ calendars|length == 1 ? 'muss der neue Kalender' : 'müssen die neuen Kalender' }} einmalig zusätzlich abonniert werden. Den persönlichen Abo-Link finden Sie nach der Anmeldung auf der Startseite (<a href="{{ base_url }}/anleitung/outlook">Anleitung</a>).</p>
+<p>Für <strong>Outlook</strong> {{ calendars|length == 1 ? 'muss der neue Kalender' : 'müssen die neuen Kalender' }} einmalig zusätzlich abonniert werden. Den persönlichen Abo-Link finden Sie nach der Anmeldung unter „Kalender abonnieren → Outlook &amp; Google Kalender“ (<a href="{{ base_url }}/anleitung/outlook">Anleitung</a>).</p>
 <p style="margin:24px 0;"><a href="{{ link }}" style="background:#b91c1c;color:#ffffff;padding:12px 20px;border-radius:6px;text-decoration:none;font-weight:bold;">Jetzt anmelden</a></p>
 <p style="font-size:13px;color:#5b6470;">Der Link ist {{ valid_days }} Tage gültig und nur einmal verwendbar. Danach können Sie unter <a href="{{ base_url }}/login/link">{{ domain }}/login/link</a> jederzeit einen neuen anfordern.</p>
 <p>Viele Grüße<br>Ihre FF KRZ</p>

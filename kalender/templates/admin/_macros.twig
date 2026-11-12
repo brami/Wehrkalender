@@ -27,3 +27,29 @@
     'mails_queued': 'E-Mails eingereiht'} %}
   {% for k, v in data %}{% if v is not iterable %}<span class="chip">{{ labels[k] ?? k }}: <b>{{ v }}</b></span> {% endif %}{% endfor %}
 {% endmacro %}
+
+{% macro blocked_table(blocked, csrf, back) %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Art</th><th>Wer</th><th>Versuche (1 Std.)</th><th>seit</th><th>gesperrt bis</th><th></th></tr></thead>
+    <tbody>
+    {% for b in blocked %}
+      <tr>
+        <td>{{ b.label }}</td>
+        <td>{% if b.user_id %}<a href="/admin/benutzer/{{ b.user_id }}" class="mono">{{ b.info }}</a>{% else %}<span class="mono">{{ b.info }}</span>{% endif %}</td>
+        <td>{{ b.count }} / {{ b.max }}</td>
+        <td class="nowrap">{{ b.first|lt('H:i') }}</td>
+        <td class="nowrap">{{ b.until|lt('H:i') }}</td>
+        <td>
+          <form method="post" action="/admin/sperren/aufheben" class="inline">
+            <input type="hidden" name="_csrf" value="{{ csrf }}">
+            <input type="hidden" name="key" value="{{ b.key }}">
+            <input type="hidden" name="info" value="{{ b.info }}">
+            <input type="hidden" name="back" value="{{ back }}">
+            <button class="btn btn-secondary btn-small" type="submit">Aufheben</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+{% endmacro %}

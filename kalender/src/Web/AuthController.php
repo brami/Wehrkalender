@@ -59,9 +59,9 @@ final class AuthController extends Controller
                 return $this->redirect($response, '/');
             }
         }
-        $throttle->hit($ipKey);
+        $throttle->hit($ipKey, LoginThrottle::maskIp($this->clientIp($request)));
         foreach ($candidates as $user) {
-            $throttle->hit('user:' . $user['id']);
+            $throttle->hit('user:' . $user['id'], $user['username']);
         }
         return $fail(self::GENERIC_ERROR);
     }
@@ -85,7 +85,7 @@ final class AuthController extends Controller
         $throttle = $this->app->throttle();
         $ipKey = 'link' . $throttle->ipKey($this->clientIp($request));
         if ($identity !== '' && !$throttle->tooMany($ipKey, LoginThrottle::IP_FAILS_PER_HOUR)) {
-            $throttle->hit($ipKey);
+            $throttle->hit($ipKey, LoginThrottle::maskIp($this->clientIp($request)));
             foreach ($this->candidates($identity) as $user) {
                 if ($user['status'] !== 'active') {
                     continue;
@@ -94,7 +94,7 @@ final class AuthController extends Controller
                 if ($throttle->tooMany($key, LoginThrottle::LINK_REQUESTS_PER_HOUR)) {
                     continue;
                 }
-                $throttle->hit($key);
+                $throttle->hit($key, $user['username']);
                 $this->app->accounts()->queueLoginLink((int) $user['id']);
             }
         }

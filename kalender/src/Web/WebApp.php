@@ -70,9 +70,14 @@ final class WebApp
         };
         $slim->group('', function (RouteCollectorProxy $g) use ($member) {
             $g->get('/', [$member, 'home']);
-            $g->get('/geraete', [$member, 'devices']);
+            $g->get('/abonnieren', [$member, 'subscribe']);
+            $g->get('/abonnieren/geraete', [$member, 'devices']);
+            $g->get('/abonnieren/outlook', [$member, 'feeds']);
+            $g->get('/geraete', fn (Request $q, Response $r) => $r->withHeader('Location', '/abonnieren/geraete')->withStatus(301));
             $g->get('/geraete/kalender-ff-krz.mobileconfig', [$member, 'mobileconfig']);
-            $g->get('/mitgliedschaften', [$member, 'memberships']);
+            $g->get('/mitgliedschaften', fn (Request $q, Response $r) => $r->withHeader('Location', '/')->withStatus(301));
+            $g->get('/terminuebersicht', [$member, 'plannerForm']);
+            $g->get('/terminuebersicht.pdf', [$member, 'plannerPdf']);
             $g->get('/konto/{action:passwort|abo-links|benutzername}', [$member, 'confirm']);
             $g->post('/konto/passwort', [$member, 'regeneratePassword']);
             $g->post('/konto/abo-links', [$member, 'regenerateFeeds']);
@@ -97,6 +102,7 @@ final class WebApp
             $g->post('/kalender/{id:\d+}', [$admin, 'calendarSave']);
             $g->post('/zuordnung', [$admin, 'sourceAdd']);
             $g->post('/zuordnung/{id:\d+}/loeschen', [$admin, 'sourceDelete']);
+            $g->post('/sperren/aufheben', [$admin, 'unblock']);
         })->add(function (Request $request, Handler $handler): Response {
             $user = $request->getAttribute('user');
             if ($user === null) {

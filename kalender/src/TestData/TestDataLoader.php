@@ -681,6 +681,18 @@ final class TestDataLoader
         $this->links['Begrüßungslink (abgelaufen) – paul.wagner'] = $this->app->config->baseUrl() . '/login/link/' . $this->welcomeTokens['1013'];
         $this->links['Begrüßungslink (bereits verwendet) – juergen.mueller'] = $this->app->config->baseUrl() . '/login/link/' . $this->welcomeTokens['1002'];
 
+        // A9: gesperrte Anmeldungen (Smartphone mit altem Passwort, Angriff von einer IP)
+        $throttle = $this->app->throttle();
+        $this->at('-25 minutes');
+        for ($i = 0; $i < 12; $i++) {
+            $throttle->hit('dav:lukas.wolf', 'lukas.wolf');
+        }
+        $this->at('-10 minutes');
+        $ip = $throttle->ipKey('198.51.100.23');
+        for ($i = 0; $i < 35; $i++) {
+            $throttle->hit($ip, '198.51.100.x');
+        }
+
         // gültiger Abo-Link und Abo-Link eines gesperrten Mitglieds
         $db = $this->app->db();
         $t = $db->value('SELECT token FROM feed_tokens WHERE user_id = ? AND calendar_id = ? AND revoked_at IS NULL',
@@ -714,7 +726,7 @@ final class TestDataLoader
             '1017' => 'Geschwister, gleiche E-Mail (2), nie angemeldet', '1018' => 'Jugendfeuerwehr', '1019' => 'nur Bereiche ohne Kalender',
             '1020' => 'Kalender entzogen, Abo-Links neu erzeugt', '1021' => 'neuer Kalender seit gestern', '1022' => 'Administrator, Benutzername umgestellt',
             '1023' => 'reservierter Name → Ziffer 2, Mail-Fehler (temporär)', '1024' => 'Name wie alter Benutzername von Anna Becker',
-            '1025' => 'Passwort neu, Geräte noch alt', '1026' => 'Begrüßung nicht zustellbar', '1027' => 'E-Mail-Adresse geändert',
+            '1025' => 'Passwort neu, Geräte noch alt → Anmeldesperre Smartphone', '1026' => 'Begrüßung nicht zustellbar', '1027' => 'E-Mail-Adresse geändert',
             '1028' => 'Marie Koch', '1029' => 'veraltet, Vorschlag belegt → marie.koch2', '1030' => 'deaktivierter Lehrgangskalender',
         ];
         foreach ($this->app->db()->all('SELECT * FROM users ORDER BY mp_id') as $u) {

@@ -54,6 +54,19 @@
   <p class="muted">Noch kein Import.</p>
 {% endif %}
 
+<h2>Gesperrte Anmeldungen (zu viele Fehlversuche)</h2>
+{% if blocked is empty %}
+  <p class="muted">Keine. Grenzen je Stunde: 10 Fehlversuche je Benutzer, 30 je IP-Adresse, 3 Anmeldelinks je Benutzer.</p>
+{% else %}
+  <p class="small muted">Sperren enden automatisch, sobald die Grenze in der letzten Stunde wieder unterschritten ist (Spalte „gesperrt bis“). IP-Adressen werden nur gekürzt angezeigt.</p>
+  {{ m.blocked_table(blocked, csrf, '/admin') }}
+  <form method="post" action="/admin/sperren/aufheben" class="actions">
+    <input type="hidden" name="_csrf" value="{{ csrf }}">
+    <input type="hidden" name="alle" value="1">
+    <button class="btn btn-secondary btn-small" type="submit">Alle Sperren aufheben</button>
+  </form>
+{% endif %}
+
 <h2>Gesperrte Mitglieder (ungültige E-Mail-Adresse)</h2>
 {% if locked is empty %}
   <p class="muted">Keine.</p>

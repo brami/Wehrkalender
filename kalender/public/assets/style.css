@@ -64,8 +64,8 @@ textarea { min-height: 5rem; }
   color: #fff; font: inherit; font-weight: 600; text-decoration: none; cursor: pointer; line-height: 1.2;
 }
 .btn:hover { background: var(--rot-dunkel); }
-.btn-secondary { background: #fff; color: var(--rot-dunkel); }
-.btn-secondary:hover { background: var(--hell); }
+.btn-secondary, button.btn-secondary { background: #fff; color: var(--rot-dunkel); }
+.btn-secondary:hover, button.btn-secondary:hover { background: var(--hell); color: var(--rot-dunkel); }
 .btn-small { padding: .3rem .6rem; font-size: .875rem; }
 button.link { background: none; border: 0; padding: 0; font: inherit; cursor: pointer; text-decoration: underline; }
 .actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; align-items: center; }
@@ -76,6 +76,8 @@ button.link { background: none; border: 0; padding: 0; font: inherit; cursor: po
 .cal-body { flex: 1; min-width: 0; }
 .cal-body h3 { margin: 0 0 .25rem; }
 .copy { display: flex; gap: .5rem; margin: .5rem 0; }
+.copy .btn, .btn-small { white-space: nowrap; }
+.copy .btn { flex: none; }
 .copy input { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .85rem; }
 .secret { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 1.1rem; letter-spacing: .03em; }
 dl.facts { display: grid; grid-template-columns: max-content 1fr; gap: .4rem 1rem; margin: 0; }
@@ -118,3 +120,25 @@ ol.steps li { margin: .35rem 0; }
 }
 main.wrap.wide { max-width: 96rem; }
 .envbanner { background: #1e40af; color: #fff; text-align: center; font-size: .85rem; padding: .3rem 1rem; }
+
+/* Terminübersicht (PDF-Formular) */
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: 0 1rem; }
+fieldset.plain { border: 0; padding: 0; margin: 1rem 0 0; }
+fieldset.plain legend { font-weight: 600; padding: 0; margin-bottom: .25rem; }
+
+/* Startseite: Kalenderliste, Abonnieren */
+.cal-list { list-style: none; margin: 0; padding: 0; }
+.cal-list li { display: flex; align-items: center; gap: .75rem; padding: .6rem 0; border-bottom: 1px solid var(--linie); }
+.cal-list li:last-child { border-bottom: 0; }
+.cal-list .swatch { width: 1.1rem; height: 1.1rem; }
+.cal-name { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.cal-count { white-space: nowrap; color: var(--muted); font-size: .9rem; }
+.callout { background: var(--info-bg); border-color: #bfdbfe; }
+.callout .btn { margin: .25rem .5rem .25rem 0; }
+.grid-2col { grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); }
+a.tile { display: block; color: inherit; text-decoration: none; }
+a.tile:hover { border-color: var(--rot); }
+a.tile h2 { margin: 0 0 .1rem; }
+a.tile .btn { margin-top: .25rem; }
+@media (max-width: 40rem) { .cal-list li { flex-wrap: wrap; } .cal-count { width: 100%; padding-left: 1.85rem; } }
+.cal-origin { font-style: italic; }

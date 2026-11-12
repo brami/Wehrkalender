@@ -84,6 +84,7 @@ final class App
         return $this->get(Twig::class, function () {
             $twig = Twig::create($this->config->baseDir() . '/templates', [
                 'cache' => $this->config->env() === 'prod' ? $this->config->storagePath('cache/twig') : false,
+                'auto_reload' => true,
                 'strict_variables' => $this->config->env() !== 'prod',
             ]);
             $twig->addExtension(new TwigExtension($this->config));
@@ -131,6 +132,11 @@ final class App
     public function memberships(): MembershipService
     {
         return $this->get(MembershipService::class, fn () => new MembershipService($this->db(), $this->clock(), $this->config, $this->mailQueue(), $this->accounts()));
+    }
+
+    public function yearPlanner(): \Kalender\Calendar\YearPlanner
+    {
+        return $this->get(\Kalender\Calendar\YearPlanner::class, fn () => new \Kalender\Calendar\YearPlanner($this->db()));
     }
 
     public function status(): StatusService

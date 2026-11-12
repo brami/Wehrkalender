@@ -27,7 +27,7 @@
         {Datum:   & \today\\
          Autor:   & \dsInhaber\\
          Projekt: & Kalender der FF KRZ\\
-         Version: & Entwurf}
+         Version: & Entwurf (Stand 12.11.2026)}
 
 \tableofcontents
 
@@ -138,7 +138,9 @@ erreichbar, z.\,B.\ \texttt{kalender.<domain-der-ff>}. Unter dieser Adresse
 finden die Mitglieder das Web-Frontend, und dieselbe Adresse wird auf
 Smartphone, Tablet und in Outlook eingetragen. Sie bleibt dauerhaft gleich,
 auch wenn sich am Betrieb des Servers später etwas ändert. Die E-Mails des
-Systems werden ebenfalls von dieser Domain verschickt.
+Systems werden ebenfalls von dieser Domain verschickt. Die Domain muss vor dem
+Echtbetrieb endgültig feststehen, weil sie in den Kennungen der Termine auf
+den Geräten enthalten ist.
 
 % ------------------------------------------------------------------
 \section{Benötigte Exporte aus MP Feuer}
@@ -169,6 +171,12 @@ Kalenderserver wird sie durchgeführt. Mitglieder ohne gültige Adresse erhalten
 keinen Zugang. Sobald in MP Feuer eine gültige Adresse hinterlegt ist, wird
 das Mitglied beim nächsten Import automatisch übernommen und erhält die
 Begrüßungs-E-Mail.
+
+Umgekehrt gilt: \textbf{Jedes Mitglied mit hinterlegter gültiger
+E-Mail-Adresse erhält einen Zugang}, auch Kinder und Jugendliche. Mehrere
+Mitglieder dürfen dieselbe Adresse haben, z.\,B.\ Geschwister in der
+Kinderfeuerwehr mit der Adresse der Eltern. Sie erhalten getrennte Zugänge mit
+eigenem Benutzernamen und Passwort.
 
 Das gilt auch für Mitglieder, die bereits einen Zugang haben: Wird ihre Adresse
 in MP Feuer ungültig, z.\,B.\ durch einen Tippfehler, wird der Zugang beim
@@ -205,7 +213,11 @@ Nach jedem Export führt der Kalenderserver folgende Schritte aus:
   \item \textbf{Kalender freischalten:} Anhand der Mitgliedschaften wird für
         jedes Mitglied festgelegt, welche Kalender es sehen darf. Ändert sich
         eine Mitgliedschaft in MP Feuer, ändert sich auch die Freischaltung
-        automatisch, ein Kalender kommt also hinzu oder fällt weg.
+        automatisch, ein Kalender kommt also hinzu oder fällt weg. Kalender,
+        die alle Mitglieder sehen sollen (z.\,B.\ \emph{FF KRZ}), werden im
+        Kalenderserver als \glqq für alle Mitglieder\grqq\ markiert und sind
+        dann unabhängig von den Mitgliedschaften für jedes Mitglied
+        freigeschaltet.
   \item \textbf{Zugänge verwalten:} Neue Mitglieder erhalten automatisch
         einen Zugang und eine Begrüßungs-E-Mail. Der
         Benutzername hat die Form \texttt{vorname.nachname}. Umlaute und ß
@@ -216,10 +228,14 @@ Nach jedem Export führt der Kalenderserver folgende Schritte aus:
         Ändert sich die E-Mail-Adresse eines Mitglieds, wird die
         Begrüßungs-E-Mail an die neue Adresse geschickt. Passwort und
         Abo-Links bleiben dabei unverändert.
-        Ausgeschiedene Mitglieder verlieren ihren Zugang automatisch.
+        Ausgeschiedene Mitglieder verlieren ihren Zugang automatisch; alle
+        ihre Daten werden gelöscht.
   \item \textbf{Benachrichtigen:} Kommt für ein Mitglied ein Kalender hinzu,
         erhält es eine kurze E-Mail mit Hinweis auf den neuen Kalender und
-        den zugehörigen Abo-Link für Outlook.
+        einem Anmeldelink für das Web-Frontend (14 Tage gültig). Den
+        Abo-Link für Outlook findet es dort; Abo-Links werden nicht per
+        E-Mail verschickt. Neue Mitglieder erhalten keinen zusätzlichen
+        Hinweis, sondern nur die Begrüßungs-E-Mail mit ihrem Anmeldelink.
   \item \textbf{Betrieb protokollieren:} Zeitpunkt und Ergebnis jedes
         Imports werden festgehalten und im Web-Frontend angezeigt. Dazu
         gehört auch die Anzahl der Mitglieder, die wegen fehlender oder
@@ -253,7 +269,9 @@ Web-Frontend oder von einem Administrator. Für die Umstellung gilt:
   \item Sie ist nur möglich, wenn der Benutzername tatsächlich nicht mehr
         zum Namen passt, und muss ausdrücklich bestätigt werden.
   \item Der alte Benutzername ist danach ungültig und wird nicht an andere
-        Mitglieder vergeben.
+        Mitglieder vergeben, solange das Mitglied in MP Feuer geführt wird.
+        Scheidet es aus, werden alle seine Daten gelöscht; seine früheren
+        Benutzernamen können dann wieder vergeben werden.
   \item Passwort, Abo-Links und Kalender bleiben unverändert. Outlook läuft
         ohne Anpassung weiter.
   \item Auf Smartphone und Tablet muss der Kalender-Account einmalig mit dem
@@ -269,14 +287,16 @@ Tablet mit dem neuen Benutzernamen neu ein. Sie kann ihn aber auch
 unverändert lassen.
 
 Die Zuordnung von Bereichen in MP Feuer zu Kalendern wird einmalig
-festgelegt, beispielsweise:
+festgelegt und von den Administratoren im Web-Frontend gepflegt. Ein
+Kalender kann dabei mehrere Bereiche umfassen. Beispiel:
 
 \begin{center}
 \begin{tabularx}{0.85\textwidth}{lX}
 \toprule
 \textbf{Kalender} & \textbf{Inhalt} \\
 \midrule
-FF KRZ   & Termine der gesamten Wehr, z.\,B.\ Jahreshauptversammlung \\
+FF KRZ   & Termine der gesamten Wehr, z.\,B.\ Jahreshauptversammlung
+           (für alle Mitglieder) \\
 LG Drove & Termine der Löschgruppe Drove \\
 GJF      & Termine der Gemeindejugendfeuerwehr \\
 JF Gr1   & Termine der Jugendfeuerwehr-Gruppe 1 \\
@@ -310,12 +330,20 @@ freigeschalteten Kalender.
 
 \begin{itemize}
   \item \textbf{iPhone und iPad:} Die Kalender werden einmalig in den
-        Einstellungen als zusätzlicher Kalender-Account eingerichtet. Danach
-        erscheinen sie in der eingebauten Kalender-App.
+        Einstellungen als zusätzlicher Kalender-Account eingerichtet, am
+        einfachsten über ein Konfigurationsprofil aus dem Web-Frontend.
+        Danach erscheinen sie in der eingebauten Kalender-App.
   \item \textbf{Android-Smartphones und -Tablets:} Android unterstützt den
         Standard nicht von Haus aus. Nötig ist einmalig eine verbreitete
         Synchronisations-App. Danach erscheinen die Kalender in jeder
         beliebigen Kalender-App.
+  \item \textbf{Android ohne Zusatz-App:} Alternativ kann ein Mitglied die
+        persönlichen Abo-Links (wie bei Outlook, siehe unten) im
+        Google Kalender abonnieren. Die Kalender erscheinen dann in der
+        Google-Kalender-App auf allen Geräten mit diesem Google-Konto.
+        Google aktualisiert abonnierte Kalender allerdings nur alle paar
+        Stunden; für kurzfristige Änderungen und Absagen ist die
+        Synchronisations-App die bessere Wahl.
 \end{itemize}
 
 Die Geräte fragen den Kalenderserver in regelmäßigen Abständen nach
@@ -336,22 +364,42 @@ ist nur so lange gültig, wie der Kalender dem Mitglied zugeordnet ist.
   \item Das Mitglied abonniert in Outlook jeden seiner Kalender einzeln über
         den zugehörigen Link. Jeder Kalender erscheint dann als eigener
         Kalender und kann einzeln ein- oder ausgeblendet werden.
-  \item Die Abo-Links stehen dem Mitglied im Web-Frontend zur Verfügung
-        (siehe Abschnitt~\ref{sec:web}).
+  \item Die Abo-Links stehen dem Mitglied ausschließlich im Web-Frontend zur
+        Verfügung (siehe Abschnitt~\ref{sec:web}). Sie werden nicht per
+        E-Mail verschickt.
+  \item Der Kalender muss \textbf{abonniert}, nicht \textbf{importiert}
+        werden. Ein Import (z.\,B.\ \glqq Aus Datei\grqq\ in Outlook,
+        \glqq Importieren\grqq\ im Google Kalender oder das Öffnen einer
+        heruntergeladenen \texttt{.ics}-Datei) kopiert die Termine nur
+        einmalig; Änderungen und Absagen kämen nicht mehr an. Web-Frontend
+        und Anleitungen weisen deutlich darauf hin. Optional zeigt der
+        Kalenderserver eine Hinweisseite, wenn ein Abo-Link im Browser
+        geöffnet wird, statt die Datei zum Herunterladen anzubieten.
+        Smartphone und Tablet mit Benutzername und Passwort sind davon nicht
+        betroffen.
   \item Outlook ruft abonnierte Kalender seltener ab als Smartphones,
         teilweise nur alle paar Stunden. Für kurzfristige Änderungen
         und Absagen sind Smartphone und Tablet daher die zuverlässigere
         Quelle.
   \item Kommt durch eine neue Mitgliedschaft ein Kalender hinzu, muss das
         Mitglied den neuen Link in Outlook einmalig zusätzlich abonnieren.
+        Es erhält dazu eine E-Mail mit Anmeldelink und findet den neuen
+        Abo-Link im Web-Frontend.
         Fällt die Zuordnung zu einem Kalender weg, wird der zugehörige Link
         automatisch ungültig und liefert keine Termine mehr.
 \end{itemize}
 
+Dieselben Abo-Links funktionieren auch im \textbf{Google Kalender}
+(Abonnieren \glqq per URL\grqq\ auf calendar.google.com), mit denselben
+Einschränkungen: Jeder Kalender wird einzeln abonniert, und Google ruft die
+Kalender nur selten ab.
+
 \subsection*{Einrichtung}
 
-Für die Einrichtung wird je eine kurze bebilderte Anleitung für iPhone/iPad,
-Android und Outlook bereitgestellt.
+Für die Einrichtung wird je eine kurze Anleitung für iPhone/iPad, Android
+(mit Synchronisations-App oder über den Google Kalender) und Outlook
+bereitgestellt, zunächst als Text, nach Inbetriebnahme des Servers
+bebildert.
 
 % ------------------------------------------------------------------
 \section{Web-Frontend und E-Mail-Versand}\label{sec:web}
@@ -368,12 +416,14 @@ Für die Anmeldung am Web-Frontend gibt es zwei Wege:
   \item \textbf{Mit Passwort:} Benutzername (\texttt{vorname.nachname})
         \emph{oder} E-Mail-Adresse, jeweils zusammen mit dem vom System
         festgelegten Passwort. Es ist dasselbe Passwort wie auf Smartphone
-        und Tablet.
+        und Tablet. Teilen sich mehrere Mitglieder eine E-Mail-Adresse,
+        bestimmt das Passwort, welcher Zugang angemeldet wird.
   \item \textbf{Mit Einmal-Link:} Das Mitglied klickt auf einen persönlichen
         Anmeldelink aus einer E-Mail des Systems, z.\,B.\ aus der
         Begrüßungs-E-Mail. Ein neuer Link kann jederzeit auf der Anmeldeseite
-        angefordert werden. Jeder Link ist nur einmal verwendbar und zeitlich
-        begrenzt gültig.
+        angefordert werden; bei mehreren Zugängen mit derselben Adresse
+        erhält jeder Zugang einen eigenen Link. Jeder Link ist nur einmal
+        verwendbar und zeitlich begrenzt gültig.
 \end{itemize}
 
 Der Einmal-Link ist auch der Weg, wenn das Passwort vergessen wurde: Nach der
@@ -382,17 +432,29 @@ Anmeldung per Link wird das Passwort im Web-Frontend angezeigt.
 \subsection*{Inhalte des Web-Frontends}
 
 \begin{itemize}
-  \item \textbf{Meine Kalender:} Liste aller für das Mitglied freigeschalteten
-        Kalender.
-  \item \textbf{Abo-Links für Outlook:} Zu jedem Kalender der persönliche
-        Abo-Link zum Kopieren, mit kurzer Erklärung.
-  \item \textbf{Einrichtung:} Serveradresse, Benutzername und Passwort für
-        Smartphone und Tablet sowie die Anleitungen für iPhone/iPad, Android
-        und Outlook. Das Passwort wird \emph{ausschließlich} hier angezeigt.
-  \item \textbf{Meine Mitgliedschaften:} In welchen Einheiten, Gruppen,
-        Abteilungen und Lehrgängen das Mitglied laut MP Feuer geführt wird.
-        So lässt sich nachvollziehen, warum ein Kalender angezeigt wird oder
-        fehlt.
+  \item \textbf{Meine Kalender} (Startseite): schlichte Liste aller für das
+        Mitglied freigeschalteten Kalender mit Farbe, Beschreibung und der
+        Anzahl der Termine im laufenden Kalenderjahr. Bei jedem Kalender
+        steht, aus welcher Mitgliedschaft in MP Feuer er stammt oder dass er
+        für alle Mitglieder gilt; Mitgliedschaften ohne eigenen Kalender
+        werden darunter genannt. So lässt sich nachvollziehen, warum ein
+        Kalender angezeigt wird oder fehlt. Technische Angaben wie Abo-Links
+        oder Passwörter stehen bewusst nicht hier.
+  \item \textbf{Kalender abonnieren:} eigener Menüpunkt mit zwei
+        Unterseiten:
+        \begin{itemize}
+          \item \emph{Smartphone \& Tablet} (iPhone, iPad, Android):
+                Serveradresse, Benutzername und Passwort sowie das Profil für
+                iPhone/iPad. Das Passwort wird \emph{ausschließlich} hier
+                angezeigt.
+          \item \emph{Outlook \& Google Kalender:} zu jedem Kalender der
+                persönliche Abo-Link zum Kopieren, mit kurzer Erklärung.
+        \end{itemize}
+        Dazu die Anleitungen für iPhone/iPad, Android (auch ohne Zusatz-App
+        über den Google Kalender) und Outlook.
+  \item \textbf{Terminübersicht als PDF:} Ein Jahreskalender zum Ausdrucken
+        oder Aufhängen mit den eigenen Kalendern, wahlweise auf einer oder
+        zwei Seiten (siehe unten).
   \item \textbf{Benutzername:} Hinweis, wenn der Benutzername nicht mehr
         zum aktuellen Namen passt, mit der Möglichkeit, ihn umzustellen
         (siehe \glqq Namensänderung\grqq\ in Abschnitt~4).
@@ -400,7 +462,9 @@ Anmeldung per Link wird das Passwort im Web-Frontend angezeigt.
         neues Passwort und neue Abo-Links erzeugen lassen, z.\,B.\ wenn ein
         Gerät verloren wurde oder ein Link weitergegeben wurde. Das bisherige
         Passwort bzw.\ die bisherigen Links werden dabei sofort ungültig und
-        müssen auf den Geräten bzw.\ in Outlook ersetzt werden.
+        müssen auf den Geräten bzw.\ in Outlook ersetzt werden. Beide
+        Aktionen stehen auf der jeweiligen Unterseite von \glqq Kalender
+        abonnieren\grqq.
   \item \textbf{Letzte Abrufe:} Zu jedem Abo-Link und zum Zugang für
         Smartphone und Tablet wird angezeigt, wann zuletzt erfolgreich
         Termine abgerufen wurden. So sieht das Mitglied selbst, ob ein Gerät
@@ -410,21 +474,54 @@ Anmeldung per Link wird das Passwort im Web-Frontend angezeigt.
         ist, wie aktuell die Daten sind.
 \end{itemize}
 
+\subsection*{Terminübersicht als PDF}
+
+Jedes Mitglied kann sich im Web-Frontend eine Terminübersicht als PDF
+herunterladen, z.\,B.\ für den Kühlschrank oder die Pinnwand im Gerätehaus.
+
+\begin{itemize}
+  \item \textbf{Auswahl:} Startmonat (Vorgabe: Januar des laufenden Jahres),
+        Zeitraum von 1 bis 12 Monaten (Vorgabe: 12) und die gewünschten
+        Kalender. Angeboten werden nur die eigenen Kalender.
+  \item \textbf{Aufteilung:} alle Monate auf einer Seite A4 quer oder auf zwei
+        Seiten (z.\,B.\ Januar--Juni und Juli--Dezember) mit größeren Feldern.
+  \item \textbf{Darstellung:} je Monat eine Spalte, je Tag eine Zeile. Jeder
+        Termin erscheint als farbiges Oval in der Farbe seines Kalenders mit
+        der Startzeit darin, ganztägige Termine als leeres Oval. Passen nicht
+        alle Termine eines Tages, zeigt das Feld nur farbige Punkte. Abgesagte
+        Termine erscheinen als leerer Kreis mit farbigem Rand.
+  \item \textbf{Markierungen:} Wochenenden und gesetzliche Feiertage in NRW
+        sind grau hinterlegt, Schulferien in NRW als Streifen am Rand.
+  \item \textbf{Bewusst knapp:} Titel, Orte und Beschreibungen stehen nicht im
+        PDF. Die Einzelheiten sieht das Mitglied wie gewohnt auf Smartphone,
+        Tablet oder in Outlook. Ein ausgedrucktes oder weitergegebenes PDF
+        verrät damit kaum etwas.
+  \item Das PDF ist eine Momentaufnahme. Der Zeitpunkt der Erstellung steht
+        in der Fußzeile.
+\end{itemize}
+
+Administratoren haben keine Ansicht der Termine; die Terminübersicht steht nur
+den Mitgliedern für ihre eigenen Kalender zur Verfügung.
+
 \subsection*{E-Mail-Versand}
 
 Der Kalenderserver verschickt automatisch E-Mails an die Mitglieder.
-Passwörter werden grundsätzlich \emph{nicht} per E-Mail verschickt.
+Passwörter und Abo-Links werden grundsätzlich \emph{nicht} per E-Mail
+verschickt.
 
 \begin{itemize}
   \item \textbf{Begrüßungs-E-Mail} an jedes neue Mitglied sowie an jede
         neue oder geänderte E-Mail-Adresse. Sie erklärt kurz das System und
         enthält den Benutzernamen, einen Einmal-Link zur direkten Anmeldung am
-        Web-Frontend sowie Hinweise auf die Anleitungen. Ein Passwort ist
-        \emph{nicht} enthalten, es wird nur im Web-Frontend angezeigt.
+        Web-Frontend (14 Tage gültig) sowie Hinweise auf die Anleitungen. Ein
+        Passwort ist \emph{nicht} enthalten, es wird nur im Web-Frontend
+        angezeigt.
   \item \textbf{Einmal-Link} für das Web-Frontend auf Anforderung über die
-        Anmeldeseite.
+        Anmeldeseite (30 Minuten gültig).
   \item \textbf{Hinweis auf neue Kalender}, wenn durch eine neue
-        Mitgliedschaft ein Kalender hinzukommt.
+        Mitgliedschaft ein Kalender hinzukommt, mit einem Anmeldelink für das
+        Web-Frontend (14 Tage gültig). Neue Mitglieder erhalten stattdessen
+        nur die Begrüßungs-E-Mail.
   \item \textbf{Neuer Benutzername}, nachdem der Benutzername umgestellt
         wurde, mit Hinweis auf die Neueinrichtung von Smartphone und Tablet.
 \end{itemize}
@@ -459,15 +556,29 @@ dient der Überwachung des Betriebs.
           \item Fehler und Warnungen, z.\,B.\ Termine, die keinem Kalender
                 zugeordnet werden konnten.
         \end{itemize}
+  \item \textbf{Warnungen per E-Mail:} Ist ein Import fehlgeschlagen oder
+        liegt seit mehr als 24 Stunden kein Export vor, erhalten alle
+        Administratoren sowie zusätzlich hinterlegte Adressen eine E-Mail.
   \item \textbf{Benutzernamen:} Liste der Mitglieder, deren Benutzername
         nicht mehr zum aktuellen Namen passt, jeweils mit altem
         Benutzernamen, aktuellem Namen und der Möglichkeit, den Zugang auf
         den neuen Benutzernamen umzustellen.
+  \item \textbf{Gesperrte Anmeldungen:} Nach zu vielen fehlgeschlagenen
+        Anmeldeversuchen wird die Anmeldung für einen Benutzer bzw.\ eine
+        IP-Adresse für bis zu eine Stunde gesperrt. Die Status-Seite listet
+        alle aktuellen Sperren mit Anzahl der Versuche und Ende der Sperre.
+        Ein Administrator kann jede Sperre einzeln oder alle auf einmal
+        aufheben, z.\,B.\ wenn am Dienstabend im Gerätehaus viele Geräte
+        gleichzeitig eingerichtet werden. IP-Adressen werden nur gekürzt
+        angezeigt.
   \item \textbf{E-Mail-Versand:} Welche E-Mails verschickt wurden und ob der
         Versand fehlgeschlagen ist.
   \item \textbf{Nutzung insgesamt:} Wie viele Mitglieder ihren Zugang auf
         Smartphone, Tablet oder in Outlook aktiv nutzen, also in einem
         bestimmten Zeitraum erfolgreich Termine abgerufen haben.
+  \item \textbf{Kalender und Zuordnungen:} Pflege der Kalender (Name, Farbe,
+        \glqq für alle Mitglieder\grqq) und der Zuordnung von Bereichen aus
+        MP Feuer zu Kalendern.
 \end{itemize}
 
 \subsection*{Nutzerübersicht}
@@ -484,22 +595,52 @@ Mitglied:
   \item letzter erfolgreicher Abruf über Smartphone bzw.\ Tablet, mit
         Gerätetyp,
   \item letzter erfolgreicher Abruf über einen Outlook-Abo-Link,
-  \item Anzahl der freigeschalteten Kalender.
+  \item die freigeschalteten Kalender mit Namen und Farbe. Bei vielen
+        Kalendern zeigt die Liste die ersten drei und \glqq +n\grqq\ für den
+        Rest. Termininhalte werden nicht angezeigt.
 \end{itemize}
 
 Die Übersicht lässt sich sortieren und filtern, z.\,B.\ nach
 \glqq hat sich noch nie angemeldet\grqq, \glqq Begrüßungslink nie
 aufgerufen\grqq, \glqq kein Abruf seit mehr als 30 Tagen\grqq\ oder
-\glqq gesperrt\grqq. So sehen die Administratoren, wen sie gezielt
-ansprechen sollten.
+\glqq gesperrt\grqq. Zusätzlich lässt sie sich nach einem Kalender filtern,
+z.\,B.\ \glqq alle Mitglieder mit Kalender LG Drove\grqq. So sehen die
+Administratoren, wen sie gezielt ansprechen sollten, und können prüfen, ob die
+Zuordnung von Bereichen zu Kalendern stimmt.
+
+\subsection*{Detailansicht eines Mitglieds}
+
+Ein Klick auf den Namen in der Nutzerübersicht öffnet die Detailansicht des
+Mitglieds. Sie zeigt auf einen Blick:
+
+\begin{itemize}
+  \item Name, Benutzername, Status und die in MP Feuer hinterlegte
+        E-Mail-Adresse,
+  \item alle freigeschalteten Kalender mit dem letzten Abruf je Abo-Link,
+  \item die Mitgliedschaften laut MP Feuer, aus denen sich die Kalender
+        ergeben,
+  \item die Nutzung: Begrüßung verschickt, Begrüßungslink aufgerufen,
+        erste und letzte Anmeldung, letzter Abruf über Smartphone bzw.\
+        Tablet und über Outlook,
+  \item eine aktuelle Anmeldesperre wegen zu vieler Fehlversuche, mit der
+        Möglichkeit, sie aufzuheben,
+  \item die Aktionen \glqq Begrüßungs-E-Mail erneut senden\grqq\ und, wenn
+        der Benutzername nicht mehr zum Namen passt, \glqq Benutzername
+        umstellen\grqq.
+\end{itemize}
+
+Die Detailansicht hilft vor allem bei Rückfragen, etwa \glqq Ich sehe den
+Kalender der JF nicht\grqq: Ist der Kalender nicht freigeschaltet, liegt es an
+der Mitgliedschaft in MP Feuer und nicht am Gerät. Über \glqq Zurück zur
+Nutzerübersicht\grqq\ geht es zur Liste zurück.
 
 \subsection*{Begrüßungs-E-Mail erneut senden}
 
 Hat ein Mitglied die Begrüßungs-E-Mail nicht beachtet oder gelöscht, kann ein
-Administrator sie in der Nutzerübersicht mit einem Klick erneut senden. Sie
-enthält dann einen neuen, wieder 14 Tage gültigen Einmal-Link; ältere,
-nicht genutzte Begrüßungslinks werden dabei ungültig. Passwort und Abo-Links
-bleiben unverändert.
+Administrator sie in der Detailansicht des Mitglieds mit einem Klick erneut
+senden. Sie enthält dann einen neuen, wieder 14 Tage gültigen Einmal-Link;
+ältere, nicht genutzte Begrüßungslinks werden dabei ungültig. Passwort und
+Abo-Links bleiben unverändert.
 
 Unabhängig davon kann sich jedes Mitglied jederzeit selbst über die
 Anmeldeseite einen neuen Einmal-Link an seine E-Mail-Adresse schicken lassen.
@@ -523,18 +664,25 @@ Feuerwehr oder per Aushang im Gerätehaus.
         Passwort erzeugen lassen. Das alte Passwort wird dann sofort
         ungültig. Passwörter aus MP Feuer werden dafür \emph{nicht}
         verwendet oder exportiert.
+  \item \textbf{Begrenzung von Anmeldeversuchen:} Nach zu vielen
+        Fehlversuchen wird die Anmeldung je Benutzer bzw.\ IP-Adresse für
+        bis zu eine Stunde gesperrt. Administratoren sehen die Sperren auf der
+        Status-Seite und können sie aufheben.
   \item \textbf{Einmal-Links:} Einmal-Links für das Web-Frontend werden nur
         an die in MP Feuer hinterlegte E-Mail-Adresse geschickt, sind
-        zeitlich begrenzt gültig und nur einmal verwendbar. Sie berechtigen
-        nur zur Anmeldung am Web-Frontend, nicht zum Abruf der Kalender auf
-        den Geräten.
+        zeitlich begrenzt gültig und nur einmal verwendbar. Sie werden erst
+        durch einen Klick auf \glqq Jetzt anmelden\grqq\ verbraucht, damit
+        Link-Prüfer von Mailprogrammen sie nicht vorab entwerten. Sie
+        berechtigen nur zur Anmeldung am Web-Frontend, nicht zum Abruf der
+        Kalender auf den Geräten.
   \item \textbf{Abo-Links für Outlook:} Da Outlook bei Abos die Anmeldung mit
         Benutzername und Passwort nicht zuverlässig unterstützt, ist jeder Abo-Link lang,
         zufällig und persönlich. Er gilt nur für ein Mitglied und einen
         Kalender und nur, solange dem Mitglied dieser Kalender zugeordnet
         ist. Bei Austritt oder Wegfall der Zuordnung wird er automatisch
-        ungültig. Das Mitglied kann seine Abo-Links im Web-Frontend jederzeit
-        neu erzeugen lassen. Die bisherigen Links werden dann sofort
+        ungültig. Abo-Links werden nur im Web-Frontend angezeigt, nicht per
+        E-Mail verschickt. Das Mitglied kann seine Abo-Links im Web-Frontend
+        jederzeit neu erzeugen lassen. Die bisherigen Links werden dann sofort
         ungültig.
   \item \textbf{Verschlüsselte Übertragung:} Die Verbindung zwischen
         Endgerät und Kalenderserver ist durchgehend verschlüsselt.
@@ -543,16 +691,28 @@ Feuerwehr oder per Aushang im Gerätehaus.
         Personaldaten werden nicht exportiert.
   \item \textbf{Nutzungsdaten:} Gespeichert werden nur Zeitpunkte (letzte
         Anmeldung, letzter Abruf, Aufruf des Begrüßungslinks) und der
-        Gerätetyp, kein Verlauf einzelner Zugriffe. Die Nutzerübersicht ist nur
-        für Administratoren sichtbar. Die Mitglieder werden in der
+        Gerätetyp, kein Verlauf einzelner Zugriffe. Nutzerübersicht und
+        Detailansicht sind nur für Administratoren sichtbar. Sie zeigen die
+        Namen der freigeschalteten Kalender, aber keine Termininhalte. Die Mitglieder werden in der
         Begrüßungs-E-Mail und im Web-Frontend darauf hingewiesen.
   \item \textbf{Automatisches Entziehen von Rechten:} Scheidet ein Mitglied
         aus oder wechselt es die Gruppe, werden Zugang bzw.\ Kalender beim
-        nächsten Export automatisch angepasst.
+        nächsten Export automatisch angepasst. Ausgeschiedene Mitglieder
+        werden mit allen Daten gelöscht, einschließlich früherer
+        Benutzernamen.
 \end{itemize}
 
 % ------------------------------------------------------------------
-\section{Mögliche Erweiterung: Kontakte}
+\section{Mögliche Erweiterungen}
+
+\subsection*{Kalenderansicht im Web-Frontend}
+
+Zusätzlich zur Terminübersicht als PDF kann das Web-Frontend später eine
+Kalenderansicht für die Mitglieder erhalten: eine Monatsansicht und eine
+Liste der nächsten Termine, jeweils mit Titel, Zeit und Ort, nur für die
+eigenen Kalender und ebenfalls nur lesend.
+
+\subsection*{Kontakte}
 
 Mit demselben Prinzip können später auch \textbf{Kontakte} verteilt werden.
 Jedes Mitglied erhält dann abhängig von seinen Gruppen ein Adressbuch, z.\,B.\
@@ -566,7 +726,9 @@ nötig.
 \begin{enumerate}
   \item Klären, ob und in welcher Form MP Feuer die beiden Exporte
         automatisch und regelmäßig bereitstellen kann (Format, Häufigkeit,
-        Übertragungsweg).
+        Übertragungsweg, Zeitraum der Termine).
+  \item Klären, ob Termine und Mitgliedschaften in MP Feuer dieselben
+        Schlüssel für Bereiche verwenden.
   \item Festlegen, welche Bereiche, Gruppen und Abteilungen in MP Feuer zu
         welchem Kalender gehören, und die Liste der Kalender abstimmen.
   \item Fehlende oder ungültige E-Mail-Adressen in MP Feuer ergänzen, damit

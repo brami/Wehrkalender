@@ -63,6 +63,7 @@ final class AdminController extends Controller
             'mails_open' => $db->all("SELECT * FROM mail_queue WHERE status = 'queued' ORDER BY created_at DESC LIMIT 50"),
             'mail_mode' => $this->app->mailSender()->deliveryMode(),
             'usage' => $status->usage(),
+            'blocked' => $this->app->throttle()->blocked(),
         ]);
     }
 
@@ -192,7 +193,30 @@ final class AdminController extends Controller
             'history' => $db->all('SELECT * FROM username_history WHERE user_id = ? ORDER BY changed_at DESC', [$u['id']]),
             'mails' => $db->all('SELECT id, type, subject, status, created_at, sent_at FROM mail_queue WHERE user_id = ? ORDER BY created_at DESC LIMIT 20', [$u['id']]),
             'query' => $this->backQuery($request),
+            'blocked' => array_values(array_filter($this->app->throttle()->blocked(), fn ($b) => $b['user_id'] === (int) $u['id'])),
         ]);
+    }
+
+    /** Sperre(n) wegen zu vieler Fehlversuche aufheben (A9) */
+    public function unblock(Request $request, Response $response): Response
+    {
+        $p = $this->post($request);
+        $throttle = $this->app->throttle();
+        if (!empty($p['alle'])) {
+            $n = $throttle->clearAll();
+            $this->session->flash('success', "Alle Sperren aufgehoben ({$n} Einträge gelöscht).");
+        } else {
+            $key = (string) ($p['key'] ?? '');
+            $kind = explode(':', $key, 2)[0];
+            if (!isset(\Kalender\Security\LoginThrottle::KINDS[$kind])) {
+                $this->notFound($request);
+            }
+            $throttle->clear($key);
+            $this->session->flash('success', 'Sperre aufgehoben: ' . \Kalender\Security\LoginThrottle::KINDS[$kind][1]
+                . (($p['info'] ?? '') !== '' ? ' (' . $p['info'] . ')' : '') . '.');
+        }
+        $back = (string) ($p['back'] ?? '/admin');
+        return $this->redirect($response, str_starts_with($back, '/admin') ? $back : '/admin');
     }
 
     public function resendWelcome(Request $request, Response $response, array $args): Response
