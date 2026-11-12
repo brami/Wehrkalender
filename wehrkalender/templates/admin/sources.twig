@@ -1,0 +1,138 @@
+{% extends 'layout.twig' %}
+{% block title %}Quellen – {{ app_name }}{% endblock %}
+{% block main_class %} wide{% endblock %}
+{% block content %}
+<h1>Quellen</h1>
+{% include 'admin/_nav.twig' %}
+<p class="muted">Termine kommen aus <strong>MP Feuer</strong> und optional aus externen <strong>iCal-Feeds</strong>, z. B. Lehrgänge des Kreises oder Abfallkalender der Gemeinde. Wer einen Kalender <em>sehen</em> darf, bestimmen weiterhin allein die Mitgliedschaften aus MP Feuer bzw. „für alle Mitglieder“ (siehe <a href="/admin/kalender">Kalender &amp; Zuordnungen</a>).</p>
+
+{% macro state(s) %}
+  {%- if s.state == 'mp' %}<span class="badge b-info">über Zuordnungen</span>
+  {%- elseif s.state == 'off' %}<span class="badge b-suppressed">deaktiviert</span>
+  {%- elseif s.state == 'never' %}<span class="badge b-warn">noch nie abgerufen</span>
+  {%- elseif s.state == 'error' %}<span class="badge b-err">Fehler</span>
+  {%- elseif s.state == 'warn' %}<span class="badge b-warn">länger kein Abruf</span>
+  {%- else %}<span class="badge b-ok">in Ordnung</span>{% endif -%}
+{% endmacro %}
+{% import _self as m %}
+
+<h2>Quellen</h2>
+<div class="table-wrap"><table>
+  <thead><tr><th>Quelle</th><th>Art</th><th>Zustand</th><th>Letzter Abruf</th><th>Befüllungen</th><th>Termine</th><th></th></tr></thead>
+  <tbody>
+  {% for s in sources %}
+    <tr>
+      <td><strong>{{ s.name }}</strong><br><span class="mono small muted">{{ s.source_key }}</span>
+        {% if s.url %}<br><span class="small muted" style="word-break:break-all">{{ s.url }}</span>{% endif %}</td>
+      <td>{{ types[s.type] }}{% if s.type == 'ical' %}<br><span class="small muted">alle {{ s.interval_minutes >= 60 and s.interval_minutes % 60 == 0 ? (s.interval_minutes / 60) ~ ' h' : s.interval_minutes ~ ' min' }}</span>{% endif %}</td>
+      <td>{{ m.state(s) }}{% if s.last_error and s.state == 'error' %}<br><span class="small" style="color:var(--err)">{{ s.last_error }}</span>{% endif %}</td>
+      <td class="small">{% if s.type == 'mpfeuer' %}siehe <a href="/admin">Status</a>{% elseif s.last_success_at %}{{ s.last_success_at|lt }}{% else %}–{% endif %}</td>
+      <td>{{ s.type == 'mpfeuer' ? mp_fills|length : s.feeds }}</td>
+      <td>{{ s.events }}</td>
+      <td>
+        {% if s.type == 'ical' %}
+        <details>
+          <summary class="small">bearbeiten</summary>
+          <form method="post" action="/admin/quellen/{{ s.id }}">
+            <input type="hidden" name="_csrf" value="{{ csrf }}">
+            <label for="sn{{ s.id }}">Name</label><input type="text" id="sn{{ s.id }}" name="name" value="{{ s.name }}" required>
+            <label for="su{{ s.id }}">Adresse des Feeds</label><input type="url" id="su{{ s.id }}" name="url" value="{{ s.url }}" required>
+            <label for="si{{ s.id }}">Abrufintervall (Minuten)</label><input type="number" id="si{{ s.id }}" name="interval_minutes" value="{{ s.interval_minutes }}" min="60" max="10080" step="30">
+            <label class="check"><input type="checkbox" name="active" value="1" {% if s.active %}checked{% endif %}> aktiv (regelmäßig abrufen)</label>
+            <div class="actions"><button class="btn btn-small" type="submit">Speichern</button></div>
+          </form>
+          {% if s.events == 0 %}
+          <form method="post" action="/admin/quellen/{{ s.id }}/loeschen" class="inline">
+            <input type="hidden" name="_csrf" value="{{ csrf }}">
+            <button class="btn btn-secondary btn-small" type="submit">Quelle löschen</button>
+          </form>
+          {% endif %}
+        </details>
+        {% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+
+<details class="box" style="margin-top:1rem">
+  <summary><strong>Neue iCal-Quelle anlegen</strong></summary>
+  <form method="post" action="/admin/quellen">
+    <input type="hidden" name="_csrf" value="{{ csrf }}">
+    <label for="nk">Schlüssel (Teil der Termin-Kennung auf den Geräten, später nicht änderbar)</label>
+    <input type="text" id="nk" name="source_key" required pattern="[a-z][a-z0-9-]{1,38}" placeholder="z. B. kreis oder abfall-drove">
+    <label for="nn">Name</label><input type="text" id="nn" name="name" required placeholder="z. B. Lehrgänge Kreis">
+    <label for="nu">Adresse des Feeds (https://…; aus webcal:// wird https://)</label><input type="url" id="nu" name="url" required placeholder="https://…/kalender.ics">
+    <label for="ni">Abrufintervall (Minuten)</label><input type="number" id="ni" name="interval_minutes" value="360" min="60" max="10080" step="30">
+    <label class="check"><input type="checkbox" name="active" value="1" checked> aktiv</label>
+    <div class="actions"><button class="btn" type="submit">Anlegen</button></div>
+  </form>
+</details>
+
+<h2>Befüllungen</h2>
+<p class="small muted">Eine Befüllung legt fest, welche Termine einer Quelle in welchen Kalender kommen. Eine Quelle kann mehrere Kalender befüllen, z. B. ein Feed mit allen Kreislehrgängen über Filter je Lehrgang. Empfohlen ist ein eigener Kalender je Quelle; gemischte Kalender sind möglich.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Quelle</th><th>Kalender</th><th>Filter</th><th>Termine</th><th></th></tr></thead>
+  <tbody>
+  {% for f in mp_fills %}
+    <tr class="muted">
+      <td>MP Feuer</td>
+      <td><span class="swatch" style="background: {{ f.color }}"></span> {{ f.display_name }}</td>
+      <td class="small">Bereich <code>{{ f.mp_key }}</code></td>
+      <td></td>
+      <td class="small"><a href="/admin/kalender">Zuordnungen</a></td>
+    </tr>
+  {% endfor %}
+  {% for f in feeds %}
+    <tr>
+      <td>{{ f.source_name }}</td>
+      <td><span class="swatch" style="background: {{ f.color }}"></span> {{ f.display_name }}</td>
+      <td class="small">{{ f.filter_text }}
+        {%- if f.source_note %}<br><span class="muted">mit Hinweis „Quelle: {{ f.source_name }}“</span>{% endif %}
+        {%- if not f.active %}<br><span class="badge b-suppressed">deaktiviert</span>{% endif %}
+        {%- if f.last_match_count is not null %}<br><span class="muted">zuletzt {{ f.last_match_count }} Treffer</span>{% endif %}</td>
+      <td>{{ f.events }}</td>
+      <td>
+        <details>
+          <summary class="small">bearbeiten</summary>
+          {% set flt = f.filter_data %}
+          <form method="post" action="/admin/befuellung/{{ f.id }}">
+            <input type="hidden" name="_csrf" value="{{ csrf }}">
+            {% include 'admin/_filter_fields.twig' with {prefix: 'f' ~ f.id, flt: flt} %}
+            <label class="check"><input type="checkbox" name="source_note" value="1" {% if f.source_note %}checked{% endif %}> Hinweis „Quelle: …“ in die Beschreibung</label>
+            <label class="check"><input type="checkbox" name="active" value="1" {% if f.active %}checked{% endif %}> aktiv</label>
+            <div class="actions"><button class="btn btn-small" type="submit">Speichern</button></div>
+          </form>
+          <form method="post" action="/admin/befuellung/{{ f.id }}/loeschen" class="inline">
+            <input type="hidden" name="_csrf" value="{{ csrf }}">
+            <button class="btn btn-secondary btn-small" type="submit">Befüllung entfernen (Termine werden entfernt)</button>
+          </form>
+        </details>
+      </td>
+    </tr>
+  {% endfor %}
+  {% if mp_fills is empty and feeds is empty %}
+    <tr><td colspan="5" class="muted">Noch keine Befüllungen.</td></tr>
+  {% endif %}
+  </tbody>
+</table></div>
+
+{% if ical_sources is not empty %}
+<details class="box" style="margin-top:1rem">
+  <summary><strong>Neue Befüllung aus einem iCal-Feed</strong></summary>
+  <form method="post" action="/admin/befuellung">
+    <input type="hidden" name="_csrf" value="{{ csrf }}">
+    <label for="bs">Quelle</label>
+    <select id="bs" name="source_id">{% for s in ical_sources %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}</select>
+    <label for="bc">Kalender</label>
+    <select id="bc" name="calendar_id">{% for c in calendars %}<option value="{{ c.id }}">{{ c.display_name }}</option>{% endfor %}</select>
+    {% include 'admin/_filter_fields.twig' with {prefix: 'new', flt: null} %}
+    <label class="check"><input type="checkbox" name="source_note" value="1"> Hinweis „Quelle: …“ in die Beschreibung (sinnvoll bei gemischten Kalendern)</label>
+    <label class="check"><input type="checkbox" name="active" value="1" checked> aktiv</label>
+    <div class="actions"><button class="btn" type="submit">Befüllung anlegen</button></div>
+  </form>
+</details>
+{% endif %}
+
+<p class="small muted" style="margin-top:1rem">Hinweis: Der Abruf der iCal-Feeds (Importer) ist noch nicht umgesetzt. Quellen und Befüllungen lassen sich bereits einrichten; Termine erscheinen, sobald der Importer läuft.</p>
+{% endblock %}

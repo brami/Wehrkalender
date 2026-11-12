@@ -33,6 +33,7 @@ final class WebApp
         $member = new MemberController($app, $session);
         $feed = new FeedController($app, $session);
         $admin = new AdminController($app, $session);
+        $sources = new SourcesController($app, $session);
 
         // ---------------------------------------------------- öffentlich
         $slim->get('/.well-known/caldav', fn (Request $q, Response $r) => $r->withHeader('Location', '/dav/')->withStatus(301));
@@ -73,6 +74,7 @@ final class WebApp
         };
         $slim->group('', function (RouteCollectorProxy $g) use ($member) {
             $g->get('/', [$member, 'home']);
+            $g->post('/kalender/{slug:[a-z0-9-]+}/{action:ein|aus}', [$member, 'toggleCalendar']);
             $g->get('/abonnieren', [$member, 'subscribe']);
             $g->get('/abonnieren/geraete', [$member, 'devices']);
             $g->get('/abonnieren/outlook', [$member, 'feeds']);
@@ -86,7 +88,7 @@ final class WebApp
         })->add($requireUser);
 
         // ---------------------------------------------------- Administratoren
-        $slim->group('/admin', function (RouteCollectorProxy $g) use ($admin) {
+        $slim->group('/admin', function (RouteCollectorProxy $g) use ($admin, $sources) {
             $g->get('', [$admin, 'dashboard']);
             $g->get('/import/{id:\d+}', [$admin, 'run']);
             $g->get('/benutzer', [$admin, 'users']);
@@ -104,6 +106,13 @@ final class WebApp
             $g->post('/zuordnung', [$admin, 'sourceAdd']);
             $g->post('/zuordnung/{id:\d+}/loeschen', [$admin, 'sourceDelete']);
             $g->post('/sperren/aufheben', [$admin, 'unblock']);
+            $g->get('/quellen', [$sources, 'index']);
+            $g->post('/quellen', [$sources, 'save']);
+            $g->post('/quellen/{id:\d+}', [$sources, 'save']);
+            $g->post('/quellen/{id:\d+}/loeschen', [$sources, 'delete']);
+            $g->post('/befuellung', [$sources, 'feedSave']);
+            $g->post('/befuellung/{id:\d+}', [$sources, 'feedSave']);
+            $g->post('/befuellung/{id:\d+}/loeschen', [$sources, 'feedDelete']);
         })->add(function (Request $request, Handler $handler): Response {
             $user = $request->getAttribute('user');
             if ($user === null) {

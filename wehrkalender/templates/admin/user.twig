@@ -47,12 +47,14 @@
 
 <h2>Kalender</h2>
 {% if calendars is empty %}<p class="muted">Keine Kalender zugeordnet.</p>{% else %}
+<p class="small muted">Ausgeschaltete Kalender erscheinen nicht auf Smartphone und Tablet; ein Abo in Outlook oder Google bleibt leer. Das Mitglied schaltet sie auf seiner Startseite selbst ein.</p>
 <div class="table-wrap"><table>
-  <thead><tr><th>Kalender</th><th>zugeordnet seit</th><th>letzter Abruf per Abo-Link</th></tr></thead>
+  <thead><tr><th>Kalender</th><th>Auswahl</th><th>freigeschaltet seit</th><th>letzter Abruf per Abo-Link</th></tr></thead>
   <tbody>
   {% for c in calendars %}
-    <tr>
+    <tr{% if not c.enabled %} class="muted"{% endif %}>
       <td><span class="swatch" style="background: {{ c.color }}"></span> {{ c.display_name }}</td>
+      <td class="small">{% if c.enabled %}eingeschaltet{% else %}<span class="badge b-warn">ausgeschaltet</span>{% endif %}<br><span class="muted">{{ c.choice is null ? 'Vorgabe' : 'selbst gewählt' }}</span></td>
       <td class="nowrap">{{ c.since|lt }}</td>
       <td>{{ c.last_access_at ? c.last_access_at|lt ~ ' (' ~ (c.last_client|device) ~ ')' : 'nie' }}</td>
     </tr>

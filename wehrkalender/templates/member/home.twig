@@ -17,11 +17,8 @@
     {% if unmapped is not empty %}<p class="muted small">Ihre Mitgliedschaften laut MP Feuer: {{ unmapped|join(', ') }}</p>{% endif %}
   </div>
 {% else %}
-  <p class="muted">Diese Kalender sind für Sie freigeschaltet. Sie ergeben sich aus Ihren Mitgliedschaften in MP Feuer.</p>
-  <div class="box">
-    <ul class="cal-list">
-    {% for c in calendars %}
-      <li>
+  {% macro row(c, year, csrf) %}
+      <li class="{{ c.enabled ? '' : 'cal-off' }}">
         <span class="swatch" style="background: {{ c.color }}"></span>
         <span class="cal-name">
           <strong>{{ c.display_name }}</strong>
@@ -32,13 +29,42 @@
           </span>
         </span>
         <span class="cal-count">{{ c.event_count }} {{ c.event_count == 1 ? 'Termin' : 'Termine' }} in {{ year }}</span>
+        <form method="post" action="/kalender/{{ c.slug }}/{{ c.enabled ? 'aus' : 'ein' }}" class="cal-toggle">
+          <input type="hidden" name="_csrf" value="{{ csrf }}">
+          <button type="submit" class="btn btn-small {{ c.enabled ? 'btn-secondary' : '' }}"
+                  aria-label="{{ c.display_name }} {{ c.enabled ? 'ausschalten' : 'einschalten' }}">{{ c.enabled ? 'Ausschalten' : 'Einschalten' }}</button>
+        </form>
       </li>
-    {% endfor %}
-    </ul>
-    {% if unmapped is not empty %}
-      <p class="small muted" style="margin:.75rem 0 0">Weitere Mitgliedschaften laut MP Feuer ohne eigenen Kalender: {{ unmapped|join(', ') }}</p>
-    {% endif %}
-  </div>
+  {% endmacro %}
+  {% import _self as h %}
+
+  {% if calendars_on is not empty %}
+    <p class="muted">Diese Kalender sind eingeschaltet und erscheinen auf Ihren Geräten und in Outlook.</p>
+    <div class="box">
+      <ul class="cal-list">
+      {% for c in calendars_on %}{{ h.row(c, year, csrf) }}{% endfor %}
+      </ul>
+      {% if unmapped is not empty %}
+        <p class="small muted" style="margin:.75rem 0 0">Weitere Mitgliedschaften laut MP Feuer ohne eigenen Kalender: {{ unmapped|join(', ') }}</p>
+      {% endif %}
+    </div>
+  {% else %}
+    <div class="box"><p>Sie haben derzeit alle Kalender ausgeschaltet. Schalten Sie unten ein, was Sie sehen möchten.</p></div>
+  {% endif %}
+
+  {% if calendars_off is not empty %}
+    <h2>Weitere Kalender</h2>
+    <p class="muted">Diese Kalender stehen Ihnen zur Verfügung, sind aber ausgeschaltet. Mit „Einschalten“ erscheinen sie auf Ihren Geräten; Abo-Links für Outlook und Google gibt es dann unter „Kalender abonnieren“.</p>
+    <div class="box">
+      <ul class="cal-list">
+      {% for c in calendars_off %}{{ h.row(c, year, csrf) }}{% endfor %}
+      </ul>
+      {% if calendars_on is empty and unmapped is not empty %}
+        <p class="small muted" style="margin:.75rem 0 0">Weitere Mitgliedschaften laut MP Feuer ohne eigenen Kalender: {{ unmapped|join(', ') }}</p>
+      {% endif %}
+    </div>
+  {% endif %}
+
   <p class="small muted">Fehlt ein Kalender oder stimmt eine Mitgliedschaft nicht, muss das in MP Feuer geändert werden. Nach dem nächsten Abgleich passt sich alles automatisch an.</p>
 
   <div class="box callout">

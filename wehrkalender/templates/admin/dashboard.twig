@@ -14,6 +14,11 @@
   <div class="flash flash-error">Impressum unvollständig: Angaben zum Betreiber fehlen (<code>BETREIBER_NAME</code>, <code>BETREIBER_ANSCHRIFT</code>, <code>BETREIBER_EMAIL</code> in <code>/srv/wehrkalender/.env</code>). <a href="/impressum">Impressum ansehen</a></div>
 {% endif %}
 
+{% for src in source_problems %}
+  <div class="flash flash-error">Quelle „{{ src.name }}“:
+    {% if src.state == 'never' %}noch nie erfolgreich abgerufen{% elseif src.state == 'warn' %}seit {{ src.last_success_at|lt }} kein erfolgreicher Abruf{% else %}letzter Abruf fehlgeschlagen{% if src.last_error %} ({{ src.last_error }}){% endif %}{% endif %}.
+    <a href="/admin/quellen">Quellen ansehen</a></div>
+{% endfor %}
 {% for p in problems %}<div class="flash flash-error">{{ p }}</div>{% endfor %}
 
 <h2>Nutzung</h2>

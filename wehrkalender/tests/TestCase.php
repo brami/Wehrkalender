@@ -66,7 +66,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     protected function event(int $calendarId, string $id, string $start, string $end, bool $allDay = false, bool $cancelled = false, string $title = 'Übung'): string
     {
         return $this->app->events()->save([
-            'mp_event_id' => $id, 'calendar_id' => $calendarId, 'summary' => $title,
+            'external_id' => $id, 'calendar_id' => $calendarId, 'summary' => $title,
             'start' => new DateTimeImmutable($start, Clock::localTz()), 'end' => new DateTimeImmutable($end, Clock::localTz()),
             'all_day' => $allDay, 'cancelled' => $cancelled,
         ]);

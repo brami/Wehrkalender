@@ -142,3 +142,15 @@ a.tile h2 { margin: 0 0 .1rem; }
 a.tile .btn { margin-top: .25rem; }
 @media (max-width: 40rem) { .cal-list li { flex-wrap: wrap; } .cal-count { width: 100%; padding-left: 1.85rem; } }
 .cal-origin { font-style: italic; }
+
+/* Kalenderauswahl auf der Startseite */
+.cal-list li .cal-toggle { margin: 0 0 0 .75rem; flex: none; }
+.cal-list li.cal-off .cal-name strong, .cal-list li.cal-off .cal-count { color: var(--muted, #6b7280); }
+.cal-list li.cal-off .swatch { opacity: .45; }
+.btn-small { padding: .3rem .7rem; font-size: .875rem; }
+.feed-off { color: var(--muted, #6b7280); }
+.filter-row { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin: .35rem 0; }
+.filter-row select, .filter-row input[type=text] { width: auto; flex: 1 1 9rem; margin: 0; }
+.filter-row input[type=date] { width: auto; margin: 0; }
+.filter-row label { margin: 0; }
+.chip-off { opacity: .5; text-decoration: line-through; }

@@ -42,15 +42,57 @@ return [
         sync_token INTEGER NOT NULL DEFAULT 1,
         active SMALLINT NOT NULL DEFAULT 1,
         all_members SMALLINT NOT NULL DEFAULT 0,
+        default_enabled SMALLINT NOT NULL DEFAULT 1,
         created_at DATETIME NOT NULL,
         updated_at DATETIME NOT NULL,
         CONSTRAINT uq_calendars_slug UNIQUE (slug)
     ) {TABLE}",
 
+    // Quellen der Termine: MP Feuer (Schlüssel mp, immer vorhanden) und externe iCal-Feeds
+    "CREATE TABLE sources (
+        id {PK},
+        source_key VARCHAR(40) NOT NULL,
+        type VARCHAR(20) NOT NULL,
+        name VARCHAR(150) NOT NULL,
+        url VARCHAR(500) NULL,
+        interval_minutes INTEGER NOT NULL DEFAULT 360,
+        active SMALLINT NOT NULL DEFAULT 1,
+        http_etag VARCHAR(255) NULL,
+        http_last_modified VARCHAR(100) NULL,
+        last_run_at DATETIME NULL,
+        last_success_at DATETIME NULL,
+        last_error TEXT NULL,
+        created_at DATETIME NOT NULL,
+        updated_at DATETIME NOT NULL,
+        CONSTRAINT uq_sources_key UNIQUE (source_key)
+    ) {TABLE}",
+    "INSERT INTO sources (source_key, type, name, interval_minutes, active, created_at, updated_at)
+        VALUES ('mp', 'mpfeuer', 'MP Feuer', 15, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+
+    // Befüllung aus externen Quellen: Quelle (+ Filter) → Kalender
+    "CREATE TABLE calendar_feeds (
+        id {PK},
+        calendar_id INTEGER NOT NULL,
+        source_id INTEGER NOT NULL,
+        filter TEXT NULL,
+        source_note SMALLINT NOT NULL DEFAULT 0,
+        active SMALLINT NOT NULL DEFAULT 1,
+        last_match_count INTEGER NULL,
+        created_at DATETIME NOT NULL,
+        updated_at DATETIME NOT NULL,
+        CONSTRAINT fk_cf_calendar FOREIGN KEY (calendar_id) REFERENCES calendars (id) ON DELETE CASCADE,
+        CONSTRAINT fk_cf_source FOREIGN KEY (source_id) REFERENCES sources (id) ON DELETE CASCADE
+    ) {TABLE}",
+    "CREATE INDEX ix_cf_source ON calendar_feeds (source_id)",
+
+    // Zuordnungen aus MP Feuer: Bereichsschlüssel → Kalender.
+    // grants_access: Mitgliedschaft schaltet den Kalender frei; fills: Termine des Bereichs kommen hinein
     "CREATE TABLE calendar_sources (
         id {PK},
         mp_key VARCHAR(100) NOT NULL,
         calendar_id INTEGER NOT NULL,
+        grants_access SMALLINT NOT NULL DEFAULT 1,
+        fills SMALLINT NOT NULL DEFAULT 1,
         created_at DATETIME NOT NULL,
         CONSTRAINT uq_calendar_sources_key UNIQUE (mp_key),
         CONSTRAINT fk_cs_calendar FOREIGN KEY (calendar_id) REFERENCES calendars (id) ON DELETE CASCADE
@@ -78,7 +120,9 @@ return [
 
     "CREATE TABLE events (
         id {PK},
-        mp_event_id VARCHAR(100) NOT NULL,
+        source_id INTEGER NOT NULL,
+        external_id VARCHAR(150) NOT NULL,
+        feed_id INTEGER NULL,
         calendar_id INTEGER NOT NULL,
         uid VARCHAR(255) NOT NULL,
         summary VARCHAR(500) NOT NULL,
@@ -94,7 +138,8 @@ return [
         sequence_no INTEGER NOT NULL DEFAULT 0,
         created_at DATETIME NOT NULL,
         updated_at DATETIME NOT NULL,
-        CONSTRAINT uq_events_mp UNIQUE (mp_event_id),
+        CONSTRAINT uq_events_source UNIQUE (source_id, external_id),
+        CONSTRAINT fk_e_source FOREIGN KEY (source_id) REFERENCES sources (id),
         CONSTRAINT uq_events_uid UNIQUE (uid),
         CONSTRAINT fk_e_calendar FOREIGN KEY (calendar_id) REFERENCES calendars (id) ON DELETE CASCADE
     ) {TABLE}",
@@ -140,8 +185,20 @@ return [
     ) {TABLE}",
     "CREATE INDEX ix_lt_user ON login_tokens (user_id, purpose)",
 
+    // Wahl des Mitglieds je Kalender; ohne Eintrag gilt calendars.default_enabled
+    "CREATE TABLE user_calendar_choice (
+        user_id INTEGER NOT NULL,
+        calendar_id INTEGER NOT NULL,
+        enabled SMALLINT NOT NULL,
+        changed_at DATETIME NOT NULL,
+        PRIMARY KEY (user_id, calendar_id),
+        CONSTRAINT fk_ucc_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+        CONSTRAINT fk_ucc_calendar FOREIGN KEY (calendar_id) REFERENCES calendars (id) ON DELETE CASCADE
+    ) {TABLE}",
+
     "CREATE TABLE import_runs (
         id {PK},
+        source_id INTEGER NULL,
         started_at DATETIME NOT NULL,
         finished_at DATETIME NULL,
         status VARCHAR(20) NOT NULL,

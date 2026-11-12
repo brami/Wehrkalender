@@ -67,7 +67,7 @@
         <td class="nowrap small">{{ u.last_feed_at|lt }}</td>
         <td>
           <div class="chips">
-            {% for c in u.calendars|slice(0, 3) %}<span class="chip"><span class="swatch" style="background: {{ c.color }}"></span>{{ c.display_name }}</span>{% endfor %}
+            {% for c in u.calendars|slice(0, 3) %}<span class="chip{{ c.enabled ? '' : ' chip-off' }}"{% if not c.enabled %} title="vom Mitglied ausgeschaltet"{% endif %}><span class="swatch" style="background: {{ c.color }}"></span>{{ c.display_name }}</span>{% endfor %}
             {% if u.calendars|length > 3 %}<span class="chip" title="{{ u.calendars|slice(3)|map(c => c.display_name)|join(', ') }}">+{{ u.calendars|length - 3 }}</span>{% endif %}
           </div>
         </td>

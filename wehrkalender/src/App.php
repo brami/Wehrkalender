@@ -9,6 +9,7 @@ use Wehrkalender\Calendar\IcsBuilder;
 use Wehrkalender\Database\Db;
 use Wehrkalender\Database\Migrator;
 use Wehrkalender\Domain\AccountService;
+use Wehrkalender\Domain\CalendarChoice;
 use Wehrkalender\Domain\MembershipService;
 use Wehrkalender\Domain\StatusService;
 use Wehrkalender\Domain\UsernamePolicy;
@@ -133,6 +134,11 @@ final class App
     public function memberships(): MembershipService
     {
         return $this->get(MembershipService::class, fn () => new MembershipService($this->db(), $this->clock(), $this->config, $this->mailQueue(), $this->accounts()));
+    }
+
+    public function calendarChoice(): CalendarChoice
+    {
+        return $this->get(CalendarChoice::class, fn () => new CalendarChoice($this->db(), $this->clock()));
     }
 
     public function yearPlanner(): \Wehrkalender\Calendar\YearPlanner

@@ -710,13 +710,16 @@ wird erzeugt und die E-Mail eingereiht. Passwort und Abo-Links bleiben
 unverändert.
 
 % ------------------------------------------------------------------
-\section{Weitere Quellen und Kalenderauswahl (Konzept)}\label{sec:quellen}
+\section{Weitere Quellen und Kalenderauswahl}\label{sec:quellen}
 
 \begin{dshinweis}[title=Stand]
-Abgestimmt am 12.11.2026, \textbf{noch nicht umgesetzt}. Vor dem ersten
-Echtbetrieb festgelegt werden müssen das UID-Schema
-(Abschnitt~\ref{sec:quellen-uid}) und die Trennung von Freischaltung und
-Befüllung; alles Weitere lässt sich nachrüsten.
+Abgestimmt am 12.11.2026. \textbf{Umgesetzt} (12.11.2026): Datenmodell,
+UID-Schema, Trennung von Freischaltung und Befüllung, Kalenderauswahl durch
+die Mitglieder vollständig, Verwaltung der Quellen und Befüllungen mit
+Filtern, Anzeige des Quellenzustands, Testdaten. \textbf{Noch offen:} der
+iCal-Importer (Abruf, Serienauflösung, Anwenden der Filter, Löschen und
+Plausibilität je Befüllung) sowie die Überwachung externer Quellen in
+\code{/health} und per E-Mail; die Status-Seite zeigt Probleme bereits an.
 \end{dshinweis}
 
 Neben MP Feuer sollen weitere Quellen Termine liefern können, z.\,B.\ die
@@ -747,11 +750,13 @@ Jeder Kalender ist abschaltbar; der Admin legt die Vorgabe (an/aus) fest. \\
 \end{tabularx}
 \end{center}
 
-Heute legt \code{calendar\_sources} Freischaltung und Befüllung zugleich fest
-(ein Bereichsschlüssel bestimmt, wer den Kalender sieht \emph{und} welche
-Termine hineinkommen). Künftig sind das zwei Zuordnungen. Für Kalender aus MP
-Feuer ändert sich im Ergebnis nichts: Der Bereich \code{LG-DROVE} schaltet
-den Kalender frei und befüllt ihn.
+Für MP Feuer legt eine Zuordnung in \code{calendar\_sources} beides fest,
+jeweils abschaltbar: Der Bereich \code{LG-DROVE} schaltet den Kalender frei
+\emph{und} befüllt ihn; der Lehrgangsschlüssel \code{LEHRGANG-TM1-2027}
+schaltet nur frei, weil die Termine aus dem Kreis-Feed kommen. Befüllungen
+aus externen Quellen stehen in \code{calendar\_feeds}. In der Verwaltung:
+\glqq Kalender \& Zuordnungen\grqq\ (Kalender, Vorgabe, Zuordnungen aus MP
+Feuer) und \glqq Quellen\grqq\ (Quellen, Befüllungen, Filter, Zustand).
 
 \subsection{Beispiele}
 
@@ -784,28 +789,34 @@ unter \glqq Bereiche ohne Kalender\grqq\ erscheint.
 \needspace{12\baselineskip}
 \subsection{Quellen und Befüllungen}
 
-Geplante Änderungen am Datenmodell:
+Änderungen am Datenmodell (umgesetzt):
 
 \begin{center}
 \begin{tabularx}{\textwidth}{L{3.6cm}X}
 \toprule
 \textbf{Tabelle} & \textbf{Inhalt} \\
 \midrule
-neu: \code{sources} & \code{key} (kurz, eindeutig, Teil der UID, z.\,B.\
-  \code{mp}, \code{kreis}, \code{abfall-drove}), \code{type} (\code{mpfeuer},
-  \code{ical}), \code{name}, \code{url}, Abrufintervall, \code{active},
-  Zustand des letzten Abrufs (\code{etag}, \code{last\_modified},
-  \code{last\_success\_at}, \code{last\_error}) \\
+neu: \code{sources} & \code{source\_key} (kurz, eindeutig, Teil der UID,
+  z.\,B.\ \code{mp}, \code{kreis}, \code{abfall-drove}), \code{type}
+  (\code{mpfeuer}, \code{ical}), \code{name}, \code{url},
+  \code{interval\_minutes}, \code{active}, Zustand des letzten Abrufs
+  (\code{http\_etag}, \code{http\_last\_modified}, \code{last\_run\_at},
+  \code{last\_success\_at}, \code{last\_error}). Die Quelle \code{mp} legt
+  die Migration an. \\
 \addlinespace
-neu: \code{calendar\_feeds} & Befüllung: \code{calendar\_id},
-  \code{source\_id}, Bereichsschlüssel (nur MP Feuer) bzw.\ Filter (nur
-  iCal), Hinweis in der Beschreibung (\glqq Quelle: \dots\grqq, an/aus) \\
+neu: \code{calendar\_feeds} & Befüllung aus einer \emph{externen} Quelle:
+  \code{calendar\_id}, \code{source\_id}, \code{filter} (JSON),
+  \code{source\_note} (Hinweis \glqq Quelle: \dots\grqq),
+  \code{active}, \code{last\_match\_count} \\
 \addlinespace
-\code{calendar\_sources} & bleibt für die \emph{Freischaltung}
-  (Mitgliedschaftsschlüssel $\rightarrow$ Kalender) \\
+\code{calendar\_sources} & Zuordnungen aus MP Feuer (Bereichsschlüssel
+  $\rightarrow$ Kalender) mit \code{grants\_access} (\emph{freischalten})
+  und \code{fills} (\emph{befüllen}). Beispiel Lehrgang: freischalten ja,
+  befüllen nein (die Termine liefert der Kreis). \\
 \addlinespace
-\code{events} & zusätzlich \code{source\_id} und \code{feed\_id};
-  \code{mp\_event\_id} wird zu \code{external\_id} (eindeutig je Quelle) \\
+\code{events} & \code{source\_id}, \code{external\_id} (eindeutig je
+  Quelle; bisher \code{mp\_event\_id}) und \code{feed\_id} (nur externe
+  Quellen) \\
 \addlinespace
 \code{calendars} & zusätzlich \code{default\_enabled} (Vorgabe an/aus) \\
 \addlinespace

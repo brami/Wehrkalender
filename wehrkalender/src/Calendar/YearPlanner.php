@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use InvalidArgumentException;
 use Wehrkalender\Clock;
 use Wehrkalender\Database\Db;
+use Wehrkalender\Domain\CalendarChoice;
 
 /**
  * Daten für die Terminübersicht als PDF (Jahresplan): nur die eigenen,
@@ -21,14 +22,20 @@ final class YearPlanner
     {
     }
 
-    /** @return list<array{id:int,slug:string,display_name:string,color:string}> */
+    /**
+     * Alle freigeschalteten Kalender; enabled = vom Mitglied eingeschaltet
+     * (nur diese sind in der Terminübersicht vorausgewählt).
+     *
+     * @return list<array{id:int,slug:string,display_name:string,color:string,enabled:bool}>
+     */
     public function calendarsFor(int $userId): array
     {
         $rows = $this->db->all(
-            'SELECT c.id, c.slug, c.display_name, c.color
+            'SELECT c.id, c.slug, c.display_name, c.color,
+                    CASE WHEN ' . CalendarChoice::enabledSql() . ' THEN 1 ELSE 0 END AS enabled
                FROM user_calendars uc JOIN calendars c ON c.id = uc.calendar_id
               WHERE uc.user_id = ? AND c.active = 1
-              ORDER BY c.display_name',
+              ORDER BY enabled DESC, c.display_name',
             [$userId]
         );
         return array_map(fn (array $r) => [
@@ -36,6 +43,7 @@ final class YearPlanner
             'slug' => (string) $r['slug'],
             'display_name' => (string) $r['display_name'],
             'color' => self::color((string) $r['color']),
+            'enabled' => (int) $r['enabled'] === 1,
         ], $rows);
     }
 

@@ -1,0 +1,16 @@
+{# Filterfelder einer Befüllung; flt = dekodierter Filter oder null #}
+<fieldset class="plain">
+  <legend class="small">Filter (alle Bedingungen müssen zutreffen; leer = alle Termine)</legend>
+  {% for i in 0..2 %}
+    {% set c = flt.conditions[i] ?? null %}
+    <div class="filter-row">
+      <select name="field[]" aria-label="Feld {{ i + 1 }}">{% for k, label in fields %}<option value="{{ k }}" {% if c and c.field == k %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+      <select name="op[]" aria-label="Bedingung {{ i + 1 }}">{% for k, label in ops %}<option value="{{ k }}" {% if c and c.op == k %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+      <input type="text" name="value[]" value="{{ c ? c.value : '' }}" aria-label="Wert {{ i + 1 }}" placeholder="{{ i == 0 ? 'z. B. TM1' : '' }}">
+    </div>
+  {% endfor %}
+  <div class="filter-row">
+    <label for="{{ prefix }}-from" class="small">Zeitraum von</label><input type="date" id="{{ prefix }}-from" name="from" value="{{ flt.from ?? '' }}">
+    <label for="{{ prefix }}-to" class="small">bis</label><input type="date" id="{{ prefix }}-to" name="to" value="{{ flt.to ?? '' }}">
+  </div>
+</fieldset>

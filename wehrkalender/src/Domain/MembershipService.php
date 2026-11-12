@@ -52,7 +52,7 @@ final class MembershipService
     {
         $ids = $this->db->column(
             'SELECT DISTINCT cs.calendar_id FROM memberships m
-               JOIN calendar_sources cs ON cs.mp_key = m.mp_key
+               JOIN calendar_sources cs ON cs.mp_key = m.mp_key AND cs.grants_access = 1
                JOIN calendars c ON c.id = cs.calendar_id
               WHERE m.user_id = ? AND c.active = 1
              UNION
@@ -88,9 +88,20 @@ final class MembershipService
                     'DELETE FROM user_calendars WHERE user_id = ? AND calendar_id IN (' . Db::in($removed) . ')',
                     array_merge([$userId], $removed)
                 );
+                // Eigene Wahl verfällt mit der Freischaltung; kommt der Kalender wieder, gilt die Vorgabe
+                $this->db->execute(
+                    'DELETE FROM user_calendar_choice WHERE user_id = ? AND calendar_id IN (' . Db::in($removed) . ')',
+                    array_merge([$userId], $removed)
+                );
             }
-            if ($notify && $added !== []) {
-                $this->notifyNewCalendars($userId, $added);
+            // Hinweis-E-Mail nur für Kalender mit Vorgabe „eingeschaltet“; Kalender mit
+            // Vorgabe „aus“ (z. B. Abfall) erscheinen nur auf der Startseite als verfügbar
+            $announce = $added === [] ? [] : array_map('intval', $this->db->column(
+                'SELECT id FROM calendars WHERE default_enabled = 1 AND id IN (' . Db::in($added) . ')',
+                $added
+            ));
+            if ($notify && $announce !== []) {
+                $this->notifyNewCalendars($userId, $announce);
             }
             return $added;
         });

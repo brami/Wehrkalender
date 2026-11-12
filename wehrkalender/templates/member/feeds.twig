@@ -18,7 +18,7 @@
 {% if calendars is empty %}
   <div class="box"><p>Ihnen ist derzeit kein Kalender zugeordnet.</p></div>
 {% else %}
-  {% for c in calendars %}
+  {% for c in calendars|filter(c => c.enabled) %}
     <div class="box cal">
       <span class="swatch" style="background: {{ c.color }}"></span>
       <div class="cal-body">
@@ -39,6 +39,16 @@
       </div>
     </div>
   {% endfor %}
+  {% set off = calendars|filter(c => not c.enabled) %}
+  {% if off is not empty %}
+    <div class="box">
+      <h3 style="margin-top:0">Ausgeschaltete Kalender</h3>
+      <p class="small muted">Für diese Kalender wird kein Abo-Link angezeigt. Ein bereits bestehendes Abo bleibt leer, bis Sie den Kalender auf der <a href="/">Startseite</a> wieder einschalten – dann kommen die Termine über dasselbe Abo zurück.</p>
+      <ul class="cal-list">
+        {% for c in off %}<li class="cal-off"><span class="swatch" style="background: {{ c.color }}"></span><span class="cal-name feed-off">{{ c.display_name }}</span></li>{% endfor %}
+      </ul>
+    </div>
+  {% endif %}
   <p class="small muted">Der Abo-Link ist persönlich und geheim. Geben Sie ihn nicht weiter. Er gilt nur, solange Ihnen der Kalender zugeordnet ist. Kommt ein Kalender hinzu, erhalten Sie eine E-Mail und abonnieren den neuen Link einmalig zusätzlich.</p>
 {% endif %}
 

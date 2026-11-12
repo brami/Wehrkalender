@@ -7,6 +7,7 @@ namespace Wehrkalender\Dav;
 use DateTimeInterface;
 use Wehrkalender\Clock;
 use Wehrkalender\Database\Db;
+use Wehrkalender\Domain\CalendarChoice;
 use Sabre\CalDAV\Backend\AbstractBackend;
 use Sabre\CalDAV\Backend\SyncSupport;
 use Sabre\CalDAV\Xml\Property\SupportedCalendarComponentSet;
@@ -15,7 +16,7 @@ use Sabre\DAV\PropPatch;
 
 /**
  * Nur lesendes Kalender-Backend auf Basis der Tabellen calendars,
- * user_calendars, events und calendar_changes.
+ * user_calendars (nur eingeschaltete Kalender, siehe CalendarChoice), events und calendar_changes.
  */
 final class CalendarBackend extends AbstractBackend implements SyncSupport
 {
@@ -37,6 +38,7 @@ final class CalendarBackend extends AbstractBackend implements SyncSupport
                JOIN user_calendars uc ON uc.calendar_id = c.id
                JOIN users u ON u.id = uc.user_id
               WHERE u.username = ? AND u.status = 'active' AND c.active = 1
+                AND " . CalendarChoice::enabledSql() . "
               ORDER BY c.display_name",
             [$username]
         );

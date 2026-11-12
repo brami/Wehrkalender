@@ -95,7 +95,7 @@ final class AccessTest extends TestCase
         self::assertSame(403, $this->dav('DELETE', '/dav/calendars/juergen.mueller/lg-drove/mp-D1@kalender.example.de.ics', $this->juergen)->getStatus());
         self::assertSame(403, $this->dav('DELETE', '/dav/calendars/juergen.mueller/lg-drove/', $this->juergen)->getStatus());
         self::assertSame(403, $this->dav('MKCALENDAR', '/dav/calendars/juergen.mueller/neu/', $this->juergen)->getStatus());
-        self::assertSame(1, (int) $this->app->db()->value("SELECT COUNT(*) FROM events WHERE mp_event_id = 'D1'"));
+        self::assertSame(1, (int) $this->app->db()->value("SELECT COUNT(*) FROM events WHERE external_id = 'D1'"));
     }
 
     public function testWrongPasswordAndLockedUser(): void

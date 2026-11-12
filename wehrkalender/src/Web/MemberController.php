@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Wehrkalender\Web;
 
+use Wehrkalender\Domain\CalendarChoice;
 use DateTimeImmutable;
 use Wehrkalender\Calendar\YearPlanner;
 use Wehrkalender\Clock;
@@ -26,13 +27,34 @@ final class MemberController extends Controller
         $outdated = $accounts->isUsernameOutdated($user);
         $year = (int) $this->app->clock()->now()->setTimezone(Clock::localTz())->format('Y');
         [$calendars, $unmapped] = $this->calendarsWithOrigin((int) $user['id'], $year);
+        $on = array_values(array_filter($calendars, fn ($c) => (int) $c['enabled'] === 1));
+        $off = array_values(array_filter($calendars, fn ($c) => (int) $c['enabled'] !== 1));
         return $this->render($response, 'member/home.twig', [
             'calendars' => $calendars,
+            'calendars_on' => $on,
+            'calendars_off' => $off,
             'unmapped' => $unmapped,
             'year' => $year,
             'outdated' => $outdated,
             'suggestion' => $outdated ? $accounts->suggestedUsername($user) : null,
         ]);
+    }
+
+    /** Kalender ein- oder ausschalten (POST /kalender/{slug}/ein|aus) */
+    public function toggleCalendar(Request $request, Response $response, array $args): Response
+    {
+        $user = $this->currentUser($request);
+        $db = $this->app->db();
+        $cal = $db->one('SELECT id, display_name FROM calendars WHERE slug = ? AND active = 1', [(string) $args['slug']]);
+        $on = $args['action'] === 'ein';
+        if ($cal === null || !$this->app->calendarChoice()->set((int) $user['id'], (int) $cal['id'], $on)) {
+            $this->session->flash('error', 'Dieser Kalender ist für Sie nicht freigeschaltet.');
+            return $this->redirect($response, '/');
+        }
+        $this->session->flash('success', $on
+            ? 'Der Kalender „' . $cal['display_name'] . '“ ist eingeschaltet. Auf Smartphone und Tablet erscheint er beim nächsten Abgleich; für Outlook und Google finden Sie den Abo-Link unter „Kalender abonnieren“.'
+            : 'Der Kalender „' . $cal['display_name'] . '“ ist ausgeschaltet. Er verschwindet beim nächsten Abgleich von Smartphone und Tablet; ein Abo in Outlook oder Google bleibt leer, bis Sie ihn wieder einschalten.');
+        return $this->redirect($response, '/');
     }
 
     /** Übersicht „Kalender abonnieren“ */
@@ -226,10 +248,13 @@ XML;
         $from = Clock::toDb(new DateTimeImmutable(sprintf('%04d-01-01', $year), $tz));
         $to = Clock::toDb(new DateTimeImmutable(sprintf('%04d-01-01', $year + 1), $tz));
         return $this->app->db()->all(
-            "SELECT c.id, c.slug, c.display_name, c.color, c.description,
+            "SELECT c.id, c.slug, c.display_name, c.color, c.description, c.default_enabled,
                     (SELECT COUNT(*) FROM events e
                       WHERE e.calendar_id = c.id AND e.status <> 'CANCELLED'
-                        AND e.starts_at >= ? AND e.starts_at < ?) AS event_count
+                        AND e.starts_at >= ? AND e.starts_at < ?) AS event_count,
+                    (SELECT ch.enabled FROM user_calendar_choice ch
+                      WHERE ch.user_id = uc.user_id AND ch.calendar_id = uc.calendar_id) AS choice,
+                    CASE WHEN " . CalendarChoice::enabledSql() . " THEN 1 ELSE 0 END AS enabled
                FROM user_calendars uc JOIN calendars c ON c.id = uc.calendar_id
               WHERE uc.user_id = ? AND c.active = 1
               ORDER BY c.display_name",
@@ -250,7 +275,7 @@ XML;
         $rows = $db->all(
             'SELECT m.label, c.id AS calendar_id
                FROM memberships m
-               LEFT JOIN calendar_sources cs ON cs.mp_key = m.mp_key
+               LEFT JOIN calendar_sources cs ON cs.mp_key = m.mp_key AND cs.grants_access = 1
                LEFT JOIN calendars c ON c.id = cs.calendar_id AND c.active = 1
               WHERE m.user_id = ?
               ORDER BY m.label',
@@ -283,12 +308,13 @@ XML;
     {
         $rows = $this->app->db()->all(
             'SELECT c.id, c.slug, c.display_name, c.color, c.description, uc.since,
+                    CASE WHEN ' . CalendarChoice::enabledSql() . ' THEN 1 ELSE 0 END AS enabled,
                     (SELECT f.token FROM feed_tokens f WHERE f.user_id = uc.user_id AND f.calendar_id = c.id AND f.revoked_at IS NULL ORDER BY f.id DESC LIMIT 1) AS token,
                     (SELECT f.last_access_at FROM feed_tokens f WHERE f.user_id = uc.user_id AND f.calendar_id = c.id AND f.revoked_at IS NULL ORDER BY f.id DESC LIMIT 1) AS last_access_at,
                     (SELECT f.last_client FROM feed_tokens f WHERE f.user_id = uc.user_id AND f.calendar_id = c.id AND f.revoked_at IS NULL ORDER BY f.id DESC LIMIT 1) AS last_client
                FROM user_calendars uc JOIN calendars c ON c.id = uc.calendar_id
               WHERE uc.user_id = ? AND c.active = 1
-              ORDER BY c.display_name',
+              ORDER BY enabled DESC, c.display_name',
             [$userId]
         );
         $base = $this->app->config->baseUrl();

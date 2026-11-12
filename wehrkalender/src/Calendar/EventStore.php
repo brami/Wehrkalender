@@ -22,6 +22,7 @@ final class EventStore
     public const OP_ADDED = 1;
     public const OP_MODIFIED = 2;
     public const OP_DELETED = 3;
+    public const SOURCE_MP = 'mp';
 
     public function __construct(
         private Db $db,
@@ -31,17 +32,39 @@ final class EventStore
     ) {
     }
 
-    public function uidFor(string $mpEventId): string
+    /** @var array<string,int> */
+    private array $sourceIds = [];
+
+    /**
+     * UID auf den Geräten: <quelle>-<id>@<domain>, für MP Feuer also mp-<id>@<domain>.
+     * Quellenschlüssel und IDs dürfen sich nach dem Echtbetrieb nicht mehr ändern.
+     */
+    public function uidFor(string $externalId, string $sourceKey = self::SOURCE_MP): string
     {
-        $safe = preg_replace('/[^A-Za-z0-9._-]/', '_', $mpEventId);
-        return 'mp-' . $safe . '@' . preg_replace('/:\d+$/', '', $this->config->domain());
+        $safe = preg_replace('/[^A-Za-z0-9._-]/', '_', $externalId);
+        return $sourceKey . '-' . $safe . '@' . preg_replace('/:\d+$/', '', $this->config->domain());
+    }
+
+    /** ID einer Quelle zu ihrem Schlüssel (z. B. "mp") */
+    public function sourceId(string $sourceKey): int
+    {
+        if (!isset($this->sourceIds[$sourceKey])) {
+            $id = $this->db->value('SELECT id FROM sources WHERE source_key = ?', [$sourceKey]);
+            if ($id === null) {
+                throw new \RuntimeException('Unbekannte Quelle: ' . $sourceKey);
+            }
+            $this->sourceIds[$sourceKey] = (int) $id;
+        }
+        return $this->sourceIds[$sourceKey];
     }
 
     /**
      * Termin anlegen oder aktualisieren (internes Format, Zeiten lokal Europe/Berlin).
      *
-     * @param array{mp_event_id:string,calendar_id:int,summary:string,location?:?string,description?:?string,
-     *              start:DateTimeImmutable,end:DateTimeImmutable,all_day?:bool,cancelled?:bool} $data
+     * @param array{external_id:string,source?:string,feed_id?:?int,calendar_id:int,summary:string,
+     *              location?:?string,description?:?string,start:DateTimeImmutable,end:DateTimeImmutable,
+     *              all_day?:bool,cancelled?:bool} $data
+     *        source: Schlüssel der Quelle (Vorgabe "mp"); external_id: Kennung des Termins in der Quelle.
      *        Bei ganztägigen Terminen ist "end" der letzte Tag (einschließlich).
      * @return string "added" | "modified" | "unchanged"
      */
@@ -69,8 +92,11 @@ final class EventStore
         ];
         $hash = hash('sha256', json_encode($row, JSON_THROW_ON_ERROR));
 
-        return $this->db->transaction(function () use ($data, $row, $hash): string {
-            $existing = $this->db->one('SELECT * FROM events WHERE mp_event_id = ?', [$data['mp_event_id']]);
+        $sourceKey = $data['source'] ?? self::SOURCE_MP;
+        $sourceId = $this->sourceId($sourceKey);
+        $row['feed_id'] = isset($data['feed_id']) ? (int) $data['feed_id'] : null;
+        return $this->db->transaction(function () use ($data, $row, $hash, $sourceKey, $sourceId): string {
+            $existing = $this->db->one('SELECT * FROM events WHERE source_id = ? AND external_id = ?', [$sourceId, $data['external_id']]);
             $now = $this->clock->nowDb();
             if ($existing !== null && $existing['content_hash'] === $hash) {
                 return 'unchanged';
@@ -78,8 +104,9 @@ final class EventStore
             $calendarName = (string) $this->db->value('SELECT display_name FROM calendars WHERE id = ?', [$row['calendar_id']]);
             if ($existing === null) {
                 $event = $row + [
-                    'mp_event_id' => $data['mp_event_id'],
-                    'uid' => $this->uidFor($data['mp_event_id']),
+                    'source_id' => $sourceId,
+                    'external_id' => $data['external_id'],
+                    'uid' => $this->uidFor($data['external_id'], $sourceKey),
                     'sequence_no' => 0,
                     'created_at' => $now,
                     'updated_at' => $now,
@@ -99,6 +126,7 @@ final class EventStore
             $event['etag'] = '"' . md5($event['ics']) . '"';
             $this->db->update('events', [
                 'calendar_id' => $row['calendar_id'],
+                'feed_id' => $row['feed_id'],
                 'summary' => $row['summary'],
                 'location' => $row['location'],
                 'description' => $row['description'],
@@ -124,11 +152,12 @@ final class EventStore
         });
     }
 
-    /** Termin entfernen (nicht mehr im Export) */
-    public function delete(string $mpEventId): bool
+    /** Termin entfernen (nicht mehr im Export dieser Quelle) */
+    public function delete(string $externalId, string $sourceKey = self::SOURCE_MP): bool
     {
-        return $this->db->transaction(function () use ($mpEventId): bool {
-            $existing = $this->db->one('SELECT id, uid, calendar_id FROM events WHERE mp_event_id = ?', [$mpEventId]);
+        $sourceId = $this->sourceId($sourceKey);
+        return $this->db->transaction(function () use ($externalId, $sourceId): bool {
+            $existing = $this->db->one('SELECT id, uid, calendar_id FROM events WHERE source_id = ? AND external_id = ?', [$sourceId, $externalId]);
             if ($existing === null) {
                 return false;
             }

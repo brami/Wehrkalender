@@ -3,21 +3,21 @@
 {% block content %}
 <h1>Kalender &amp; Zuordnungen</h1>
 {% include 'admin/_nav.twig' %}
-<p class="muted">Jeder Bereich aus MP Feuer (Einheit, Gruppe, Abteilung, Lehrgang) wird über seinen Schlüssel einem Kalender zugeordnet. Die Zuordnung bestimmt zweierlei: in welchem Kalender die Termine des Bereichs erscheinen und welche Mitglieder (über ihre Mitgliedschaften) den Kalender sehen.</p>
+<p class="muted">Jeder Bereich aus MP Feuer (Einheit, Gruppe, Abteilung, Lehrgang) wird über seinen Schlüssel einem Kalender zugeordnet. Eine Zuordnung kann den Kalender <strong>freischalten</strong> (Mitglieder mit dieser Mitgliedschaft sehen ihn) und/oder <strong>befüllen</strong> (die Termine des Bereichs kommen hinein). Termine aus externen iCal-Feeds richten Sie unter <a href="/admin/quellen">Quellen</a> ein. Jedes Mitglied kann jeden Kalender für sich ein- und ausschalten; hier legen Sie die Vorgabe fest.</p>
 
 <h2>Kalender</h2>
 <div class="table-wrap"><table>
-  <thead><tr><th>Kalender</th><th>Kurzname</th><th>Mitglieder</th><th>Termine</th><th>Eigenschaften</th></tr></thead>
+  <thead><tr><th>Kalender</th><th>Kurzname</th><th title="freigeschaltet / davon eingeschaltet">Mitglieder</th><th>Termine</th><th>Eigenschaften</th></tr></thead>
   <tbody>
   {% for c in calendars %}
     <tr>
       <td><span class="swatch" style="background: {{ c.color }}"></span> <strong>{{ c.display_name }}</strong>{% if c.description %}<br><span class="small muted">{{ c.description }}</span>{% endif %}</td>
       <td class="mono small">{{ c.slug }}</td>
-      <td><a href="/admin/benutzer?kalender={{ c.slug }}">{{ c.members }}</a></td>
-      <td>{{ c.events }}</td>
+      <td><a href="/admin/benutzer?kalender={{ c.slug }}">{{ c.members }}</a>{% if c.members > 0 %}<br><span class="small muted">{{ c.members_on }} eingeschaltet</span>{% endif %}</td>
+      <td>{{ c.events }}{% if c.filled_by is not empty %}<br><span class="small muted">aus: {{ c.filled_by|join('; ') }}</span>{% else %}<br><span class="small muted">keine Befüllung</span>{% endif %}</td>
       <td>
         <details>
-          <summary class="small">{{ c.active ? 'aktiv' : 'deaktiviert' }}{{ c.all_members ? ', für alle Mitglieder' : '' }} – bearbeiten</summary>
+          <summary class="small">{{ c.active ? 'aktiv' : 'deaktiviert' }}{{ c.all_members ? ', für alle Mitglieder' : '' }}, Vorgabe {{ c.default_enabled ? 'an' : 'aus' }} – bearbeiten</summary>
           <form method="post" action="/admin/kalender/{{ c.id }}">
             <input type="hidden" name="_csrf" value="{{ csrf }}">
             <label for="n{{ c.id }}">Name</label><input type="text" id="n{{ c.id }}" name="display_name" value="{{ c.display_name }}" required>
@@ -25,6 +25,7 @@
             <label for="d{{ c.id }}">Beschreibung</label><input type="text" id="d{{ c.id }}" name="description" value="{{ c.description }}">
             <label class="check"><input type="checkbox" name="active" value="1" {% if c.active %}checked{% endif %}> aktiv (an Geräte ausliefern)</label>
             <label class="check"><input type="checkbox" name="all_members" value="1" {% if c.all_members %}checked{% endif %}> für alle Mitglieder (unabhängig von Mitgliedschaften)</label>
+            <label class="check"><input type="checkbox" name="default_enabled" value="1" {% if c.default_enabled %}checked{% endif %}> Vorgabe: eingeschaltet <span class="muted small">(gilt für alle, die nicht selbst geschaltet haben; aus = Mitglieder schalten ihn bei Bedarf selbst ein, keine E-Mail bei Freischaltung)</span></label>
             <div class="actions"><button class="btn btn-small" type="submit">Speichern</button></div>
           </form>
         </details>
@@ -44,17 +45,19 @@
     <label for="nd">Beschreibung</label><input type="text" id="nd" name="description">
     <label class="check"><input type="checkbox" name="active" value="1" checked> aktiv</label>
     <label class="check"><input type="checkbox" name="all_members" value="1"> für alle Mitglieder</label>
+    <label class="check"><input type="checkbox" name="default_enabled" value="1" checked> Vorgabe: eingeschaltet <span class="muted small">(z. B. für Abfallkalender ausschalten)</span></label>
     <div class="actions"><button class="btn" type="submit">Anlegen</button></div>
   </form>
 </details>
 
 <h2>Zuordnung Bereich → Kalender</h2>
 <div class="table-wrap"><table>
-  <thead><tr><th>Schlüssel (MP Feuer)</th><th>Bezeichnung</th><th>Mitglieder</th><th>Kalender</th><th></th></tr></thead>
+  <thead><tr><th>Schlüssel (MP Feuer)</th><th>Bezeichnung</th><th>Mitglieder</th><th>Kalender</th><th>Wirkung</th><th></th></tr></thead>
   <tbody>
   {% for s in sources %}
     <tr>
       <td class="mono">{{ s.mp_key }}</td><td>{{ s.label ?? '–' }}</td><td>{{ s.members }}</td><td>{{ s.display_name }}</td>
+      <td class="small">{{ [s.grants_access ? 'freischalten' : null, s.fills ? 'befüllen' : null]|filter(v => v)|join(' + ') }}</td>
       <td>
         <form method="post" action="/admin/zuordnung/{{ s.id }}/loeschen" class="inline">
           <input type="hidden" name="_csrf" value="{{ csrf }}">
@@ -63,7 +66,7 @@
       </td>
     </tr>
   {% else %}
-    <tr><td colspan="5" class="muted">Noch keine Zuordnungen.</td></tr>
+    <tr><td colspan="6" class="muted">Noch keine Zuordnungen.</td></tr>
   {% endfor %}
   </tbody>
 </table></div>
@@ -77,6 +80,8 @@
     <datalist id="areas">{% for a in areas %}<option value="{{ a.mp_key }}">{{ a.label }}</option>{% endfor %}</datalist>
     <label for="kc">Kalender</label>
     <select id="kc" name="calendar_id">{% for c in calendars %}<option value="{{ c.id }}">{{ c.display_name }}</option>{% endfor %}</select>
+    <label class="check"><input type="checkbox" name="grants_access" value="1" checked> freischalten: Mitglieder mit dieser Mitgliedschaft sehen den Kalender</label>
+    <label class="check"><input type="checkbox" name="fills" value="1" checked> befüllen: Termine dieses Bereichs aus MP Feuer kommen in den Kalender <span class="muted small">(aus, wenn die Termine aus einer anderen Quelle kommen, z. B. Kreislehrgänge)</span></label>
     <div class="actions"><button class="btn" type="submit">Zuordnen</button></div>
   </form>
 </div>

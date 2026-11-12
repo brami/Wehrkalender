@@ -36,7 +36,7 @@
   <fieldset class="plain">
     <legend>Kalender</legend>
     {% for c in calendars %}
-      <label class="check"><input type="checkbox" name="k[]" value="{{ c.slug }}" checked> <span class="swatch" style="background: {{ c.color }}"></span> {{ c.display_name }}</label>
+      <label class="check"><input type="checkbox" name="k[]" value="{{ c.slug }}"{{ c.enabled ? ' checked' : '' }}> <span class="swatch" style="background: {{ c.color }}"></span> {{ c.display_name }}{% if not c.enabled %} <span class="muted small">(ausgeschaltet)</span>{% endif %}</label>
     {% endfor %}
   </fieldset>
 

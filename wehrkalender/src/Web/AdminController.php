@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Wehrkalender\Web;
 
+use Wehrkalender\Calendar\FeedFilter;
+use Wehrkalender\Domain\CalendarChoice;
 use Wehrkalender\Domain\UsernamePolicy;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -44,7 +46,15 @@ final class AdminController extends Controller
                FROM memberships m LEFT JOIN calendar_sources cs ON cs.mp_key = m.mp_key
               WHERE cs.id IS NULL GROUP BY m.mp_key ORDER BY m.mp_key'
         );
+        $sourceProblems = [];
+        foreach ($db->all("SELECT * FROM sources WHERE type = 'ical' AND active = 1 ORDER BY name") as $src) {
+            $state = SourcesController::state($src, $this->app->clock());
+            if (in_array($state, ['error', 'warn', 'never'], true)) {
+                $sourceProblems[] = $src + ['state' => $state];
+            }
+        }
         return $this->render($response, 'admin/dashboard.twig', [
+            'source_problems' => $sourceProblems,
             'last_run' => $runs[0] ?? null,
             'runs' => $runs,
             'problems' => $status->problems(),
@@ -110,7 +120,9 @@ final class AdminController extends Controller
             'SELECT u.*, (SELECT MAX(f.last_access_at) FROM feed_tokens f WHERE f.user_id = u.id) AS last_feed_at FROM users u'
         );
         $calByUser = [];
-        foreach ($db->all('SELECT uc.user_id, c.slug, c.display_name, c.color FROM user_calendars uc JOIN calendars c ON c.id = uc.calendar_id ORDER BY c.display_name') as $r) {
+        foreach ($db->all('SELECT uc.user_id, c.slug, c.display_name, c.color,
+                                  CASE WHEN ' . CalendarChoice::enabledSql() . ' THEN 1 ELSE 0 END AS enabled
+                             FROM user_calendars uc JOIN calendars c ON c.id = uc.calendar_id ORDER BY enabled DESC, c.display_name') as $r) {
             $calByUser[$r['user_id']][] = $r;
         }
         $cutoff = $this->app->clock()->db("-{$days} days");
@@ -169,7 +181,9 @@ final class AdminController extends Controller
             $this->notFound($request);
         }
         $calendars = $db->all(
-            'SELECT c.id, c.display_name, c.color, c.slug, uc.since,
+            'SELECT c.id, c.display_name, c.color, c.slug, c.default_enabled, uc.since,
+                    CASE WHEN ' . CalendarChoice::enabledSql() . ' THEN 1 ELSE 0 END AS enabled,
+                    (SELECT ch.enabled FROM user_calendar_choice ch WHERE ch.user_id = uc.user_id AND ch.calendar_id = uc.calendar_id) AS choice,
                     (SELECT MAX(f.last_access_at) FROM feed_tokens f WHERE f.user_id = uc.user_id AND f.calendar_id = c.id) AS last_access_at,
                     (SELECT f.last_client FROM feed_tokens f WHERE f.user_id = uc.user_id AND f.calendar_id = c.id AND f.last_access_at IS NOT NULL ORDER BY f.last_access_at DESC LIMIT 1) AS last_client
                FROM user_calendars uc JOIN calendars c ON c.id = uc.calendar_id
@@ -317,9 +331,23 @@ final class AdminController extends Controller
         $db = $this->app->db();
         $calendars = $db->all(
             'SELECT c.*, (SELECT COUNT(*) FROM user_calendars uc WHERE uc.calendar_id = c.id) AS members,
+                    (SELECT COUNT(*) FROM user_calendars uc WHERE uc.calendar_id = c.id AND ' . CalendarChoice::enabledSql() . ') AS members_on,
                     (SELECT COUNT(*) FROM events e WHERE e.calendar_id = c.id) AS events
                FROM calendars c ORDER BY c.display_name'
         );
+        // Woher kommen die Termine? (MP-Feuer-Bereiche mit „befüllen“ und externe Befüllungen)
+        $filledBy = [];
+        foreach ($db->all('SELECT calendar_id, mp_key FROM calendar_sources WHERE fills = 1 ORDER BY mp_key') as $r) {
+            $filledBy[(int) $r['calendar_id']][] = 'MP Feuer (' . $r['mp_key'] . ')';
+        }
+        foreach ($db->all('SELECT f.calendar_id, f.filter, s.name FROM calendar_feeds f JOIN sources s ON s.id = f.source_id WHERE f.active = 1 ORDER BY s.name') as $r) {
+            $filter = FeedFilter::fromJson($r['filter']);
+            $filledBy[(int) $r['calendar_id']][] = $r['name'] . ($filter->isEmpty() ? '' : ' (' . $filter->describe() . ')');
+        }
+        foreach ($calendars as &$c) {
+            $c['filled_by'] = $filledBy[(int) $c['id']] ?? [];
+        }
+        unset($c);
         $sources = $db->all('SELECT cs.*, c.display_name, (SELECT MIN(label) FROM memberships m WHERE m.mp_key = cs.mp_key) AS label,
                                     (SELECT COUNT(DISTINCT user_id) FROM memberships m WHERE m.mp_key = cs.mp_key) AS members
                                FROM calendar_sources cs JOIN calendars c ON c.id = cs.calendar_id ORDER BY cs.mp_key');
@@ -370,6 +398,7 @@ final class AdminController extends Controller
             'description' => trim((string) ($p['description'] ?? '')) ?: null,
             'active' => !empty($p['active']) ? 1 : 0,
             'all_members' => !empty($p['all_members']) ? 1 : 0,
+            'default_enabled' => !empty($p['default_enabled']) ? 1 : 0,
             'updated_at' => $now,
         ];
         if ($id === null) {
@@ -403,14 +432,23 @@ final class AdminController extends Controller
         $p = $this->post($request);
         $key = trim((string) ($p['mp_key'] ?? ''));
         $calId = (int) ($p['calendar_id'] ?? 0);
+        $grants = !empty($p['grants_access']);
+        $fills = !empty($p['fills']);
         if ($key === '' || $db->value('SELECT 1 FROM calendars WHERE id = ?', [$calId]) === null) {
             $this->session->flash('error', 'Bitte Bereich (Schlüssel aus MP Feuer) und Kalender angeben.');
+        } elseif (!$grants && !$fills) {
+            $this->session->flash('error', 'Eine Zuordnung muss den Kalender freischalten, befüllen oder beides.');
         } elseif ($db->value('SELECT 1 FROM calendar_sources WHERE mp_key = ?', [$key]) !== null) {
             $this->session->flash('error', "Der Bereich „{$key}“ ist bereits einem Kalender zugeordnet.");
         } else {
-            $db->insert('calendar_sources', ['mp_key' => $key, 'calendar_id' => $calId, 'created_at' => $this->app->clock()->nowDb()]);
+            $db->insert('calendar_sources', [
+                'mp_key' => $key, 'calendar_id' => $calId,
+                'grants_access' => $grants ? 1 : 0, 'fills' => $fills ? 1 : 0,
+                'created_at' => $this->app->clock()->nowDb(),
+            ]);
             $stats = $this->app->memberships()->recomputeAll(true);
-            $this->session->flash('success', "Zuordnung „{$key}“ gespeichert; {$stats['added']} neue Kalenderzuordnung(en). Termine dieses Bereichs erscheinen nach dem nächsten Import.");
+            $this->session->flash('success', "Zuordnung „{$key}“ gespeichert; {$stats['added']} neue Freischaltung(en)."
+                . ($fills ? ' Termine dieses Bereichs erscheinen nach dem nächsten Import.' : ''));
         }
         return $this->redirect($response, '/admin/kalender');
     }

@@ -271,7 +271,7 @@ final class AccountService
     {
         return $this->db->column(
             'SELECT c.display_name FROM user_calendars uc JOIN calendars c ON c.id = uc.calendar_id
-             WHERE uc.user_id = ? ORDER BY c.display_name',
+             WHERE uc.user_id = ? AND c.active = 1 AND ' . CalendarChoice::enabledSql() . ' ORDER BY c.display_name',
             [$userId]
         );
     }
