@@ -164,6 +164,7 @@ final class IcalProcessor
             'feeds' => [],
             'warnings' => [],
             'unmatched' => [],
+            'unmatched_count' => 0,
         ];
         if ($feeds === []) {
             $plan['warnings'][] = 'Diese Quelle befüllt noch keinen Kalender. Legen Sie zuerst eine Befüllung an.';
@@ -256,8 +257,8 @@ final class IcalProcessor
         $plan['unmatched'] = [];
         if ($feeds !== []) {
             $rest = array_values(array_filter($events, fn ($e, $i) => !isset($hit[$i]), ARRAY_FILTER_USE_BOTH));
-            usort($rest, fn ($a, $b) => $a['start'] <=> $b['start']);
-            $plan['unmatched'] = array_map(fn ($e) => $this->label($e), $rest);
+            $plan['unmatched'] = self::groupByTitle($rest);
+            $plan['unmatched_count'] = count($rest);
         }
         return $plan;
     }
@@ -292,6 +293,47 @@ final class IcalProcessor
             $db->update('calendar_feeds', ['last_match_count' => $p['matched']], ['id' => $feedId]);
         }
         return $stats;
+    }
+
+    /**
+     * Titel ohne Zählung am Ende: „Maschinist 2/2027 – Tag 1/4“ → „Maschinist 2/2027“,
+     * ebenso „– Teil 2“, „Termin 3“, „Block 1/2“, „(3/5)“. Eine Lehrgangsnummer wie „2/2027“
+     * ohne vorangestelltes Wort bleibt erhalten.
+     */
+    public static function baseTitle(string $summary): string
+    {
+        $t = preg_replace('/\s*[–—-]?\s*(?:(?:Tag|Teil|Termin|Block|Abschnitt)\s+\d+(?:\s*\/\s*\d+)?|\(\d+\s*\/\s*\d+\))\s*$/iu', '', $summary);
+        $t = trim((string) $t);
+        return $t === '' ? trim($summary) : $t;
+    }
+
+    /**
+     * Termine nach Titel (ohne Zählung) gruppieren, Gruppen alphabetisch mit natürlicher
+     * Zahlenfolge (1/2027 vor 10/2027), innerhalb einer Gruppe nach Beginn.
+     *
+     * @param list<array<string,mixed>> $events
+     * @return list<array{title:string,count:int,first:\DateTimeImmutable,last:\DateTimeImmutable,items:list<array{when:string,summary:string,location:?string}>}>
+     */
+    public static function groupByTitle(array $events): array
+    {
+        $groups = [];
+        usort($events, fn ($a, $b) => $a['start'] <=> $b['start']);
+        foreach ($events as $e) {
+            $title = self::baseTitle((string) $e['summary']);
+            $key = mb_strtolower($title);
+            $groups[$key] ??= ['title' => $title, 'count' => 0, 'first' => $e['start'], 'last' => $e['end'], 'items' => []];
+            $g = &$groups[$key];
+            $g['count']++;
+            $g['last'] = max($g['last'], $e['end']);
+            $g['items'][] = [
+                'when' => $e['start']->format($e['all_day'] ? 'd.m.Y' : 'd.m.Y H:i'),
+                'summary' => (string) $e['summary'],
+                'location' => $e['location'] !== null && $e['location'] !== '' ? (string) $e['location'] : null,
+            ];
+            unset($g);
+        }
+        uasort($groups, fn ($a, $b) => strnatcasecmp($a['title'], $b['title']));
+        return array_values($groups);
     }
 
     /** @param array<string,mixed> $e */

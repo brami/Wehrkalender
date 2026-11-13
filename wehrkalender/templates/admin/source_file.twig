@@ -37,11 +37,22 @@
 {% if plan.unmatched is not empty %}
 <div class="box">
   <h2 style="margin-top:0">Nicht übernommen</h2>
-  <p class="small muted">{{ plan.unmatched|length }} von {{ plan.events_total }} Terminen trifft keine Befüllung; sie kommen in keinen Kalender.
+  <p class="small muted">{{ plan.unmatched_count }} von {{ plan.events_total }} Terminen ({{ plan.unmatched|length }} {{ plan.unmatched|length == 1 ? 'Titel' : 'verschiedene Titel' }}) trifft keine Befüllung; sie kommen in keinen Kalender.
     Soll einer davon erscheinen, legen Sie unter „Quellen“ eine Befüllung an und übernehmen die Datei erneut.</p>
-  <details{% if plan.unmatched|length <= 12 %} open{% endif %}><summary class="small">Termine anzeigen ({{ plan.unmatched|length }})</summary>
-    <ul class="small">{% for l in plan.unmatched %}<li>{{ l }}</li>{% endfor %}</ul>
-  </details>
+  <div class="table-wrap"><table class="small unmatched">
+    <thead><tr><th>Titel</th><th>Termine</th><th>Zeitraum</th></tr></thead>
+    <tbody>
+    {% for g in plan.unmatched %}
+      <tr>
+        <td><details><summary>{{ g.title }}</summary>
+          <ul>{% for i in g.items %}<li>{{ i.when }} {{ i.summary }}{% if i.location %} <span class="muted">· {{ i.location }}</span>{% endif %}</li>{% endfor %}</ul>
+        </details></td>
+        <td>{{ g.count }}</td>
+        <td>{{ g.first|date('d.m.') }}{% if g.first|date('Y') != g.last|date('Y') %}{{ g.first|date('Y') }}{% endif %}{% if g.count > 1 or g.first|date('Ymd') != g.last|date('Ymd') %}–{{ g.last|date('d.m.Y') }}{% else %}{{ g.first|date('Y') }}{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
 </div>
 {% endif %}
 

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Wehrkalender\Tests;
 
+use Wehrkalender\Import\IcalProcessor;
+
 use Psr\Http\Message\ResponseInterface;
 use Slim\Psr7\Factory\ServerRequestFactory;
 use Slim\Psr7\Factory\StreamFactory;
@@ -97,8 +99,12 @@ final class ExternalSourcesTest extends TestCase
         self::assertStringContainsString('<strong>4</strong> neu', $preview, 'Maschinist 2/2027: 4 Tage');
         self::assertStringContainsString('<strong>5</strong> neu', $preview, 'Truppführer Theorie: 5 Tage (Praxis: 4)');
         self::assertSame(4, substr_count($preview, '<h2 style="margin-top:0">'), 'eine Übersicht je Befüllung + „Nicht übernommen“');
-        self::assertStringContainsString('92 von 105 Terminen trifft keine Befüllung', $preview);
-        self::assertStringContainsString('Atemschutzgeräteträger 1/2027', $preview, 'nicht übernommene Termine werden gelistet');
+        self::assertStringContainsString('92 von 105 Terminen (32 verschiedene Titel) trifft keine Befüllung', $preview);
+        self::assertStringContainsString('<summary>Atemschutzgeräteträger 1/2027</summary>', $preview, 'je Lehrgang eine Zeile');
+        self::assertStringContainsString('13.02.–06.03.2027', $preview, 'Zeitraum der Gruppe');
+        // alphabetisch mit natürlicher Zahlenfolge
+        self::assertLessThan(strpos($preview, '<summary>Atemschutzgeräteträger 1/2027'), strpos($preview, '<summary>ABC 1 Modul 1'));
+        self::assertLessThan(strpos($preview, '<summary>Truppführer Theorie 2/2027'), strpos($preview, '<summary>Atemschutzgeräteträger 4/2027'));
 
         $this->web('POST', '/admin/quellen/datei/' . $pending['id'] . '/uebernehmen', ['x' => '1']);
         self::assertSame(4, (int) $db->value('SELECT COUNT(*) FROM events WHERE calendar_id = ?', [$m2]));
@@ -123,7 +129,7 @@ final class ExternalSourcesTest extends TestCase
         $preview = (string) $this->web('GET', '/admin/quellen/datei/' . $re['id'])->getBody();
         self::assertStringContainsString('identisch', $preview);
         self::assertSame(1, substr_count($preview, '<strong>4</strong> neu'), 'nur Atemschutz neu');
-        self::assertStringContainsString('88 von 105', $preview);
+        self::assertStringContainsString('88 von 105 Terminen (31 verschiedene Titel)', $preview);
         $this->web('POST', '/admin/quellen/datei/' . $re['id'] . '/uebernehmen', ['x' => '1']);
         self::assertSame(4, (int) $db->value('SELECT COUNT(*) FROM events WHERE calendar_id = ?', [$agt]));
         self::assertSame(1, (int) $db->value('SELECT COUNT(*) FROM source_files'));
@@ -161,6 +167,32 @@ final class ExternalSourcesTest extends TestCase
         // Datei entfernen → Termine weg
         $this->web('POST', '/admin/quellen/datei/' . $file['id'] . '/loeschen', ['x' => '1']);
         self::assertSame(0, (int) $db->value('SELECT COUNT(*) FROM events'));
+    }
+
+    public function testUnmatchedGroupedByTitle(): void
+    {
+        foreach ([
+            'Maschinist 2/2027 – Tag 1/4' => 'Maschinist 2/2027',
+            'ABC 1 Modul 1 - Grundlagen 1/2027 – Tag 2/3' => 'ABC 1 Modul 1 - Grundlagen 1/2027',
+            'Truppführer Zulassungstest 1/2027' => 'Truppführer Zulassungstest 1/2027',
+            'Erste Hilfe - Teil 2' => 'Erste Hilfe',
+            'Sprechfunk (3/5)' => 'Sprechfunk',
+            'Seminar Termin 3' => 'Seminar',
+            'Tag 1/2' => 'Tag 1/2',
+            'Restmüll' => 'Restmüll',
+        ] as $in => $out) {
+            self::assertSame($out, IcalProcessor::baseTitle($in), $in);
+        }
+        $d = fn (string $s) => new \DateTimeImmutable($s, new \DateTimeZone('Europe/Berlin'));
+        $ev = fn (string $t, string $start) => ['summary' => $t, 'start' => $d($start), 'end' => $d($start . ' +2 hours'), 'all_day' => false, 'location' => 'Düren'];
+        $groups = IcalProcessor::groupByTitle([
+            $ev('Kurs 10/2027 – Tag 1/2', '2027-03-01 08:00'), $ev('Kurs 2/2027 – Tag 2/2', '2027-02-08 08:00'),
+            $ev('Kurs 2/2027 – Tag 1/2', '2027-02-01 08:00'), $ev('kurs 2/2027 – Tag 3/3', '2027-02-15 08:00'),
+        ]);
+        self::assertSame(['Kurs 2/2027', 'Kurs 10/2027'], array_column($groups, 'title'), 'natürliche Zahlenfolge, Groß-/Kleinschreibung egal');
+        self::assertSame(3, $groups[0]['count']);
+        self::assertSame(['01.02.2027 08:00', '08.02.2027 08:00', '15.02.2027 08:00'], array_column($groups[0]['items'], 'when'));
+        self::assertSame('Düren', $groups[0]['items'][0]['location']);
     }
 
     public function testRejectedUploadsAndDiscard(): void
