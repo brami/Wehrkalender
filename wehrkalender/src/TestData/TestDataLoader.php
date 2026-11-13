@@ -534,7 +534,8 @@ final class TestDataLoader
 
     /**
      * Termine aus externen Quellen über die echte Verarbeitung (IcalProcessor):
-     * Kreis-Lehrgänge aus der Datei tests/fixtures/kreis-lehrgaenge-2027.ics (hochgeladen),
+     * Kreis-Lehrgänge aus der Datei src/TestData/dateien/kreis-lehrgaenge-2027.ics (hochgeladen;
+     * liegt unter src/, weil nur das ins Docker-Image kommt),
      * Abfallkalender als Serien (RRULE), Verband mit fehlerhaftem letzten Abruf.
      */
     private function externalEvents(DateTimeImmutable $today): void
@@ -545,7 +546,11 @@ final class TestDataLoader
 
         // Kreis: Datei hochgeladen und übernommen (vor 3 Tagen, von Michael)
         $this->at('-3 days');
-        $ics = (string) file_get_contents(dirname(__DIR__, 2) . '/tests/fixtures/kreis-lehrgaenge-2027.ics');
+        $file = __DIR__ . '/dateien/kreis-lehrgaenge-2027.ics';
+        $ics = @file_get_contents($file);
+        if ($ics === false || $ics === '') {
+            throw new \RuntimeException("Testdatei fehlt: $file");
+        }
         $events = $proc->parse($ics);
         $fileId = $db->insert('source_files', [
             'source_id' => $this->src['kreis'], 'name' => 'Lehrgaenge_Kreis_Dueren_2027.ics', 'ics' => $ics, 'sha256' => hash('sha256', $ics),

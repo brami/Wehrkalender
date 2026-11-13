@@ -20,7 +20,7 @@ use Wehrkalender\Web\WebApp;
 /** Verarbeitung externer Termine: Datei-Upload mit Vorschau, Feed-Abruf, Filter, Stand, Plausibilität */
 final class ExternalSourcesTest extends TestCase
 {
-    private const KREIS = __DIR__ . '/fixtures/kreis-lehrgaenge-2027.ics';
+    private const KREIS = __DIR__ . '/../src/TestData/dateien/kreis-lehrgaenge-2027.ics';
     private const KREIS_2026 = __DIR__ . '/fixtures/kreis-lehrgaenge-2026.ics';
 
     private function source(string $key, string $type = 'upload', array $extra = []): array
