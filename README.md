@@ -1,5 +1,7 @@
 # Wehrkalender
 
+Quellcode: https://github.com/brami/Wehrkalender
+
 Bringt die Termine einer Feuerwehr aus MP Feuer nur lesend auf die Geräte der Mitglieder: CalDAV für Smartphone und Tablet, Abo-Links für Outlook und Google Kalender, Terminübersicht als PDF, Verwaltung mit Nutzungsübersicht. Erster Einsatz: Freiwillige Feuerwehr Kreuzau.
 
 | Verzeichnis | Inhalt |
@@ -17,8 +19,8 @@ Bringt die Termine einer Feuerwehr aus MP Feuer nur lesend auf die Geräte der M
 ```sh
 zip -r wehrkalender.zip wehrkalender -x 'wehrkalender/vendor/*' 'wehrkalender/.env' 'wehrkalender/storage/*'
 cp server/setup-server-wehrkalender.sh .
-./setup-server-wehrkalender.sh -H <server> -d <domain>        # Erstinstallation
-./setup-server-wehrkalender.sh -H <server> -d <domain> -U     # Update
+./setup-server-wehrkalender.sh -H <server> -d <domain> -E test   # Erstinstallation (legt wehrkalender.env an)
+./setup-server-wehrkalender.sh -U                                # Update (Einstellungen aus wehrkalender.env)
 ```
 
 ## Dokumentation übersetzen

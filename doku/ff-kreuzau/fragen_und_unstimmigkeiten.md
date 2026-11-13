@@ -260,7 +260,7 @@ Abgestimmt mit M. Bramer.
 
 - **`FEED_BROWSER_NOTICE=1` einschalten**, sobald der Gerätetest bestätigt, dass Outlook (klassisch, neu, Web, Mac) und der Google Kalender ihre Abos weiter mit Terminen füllen (siehe E4).
 - **Betreiber für Impressum und Datenschutz klären** (Förderverein, FF oder Stadt?) und `BETREIBER_*` sowie `DATENSCHUTZ_KONTAKT` in der Einstellungsdatei des Setup-Skripts eintragen; Datenschutzhinweis mit der bzw. dem Datenschutzbeauftragten abstimmen (Seite ist noch als Entwurf markiert).
-- **`SOURCE_URL`** in der Einstellungsdatei des Setup-Skripts auf die Adresse des Git-Repositorys setzen, sobald es angelegt ist.
+- ~~`SOURCE_URL` setzen~~ – erledigt (13.11.2026): Repository https://github.com/brami/Wehrkalender (öffentlich); Vorgabe im Setup-Skript und in `.env.example`. Commits mit Autor m.bramer@deb-support.de.
 - **`composer.lock`** ins Repository aufnehmen, damit jeder Docker-Build dieselben Bibliotheksversionen verwendet.
 - **Echte Feed-Adressen** von Kreis (falls es einen Feed gibt) und Gemeinde (Abfall) beschaffen; Lehrgangskalender-Vorschlag mit MP Feuer klären (E7);
 - **Anleitung für Mitglieder** um „Kalender ein- und ausschalten“ ergänzen (neue Screenshots der Startseite).

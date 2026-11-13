@@ -253,7 +253,7 @@ cfg_template() {
 # ---------------------------------------------------------- Anwendung (.env)
 # APP_NAME="Kalender FF Musterstadt"  # Name in Oberfläche, E-Mails, auf den Geräten
 # WEHR_NAME="FF Musterstadt"          # Name der Wehr in Texten („Kalender der …“)
-# SOURCE_URL=https://github.com/<besitzer>/<repo>   # Quellcode-Link (AGPL-3.0)
+# SOURCE_URL=https://github.com/brami/Wehrkalender   # Quellcode-Link (AGPL-3.0); bei eigenen Änderungen: eigenes Repository
 # FEED_BROWSER_NOTICE=0               # 1 = Hinweisseite für Abo-Links im Browser (nach Gerätetest)
 
 # E-Mail-Versand (Betriebsdoku: „E-Mail-Versand einrichten“)
@@ -1425,7 +1425,7 @@ phase_app() {
   ensure_env MAIL_FROM_NAME     "Wehrkalender"
   ensure_env ADMIN_ALERT_EMAILS ""
   ensure_env FEED_BROWSER_NOTICE "0"         # 1 = Abo-Link im Browser zeigt Hinweisseite statt .ics (nach Gerätetest)
-  ensure_env SOURCE_URL          ""          # Link zum Quellcode im Seitenfuß (AGPL-3.0), z. B. https://github.com/<besitzer>/<repo>
+  ensure_env SOURCE_URL          "https://github.com/brami/Wehrkalender"   # Link zum Quellcode im Seitenfuß (AGPL-3.0); bei eigenen Änderungen auf das eigene Repository setzen
   # Impressum und Datenschutz: Betreiber des Dienstes (Anschrift: Zeilen mit ; trennen)
   ensure_env BETREIBER_NAME ""
   ensure_env BETREIBER_ANSCHRIFT ""
