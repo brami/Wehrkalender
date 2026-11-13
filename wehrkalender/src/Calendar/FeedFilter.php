@@ -26,6 +26,7 @@ final class FeedFilter
     ];
     public const OPS = [
         'contains' => 'enthält',
+        'not_contains' => 'enthält nicht',
         'starts' => 'beginnt mit',
         'regex' => 'regulärer Ausdruck',
     ];
@@ -145,6 +146,7 @@ final class FeedFilter
             $text = (string) ($event[$c['field']] ?? '');
             $ok = match ($c['op']) {
                 'contains' => mb_stripos($text, $c['value']) !== false,
+                'not_contains' => mb_stripos($text, $c['value']) === false,
                 'starts' => mb_stripos(ltrim($text), $c['value']) === 0,
                 'regex' => preg_match(self::regex($c['value']), $text) === 1,
             };

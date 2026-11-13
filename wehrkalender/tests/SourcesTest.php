@@ -67,6 +67,13 @@ final class SourcesTest extends TestCase
         self::assertTrue($starts->matches($this->ev('Dorffest', '2027-05-01', '2027-05-02', 'Feuerwehr, Fest')));
         self::assertFalse($starts->matches($this->ev('Konzert', '2027-05-01', '2027-05-02', 'Musik')));
 
+        // „enthält nicht“: alles außer Schadstoffen; ohne Kategorie zählt als „enthält nicht“
+        $not = FeedFilter::fromForm(['field' => ['categories'], 'op' => ['not_contains'], 'value' => ['schadstoffe']]);
+        self::assertTrue($not->matches($this->ev('Restmülltonne', '2027-01-04', '2027-01-04', 'Abfall,Restmülltonne')));
+        self::assertFalse($not->matches($this->ev('Schadstoffmobil', '2027-03-03 12:45', '2027-03-03 13:30', 'Abfall,Schadstoffe')));
+        self::assertTrue($not->matches($this->ev('Ohne Kategorie', '2027-01-04', '2027-01-04')));
+        self::assertSame('Kategorie enthält nicht „schadstoffe“', $not->describe());
+
         self::assertSame('alle Termine', FeedFilter::fromJson(null)->describe());
         self::assertNull((new FeedFilter())->toJson());
         foreach ([

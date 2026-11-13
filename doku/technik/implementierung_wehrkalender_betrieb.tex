@@ -461,9 +461,13 @@ neuen Passwörtern und Abo-Links für alle Mitglieder.
   \item Endpunkt \code{/health} für einen externen Uptime-Dienst. Antwort
         \code{200} mit \code{\{"status":"ok"\}}, wenn die Datenbank erreichbar
         ist und innerhalb der letzten 24 Stunden ein Export gesehen wurde
-        (auch ohne Änderungen) und der letzte Import nicht fehlgeschlagen
-        ist; sonst \code{503} mit \code{"status":"warning"} und der Liste der
-        Probleme.
+        (auch ohne Änderungen), der letzte Import nicht fehlgeschlagen
+        ist und keine externe Quelle ein Problem hat (Abruffehler, länger kein
+        Abruf, Dateien enden bald); sonst \code{503} mit
+        \code{"status":"warning"} und der Liste der Probleme. Ohne Anmeldung
+        erreichbar, \code{Cache-Control: no-store}. Solange der Import aus MP
+        Feuer fehlt, meldet \code{/health} immer \code{503} (\glqq noch kein
+        Export\grqq).
   \item E-Mail an alle Administratoren und an \code{ADMIN\_ALERT\_EMAILS}
         bei fehlgeschlagenem oder abgebrochenem Import und bei ausbleibenden
         Exporten (\code{monitor:check}, höchstens einmal täglich).

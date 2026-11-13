@@ -239,7 +239,7 @@ final class ExternalSourcesTest extends TestCase
         $now = $this->clock->nowDb();
         $f = fn (int $cal, array $cond) => $db->insert('calendar_feeds', ['calendar_id' => $cal, 'source_id' => $src['id'],
             'filter' => json_encode(['conditions' => [$cond]]), 'source_note' => 0, 'show_stand' => 1, 'active' => 1, 'created_at' => $now, 'updated_at' => $now]);
-        $f($abfall, ['field' => 'summary', 'op' => 'regex', 'value' => '^(?!Schadstoff)']);   // alles außer Schadstoffen
+        $f($abfall, ['field' => 'categories', 'op' => 'not_contains', 'value' => 'Schadstoffe']);   // alles außer Schadstoffen
         $f($schad, ['field' => 'categories', 'op' => 'contains', 'value' => 'Schadstoffe']);
 
         $this->web('POST', "/admin/quellen/{$src['id']}/datei", ['x' => '1'], ['datei' => $this->upload((string) file_get_contents(__DIR__ . '/fixtures/abfall-kreuzau-2026.ics'), 'Abfallkalender_Kreuzau_2026.ics')]);
