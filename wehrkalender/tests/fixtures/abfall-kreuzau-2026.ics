@@ -1,0 +1,1561 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Deb Support//Abfallkalender Kreuzau 2026//DE
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Abfallkalender Kreuzau 2026 (Ortsteil Kreuzau)
+X-WR-TIMEZONE:Europe/Berlin
+BEGIN:VTIMEZONE
+TZID:Europe/Berlin
+BEGIN:DAYLIGHT
+TZOFFSETFROM:+0100
+TZOFFSETTO:+0200
+TZNAME:CEST
+DTSTART:19700329T020000
+RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU
+END:DAYLIGHT
+BEGIN:STANDARD
+TZOFFSETFROM:+0200
+TZOFFSETTO:+0100
+TZNAME:CET
+DTSTART:19701025T030000
+RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-gelb-20260102@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260102
+DTEND;VALUE=DATE:20260103
+TRANSP:TRANSPARENT
+SUMMARY:Gelbe Tonne/Gelber Sack
+DESCRIPTION:Abfuhr: Gelbe Tonne/Gelber Sack\nQuelle: Abfallkalender 2026 Ge
+ meinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Gelbe Tonne/Gelber Sack
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-horm-20260102@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;TZID=Europe/Berlin:20260102T080000
+DTEND;TZID=Europe/Berlin:20260102T130000
+TRANSP:OPAQUE
+SUMMARY:Schadstoffannahme Entsorgungszentrum Horm
+DESCRIPTION:Schadstoffannahme im Entsorgungszentrum Horm\, 8:00–13:00 Uhr
+ \nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Schadstoffe
+LOCATION:Entsorgungszentrum Horm\, Pfarrer-Pleus-Straße 46\, 52393 Hürtge
+ nwald
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-grau-20260107@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260107
+DTEND;VALUE=DATE:20260108
+TRANSP:TRANSPARENT
+SUMMARY:Restmülltonne
+DESCRIPTION:Abfuhr: Restmülltonne\nQuelle: Abfallkalender 2026 Gemeinde Kr
+ euzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Restmülltonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-baum-20260109@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260109
+DTEND;VALUE=DATE:20260110
+TRANSP:TRANSPARENT
+SUMMARY:Weihnachtsbaum-Abfuhr
+DESCRIPTION:Abfuhr: Weihnachtsbaum-Abfuhr\nQuelle: Abfallkalender 2026 Geme
+ inde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Weihnachtsbaum-Abfuhr
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-blau-20260110@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260110
+DTEND;VALUE=DATE:20260111
+TRANSP:TRANSPARENT
+SUMMARY:Altpapiersammlung
+DESCRIPTION:Abfuhr: Altpapiersammlung\nQuelle: Abfallkalender 2026 Gemeinde
+  Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Altpapiersammlung
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-braun-20260114@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260114
+DTEND;VALUE=DATE:20260115
+TRANSP:TRANSPARENT
+SUMMARY:Biotonne
+DESCRIPTION:Abfuhr: Biotonne\nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\
+ , Ortsteil Kreuzau
+CATEGORIES:Abfall,Biotonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-gelb-20260115@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260115
+DTEND;VALUE=DATE:20260116
+TRANSP:TRANSPARENT
+SUMMARY:Gelbe Tonne/Gelber Sack
+DESCRIPTION:Abfuhr: Gelbe Tonne/Gelber Sack\nQuelle: Abfallkalender 2026 Ge
+ meinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Gelbe Tonne/Gelber Sack
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-horm-20260117@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;TZID=Europe/Berlin:20260117T080000
+DTEND;TZID=Europe/Berlin:20260117T130000
+TRANSP:OPAQUE
+SUMMARY:Schadstoffannahme Entsorgungszentrum Horm
+DESCRIPTION:Schadstoffannahme im Entsorgungszentrum Horm\, 8:00–13:00 Uhr
+ \nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Schadstoffe
+LOCATION:Entsorgungszentrum Horm\, Pfarrer-Pleus-Straße 46\, 52393 Hürtge
+ nwald
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-grau-20260121@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260121
+DTEND;VALUE=DATE:20260122
+TRANSP:TRANSPARENT
+SUMMARY:Restmülltonne
+DESCRIPTION:Abfuhr: Restmülltonne\nQuelle: Abfallkalender 2026 Gemeinde Kr
+ euzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Restmülltonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-braun-20260128@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260128
+DTEND;VALUE=DATE:20260129
+TRANSP:TRANSPARENT
+SUMMARY:Biotonne
+DESCRIPTION:Abfuhr: Biotonne\nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\
+ , Ortsteil Kreuzau
+CATEGORIES:Abfall,Biotonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-gelb-20260129@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260129
+DTEND;VALUE=DATE:20260130
+TRANSP:TRANSPARENT
+SUMMARY:Gelbe Tonne/Gelber Sack
+DESCRIPTION:Abfuhr: Gelbe Tonne/Gelber Sack\nQuelle: Abfallkalender 2026 Ge
+ meinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Gelbe Tonne/Gelber Sack
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-horm-20260130@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;TZID=Europe/Berlin:20260130T080000
+DTEND;TZID=Europe/Berlin:20260130T130000
+TRANSP:OPAQUE
+SUMMARY:Schadstoffannahme Entsorgungszentrum Horm
+DESCRIPTION:Schadstoffannahme im Entsorgungszentrum Horm\, 8:00–13:00 Uhr
+ \nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Schadstoffe
+LOCATION:Entsorgungszentrum Horm\, Pfarrer-Pleus-Straße 46\, 52393 Hürtge
+ nwald
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-grau-20260204@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260204
+DTEND;VALUE=DATE:20260205
+TRANSP:TRANSPARENT
+SUMMARY:Restmülltonne
+DESCRIPTION:Abfuhr: Restmülltonne\nQuelle: Abfallkalender 2026 Gemeinde Kr
+ euzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Restmülltonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-blau-20260207@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260207
+DTEND;VALUE=DATE:20260208
+TRANSP:TRANSPARENT
+SUMMARY:Altpapiersammlung
+DESCRIPTION:Abfuhr: Altpapiersammlung\nQuelle: Abfallkalender 2026 Gemeinde
+  Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Altpapiersammlung
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-braun-20260211@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260211
+DTEND;VALUE=DATE:20260212
+TRANSP:TRANSPARENT
+SUMMARY:Biotonne
+DESCRIPTION:Abfuhr: Biotonne\nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\
+ , Ortsteil Kreuzau
+CATEGORIES:Abfall,Biotonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-gelb-20260212@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260212
+DTEND;VALUE=DATE:20260213
+TRANSP:TRANSPARENT
+SUMMARY:Gelbe Tonne/Gelber Sack
+DESCRIPTION:Abfuhr: Gelbe Tonne/Gelber Sack\nQuelle: Abfallkalender 2026 Ge
+ meinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Gelbe Tonne/Gelber Sack
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-horm-20260214@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;TZID=Europe/Berlin:20260214T080000
+DTEND;TZID=Europe/Berlin:20260214T130000
+TRANSP:OPAQUE
+SUMMARY:Schadstoffannahme Entsorgungszentrum Horm
+DESCRIPTION:Schadstoffannahme im Entsorgungszentrum Horm\, 8:00–13:00 Uhr
+ \nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Schadstoffe
+LOCATION:Entsorgungszentrum Horm\, Pfarrer-Pleus-Straße 46\, 52393 Hürtge
+ nwald
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-grau-20260219@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260219
+DTEND;VALUE=DATE:20260220
+TRANSP:TRANSPARENT
+SUMMARY:Restmülltonne
+DESCRIPTION:Abfuhr: Restmülltonne\nQuelle: Abfallkalender 2026 Gemeinde Kr
+ euzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Restmülltonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-braun-20260225@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260225
+DTEND;VALUE=DATE:20260226
+TRANSP:TRANSPARENT
+SUMMARY:Biotonne
+DESCRIPTION:Abfuhr: Biotonne\nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\
+ , Ortsteil Kreuzau
+CATEGORIES:Abfall,Biotonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-gelb-20260226@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260226
+DTEND;VALUE=DATE:20260227
+TRANSP:TRANSPARENT
+SUMMARY:Gelbe Tonne/Gelber Sack
+DESCRIPTION:Abfuhr: Gelbe Tonne/Gelber Sack\nQuelle: Abfallkalender 2026 Ge
+ meinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Gelbe Tonne/Gelber Sack
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-horm-20260227@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;TZID=Europe/Berlin:20260227T080000
+DTEND;TZID=Europe/Berlin:20260227T130000
+TRANSP:OPAQUE
+SUMMARY:Schadstoffannahme Entsorgungszentrum Horm
+DESCRIPTION:Schadstoffannahme im Entsorgungszentrum Horm\, 8:00–13:00 Uhr
+ \nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Schadstoffe
+LOCATION:Entsorgungszentrum Horm\, Pfarrer-Pleus-Straße 46\, 52393 Hürtge
+ nwald
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-grau-20260304@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260304
+DTEND;VALUE=DATE:20260305
+TRANSP:TRANSPARENT
+SUMMARY:Restmülltonne
+DESCRIPTION:Abfuhr: Restmülltonne\nQuelle: Abfallkalender 2026 Gemeinde Kr
+ euzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Restmülltonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-mobil-20260304@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;TZID=Europe/Berlin:20260304T100000
+DTEND;TZID=Europe/Berlin:20260304T104500
+TRANSP:OPAQUE
+SUMMARY:Schadstoffmobil
+DESCRIPTION:Schadstoffmobil (Abgabe bis 15 kg / 15 l)\nStandorte am selben 
+ Tag:\nKreuzau 10:00–10:45 Uhr\, Windener Weg\nObermaubach 11:00–11:45 
+ Uhr\, Parkplatz Seestraße\, Ortseingang\nDrove 12:45–13:30 Uhr\, Parkpl
+ atz Wewordenstraße\, Kirmesplatz\nStockheim 14:00–14:45 Uhr\, Parkplatz
+  „An der Tränke“\nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\, Orts
+ teil Kreuzau
+CATEGORIES:Abfall,Schadstoffe
+LOCATION:Windener Weg\, Kreuzau
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-braun-20260311@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260311
+DTEND;VALUE=DATE:20260312
+TRANSP:TRANSPARENT
+SUMMARY:Biotonne
+DESCRIPTION:Abfuhr: Biotonne\nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\
+ , Ortsteil Kreuzau
+CATEGORIES:Abfall,Biotonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-gelb-20260312@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260312
+DTEND;VALUE=DATE:20260313
+TRANSP:TRANSPARENT
+SUMMARY:Gelbe Tonne/Gelber Sack
+DESCRIPTION:Abfuhr: Gelbe Tonne/Gelber Sack\nQuelle: Abfallkalender 2026 Ge
+ meinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Gelbe Tonne/Gelber Sack
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-blau-20260314@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260314
+DTEND;VALUE=DATE:20260315
+TRANSP:TRANSPARENT
+SUMMARY:Altpapiersammlung
+DESCRIPTION:Abfuhr: Altpapiersammlung\nQuelle: Abfallkalender 2026 Gemeinde
+  Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Altpapiersammlung
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-horm-20260314@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;TZID=Europe/Berlin:20260314T080000
+DTEND;TZID=Europe/Berlin:20260314T130000
+TRANSP:OPAQUE
+SUMMARY:Schadstoffannahme Entsorgungszentrum Horm
+DESCRIPTION:Schadstoffannahme im Entsorgungszentrum Horm\, 8:00–13:00 Uhr
+ \nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Schadstoffe
+LOCATION:Entsorgungszentrum Horm\, Pfarrer-Pleus-Straße 46\, 52393 Hürtge
+ nwald
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-grau-20260318@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260318
+DTEND;VALUE=DATE:20260319
+TRANSP:TRANSPARENT
+SUMMARY:Restmülltonne
+DESCRIPTION:Abfuhr: Restmülltonne\nQuelle: Abfallkalender 2026 Gemeinde Kr
+ euzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Restmülltonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-braun-20260325@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260325
+DTEND;VALUE=DATE:20260326
+TRANSP:TRANSPARENT
+SUMMARY:Biotonne
+DESCRIPTION:Abfuhr: Biotonne\nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\
+ , Ortsteil Kreuzau
+CATEGORIES:Abfall,Biotonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-gelb-20260326@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260326
+DTEND;VALUE=DATE:20260327
+TRANSP:TRANSPARENT
+SUMMARY:Gelbe Tonne/Gelber Sack
+DESCRIPTION:Abfuhr: Gelbe Tonne/Gelber Sack\nQuelle: Abfallkalender 2026 Ge
+ meinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Gelbe Tonne/Gelber Sack
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-horm-20260327@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;TZID=Europe/Berlin:20260327T080000
+DTEND;TZID=Europe/Berlin:20260327T130000
+TRANSP:OPAQUE
+SUMMARY:Schadstoffannahme Entsorgungszentrum Horm
+DESCRIPTION:Schadstoffannahme im Entsorgungszentrum Horm\, 8:00–13:00 Uhr
+ \nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Schadstoffe
+LOCATION:Entsorgungszentrum Horm\, Pfarrer-Pleus-Straße 46\, 52393 Hürtge
+ nwald
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-grau-20260401@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260401
+DTEND;VALUE=DATE:20260402
+TRANSP:TRANSPARENT
+SUMMARY:Restmülltonne
+DESCRIPTION:Abfuhr: Restmülltonne\nQuelle: Abfallkalender 2026 Gemeinde Kr
+ euzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Restmülltonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-braun-20260409@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260409
+DTEND;VALUE=DATE:20260410
+TRANSP:TRANSPARENT
+SUMMARY:Biotonne
+DESCRIPTION:Abfuhr: Biotonne\nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\
+ , Ortsteil Kreuzau
+CATEGORIES:Abfall,Biotonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-gelb-20260410@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260410
+DTEND;VALUE=DATE:20260411
+TRANSP:TRANSPARENT
+SUMMARY:Gelbe Tonne/Gelber Sack
+DESCRIPTION:Abfuhr: Gelbe Tonne/Gelber Sack\nQuelle: Abfallkalender 2026 Ge
+ meinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Gelbe Tonne/Gelber Sack
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-horm-20260411@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;TZID=Europe/Berlin:20260411T080000
+DTEND;TZID=Europe/Berlin:20260411T130000
+TRANSP:OPAQUE
+SUMMARY:Schadstoffannahme Entsorgungszentrum Horm
+DESCRIPTION:Schadstoffannahme im Entsorgungszentrum Horm\, 8:00–13:00 Uhr
+ \nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Schadstoffe
+LOCATION:Entsorgungszentrum Horm\, Pfarrer-Pleus-Straße 46\, 52393 Hürtge
+ nwald
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-grau-20260415@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260415
+DTEND;VALUE=DATE:20260416
+TRANSP:TRANSPARENT
+SUMMARY:Restmülltonne
+DESCRIPTION:Abfuhr: Restmülltonne\nQuelle: Abfallkalender 2026 Gemeinde Kr
+ euzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Restmülltonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-blau-20260418@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260418
+DTEND;VALUE=DATE:20260419
+TRANSP:TRANSPARENT
+SUMMARY:Altpapiersammlung
+DESCRIPTION:Abfuhr: Altpapiersammlung\nQuelle: Abfallkalender 2026 Gemeinde
+  Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Altpapiersammlung
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-braun-20260422@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260422
+DTEND;VALUE=DATE:20260423
+TRANSP:TRANSPARENT
+SUMMARY:Biotonne
+DESCRIPTION:Abfuhr: Biotonne\nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\
+ , Ortsteil Kreuzau
+CATEGORIES:Abfall,Biotonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-gelb-20260423@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260423
+DTEND;VALUE=DATE:20260424
+TRANSP:TRANSPARENT
+SUMMARY:Gelbe Tonne/Gelber Sack
+DESCRIPTION:Abfuhr: Gelbe Tonne/Gelber Sack\nQuelle: Abfallkalender 2026 Ge
+ meinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Gelbe Tonne/Gelber Sack
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-horm-20260424@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;TZID=Europe/Berlin:20260424T080000
+DTEND;TZID=Europe/Berlin:20260424T130000
+TRANSP:OPAQUE
+SUMMARY:Schadstoffannahme Entsorgungszentrum Horm
+DESCRIPTION:Schadstoffannahme im Entsorgungszentrum Horm\, 8:00–13:00 Uhr
+ \nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Schadstoffe
+LOCATION:Entsorgungszentrum Horm\, Pfarrer-Pleus-Straße 46\, 52393 Hürtge
+ nwald
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-grau-20260429@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260429
+DTEND;VALUE=DATE:20260430
+TRANSP:TRANSPARENT
+SUMMARY:Restmülltonne
+DESCRIPTION:Abfuhr: Restmülltonne\nQuelle: Abfallkalender 2026 Gemeinde Kr
+ euzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Restmülltonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-braun-20260506@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260506
+DTEND;VALUE=DATE:20260507
+TRANSP:TRANSPARENT
+SUMMARY:Biotonne
+DESCRIPTION:Abfuhr: Biotonne\nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\
+ , Ortsteil Kreuzau
+CATEGORIES:Abfall,Biotonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-gelb-20260507@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260507
+DTEND;VALUE=DATE:20260508
+TRANSP:TRANSPARENT
+SUMMARY:Gelbe Tonne/Gelber Sack
+DESCRIPTION:Abfuhr: Gelbe Tonne/Gelber Sack\nQuelle: Abfallkalender 2026 Ge
+ meinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Gelbe Tonne/Gelber Sack
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-horm-20260509@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;TZID=Europe/Berlin:20260509T080000
+DTEND;TZID=Europe/Berlin:20260509T130000
+TRANSP:OPAQUE
+SUMMARY:Schadstoffannahme Entsorgungszentrum Horm
+DESCRIPTION:Schadstoffannahme im Entsorgungszentrum Horm\, 8:00–13:00 Uhr
+ \nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Schadstoffe
+LOCATION:Entsorgungszentrum Horm\, Pfarrer-Pleus-Straße 46\, 52393 Hürtge
+ nwald
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-grau-20260513@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260513
+DTEND;VALUE=DATE:20260514
+TRANSP:TRANSPARENT
+SUMMARY:Restmülltonne
+DESCRIPTION:Abfuhr: Restmülltonne\nQuelle: Abfallkalender 2026 Gemeinde Kr
+ euzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Restmülltonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-braun-20260520@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260520
+DTEND;VALUE=DATE:20260521
+TRANSP:TRANSPARENT
+SUMMARY:Biotonne
+DESCRIPTION:Abfuhr: Biotonne\nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\
+ , Ortsteil Kreuzau
+CATEGORIES:Abfall,Biotonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-gelb-20260521@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260521
+DTEND;VALUE=DATE:20260522
+TRANSP:TRANSPARENT
+SUMMARY:Gelbe Tonne/Gelber Sack
+DESCRIPTION:Abfuhr: Gelbe Tonne/Gelber Sack\nQuelle: Abfallkalender 2026 Ge
+ meinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Gelbe Tonne/Gelber Sack
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-horm-20260522@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;TZID=Europe/Berlin:20260522T080000
+DTEND;TZID=Europe/Berlin:20260522T130000
+TRANSP:OPAQUE
+SUMMARY:Schadstoffannahme Entsorgungszentrum Horm
+DESCRIPTION:Schadstoffannahme im Entsorgungszentrum Horm\, 8:00–13:00 Uhr
+ \nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Schadstoffe
+LOCATION:Entsorgungszentrum Horm\, Pfarrer-Pleus-Straße 46\, 52393 Hürtge
+ nwald
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-blau-20260523@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260523
+DTEND;VALUE=DATE:20260524
+TRANSP:TRANSPARENT
+SUMMARY:Altpapiersammlung
+DESCRIPTION:Abfuhr: Altpapiersammlung\nQuelle: Abfallkalender 2026 Gemeinde
+  Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Altpapiersammlung
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-grau-20260528@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260528
+DTEND;VALUE=DATE:20260529
+TRANSP:TRANSPARENT
+SUMMARY:Restmülltonne
+DESCRIPTION:Abfuhr: Restmülltonne\nQuelle: Abfallkalender 2026 Gemeinde Kr
+ euzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Restmülltonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-braun-20260603@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260603
+DTEND;VALUE=DATE:20260604
+TRANSP:TRANSPARENT
+SUMMARY:Biotonne
+DESCRIPTION:Abfuhr: Biotonne\nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\
+ , Ortsteil Kreuzau
+CATEGORIES:Abfall,Biotonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-gelb-20260605@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260605
+DTEND;VALUE=DATE:20260606
+TRANSP:TRANSPARENT
+SUMMARY:Gelbe Tonne/Gelber Sack
+DESCRIPTION:Abfuhr: Gelbe Tonne/Gelber Sack\nQuelle: Abfallkalender 2026 Ge
+ meinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Gelbe Tonne/Gelber Sack
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-horm-20260606@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;TZID=Europe/Berlin:20260606T080000
+DTEND;TZID=Europe/Berlin:20260606T130000
+TRANSP:OPAQUE
+SUMMARY:Schadstoffannahme Entsorgungszentrum Horm
+DESCRIPTION:Schadstoffannahme im Entsorgungszentrum Horm\, 8:00–13:00 Uhr
+ \nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Schadstoffe
+LOCATION:Entsorgungszentrum Horm\, Pfarrer-Pleus-Straße 46\, 52393 Hürtge
+ nwald
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-grau-20260610@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260610
+DTEND;VALUE=DATE:20260611
+TRANSP:TRANSPARENT
+SUMMARY:Restmülltonne
+DESCRIPTION:Abfuhr: Restmülltonne\nQuelle: Abfallkalender 2026 Gemeinde Kr
+ euzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Restmülltonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-mobil-20260610@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;TZID=Europe/Berlin:20260610T100000
+DTEND;TZID=Europe/Berlin:20260610T104500
+TRANSP:OPAQUE
+SUMMARY:Schadstoffmobil
+DESCRIPTION:Schadstoffmobil (Abgabe bis 15 kg / 15 l)\nStandorte am selben 
+ Tag:\nKreuzau 10:00–10:45 Uhr\, Windener Weg\nObermaubach 11:00–11:45 
+ Uhr\, Parkplatz Seestraße\, Ortseingang\nDrove 12:45–13:30 Uhr\, Parkpl
+ atz Wewordenstraße\, Kirmesplatz\nStockheim 14:00–14:45 Uhr\, Parkplatz
+  „An der Tränke“\nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\, Orts
+ teil Kreuzau
+CATEGORIES:Abfall,Schadstoffe
+LOCATION:Windener Weg\, Kreuzau
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-braun-20260617@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260617
+DTEND;VALUE=DATE:20260618
+TRANSP:TRANSPARENT
+SUMMARY:Biotonne
+DESCRIPTION:Abfuhr: Biotonne\nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\
+ , Ortsteil Kreuzau
+CATEGORIES:Abfall,Biotonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-gelb-20260618@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260618
+DTEND;VALUE=DATE:20260619
+TRANSP:TRANSPARENT
+SUMMARY:Gelbe Tonne/Gelber Sack
+DESCRIPTION:Abfuhr: Gelbe Tonne/Gelber Sack\nQuelle: Abfallkalender 2026 Ge
+ meinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Gelbe Tonne/Gelber Sack
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-horm-20260619@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;TZID=Europe/Berlin:20260619T080000
+DTEND;TZID=Europe/Berlin:20260619T130000
+TRANSP:OPAQUE
+SUMMARY:Schadstoffannahme Entsorgungszentrum Horm
+DESCRIPTION:Schadstoffannahme im Entsorgungszentrum Horm\, 8:00–13:00 Uhr
+ \nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Schadstoffe
+LOCATION:Entsorgungszentrum Horm\, Pfarrer-Pleus-Straße 46\, 52393 Hürtge
+ nwald
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-blau-20260620@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260620
+DTEND;VALUE=DATE:20260621
+TRANSP:TRANSPARENT
+SUMMARY:Altpapiersammlung
+DESCRIPTION:Abfuhr: Altpapiersammlung\nQuelle: Abfallkalender 2026 Gemeinde
+  Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Altpapiersammlung
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-grau-20260624@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260624
+DTEND;VALUE=DATE:20260625
+TRANSP:TRANSPARENT
+SUMMARY:Restmülltonne
+DESCRIPTION:Abfuhr: Restmülltonne\nQuelle: Abfallkalender 2026 Gemeinde Kr
+ euzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Restmülltonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-braun-20260701@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260701
+DTEND;VALUE=DATE:20260702
+TRANSP:TRANSPARENT
+SUMMARY:Biotonne
+DESCRIPTION:Abfuhr: Biotonne\nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\
+ , Ortsteil Kreuzau
+CATEGORIES:Abfall,Biotonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-gelb-20260702@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260702
+DTEND;VALUE=DATE:20260703
+TRANSP:TRANSPARENT
+SUMMARY:Gelbe Tonne/Gelber Sack
+DESCRIPTION:Abfuhr: Gelbe Tonne/Gelber Sack\nQuelle: Abfallkalender 2026 Ge
+ meinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Gelbe Tonne/Gelber Sack
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-horm-20260704@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;TZID=Europe/Berlin:20260704T080000
+DTEND;TZID=Europe/Berlin:20260704T130000
+TRANSP:OPAQUE
+SUMMARY:Schadstoffannahme Entsorgungszentrum Horm
+DESCRIPTION:Schadstoffannahme im Entsorgungszentrum Horm\, 8:00–13:00 Uhr
+ \nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Schadstoffe
+LOCATION:Entsorgungszentrum Horm\, Pfarrer-Pleus-Straße 46\, 52393 Hürtge
+ nwald
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-grau-20260708@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260708
+DTEND;VALUE=DATE:20260709
+TRANSP:TRANSPARENT
+SUMMARY:Restmülltonne
+DESCRIPTION:Abfuhr: Restmülltonne\nQuelle: Abfallkalender 2026 Gemeinde Kr
+ euzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Restmülltonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-braun-20260715@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260715
+DTEND;VALUE=DATE:20260716
+TRANSP:TRANSPARENT
+SUMMARY:Biotonne
+DESCRIPTION:Abfuhr: Biotonne\nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\
+ , Ortsteil Kreuzau
+CATEGORIES:Abfall,Biotonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-gelb-20260716@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260716
+DTEND;VALUE=DATE:20260717
+TRANSP:TRANSPARENT
+SUMMARY:Gelbe Tonne/Gelber Sack
+DESCRIPTION:Abfuhr: Gelbe Tonne/Gelber Sack\nQuelle: Abfallkalender 2026 Ge
+ meinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Gelbe Tonne/Gelber Sack
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-horm-20260717@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;TZID=Europe/Berlin:20260717T080000
+DTEND;TZID=Europe/Berlin:20260717T130000
+TRANSP:OPAQUE
+SUMMARY:Schadstoffannahme Entsorgungszentrum Horm
+DESCRIPTION:Schadstoffannahme im Entsorgungszentrum Horm\, 8:00–13:00 Uhr
+ \nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Schadstoffe
+LOCATION:Entsorgungszentrum Horm\, Pfarrer-Pleus-Straße 46\, 52393 Hürtge
+ nwald
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-blau-20260718@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260718
+DTEND;VALUE=DATE:20260719
+TRANSP:TRANSPARENT
+SUMMARY:Altpapiersammlung
+DESCRIPTION:Abfuhr: Altpapiersammlung\nQuelle: Abfallkalender 2026 Gemeinde
+  Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Altpapiersammlung
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-grau-20260722@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260722
+DTEND;VALUE=DATE:20260723
+TRANSP:TRANSPARENT
+SUMMARY:Restmülltonne
+DESCRIPTION:Abfuhr: Restmülltonne\nQuelle: Abfallkalender 2026 Gemeinde Kr
+ euzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Restmülltonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-braun-20260729@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260729
+DTEND;VALUE=DATE:20260730
+TRANSP:TRANSPARENT
+SUMMARY:Biotonne
+DESCRIPTION:Abfuhr: Biotonne\nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\
+ , Ortsteil Kreuzau
+CATEGORIES:Abfall,Biotonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-gelb-20260730@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260730
+DTEND;VALUE=DATE:20260731
+TRANSP:TRANSPARENT
+SUMMARY:Gelbe Tonne/Gelber Sack
+DESCRIPTION:Abfuhr: Gelbe Tonne/Gelber Sack\nQuelle: Abfallkalender 2026 Ge
+ meinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Gelbe Tonne/Gelber Sack
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-horm-20260801@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;TZID=Europe/Berlin:20260801T080000
+DTEND;TZID=Europe/Berlin:20260801T130000
+TRANSP:OPAQUE
+SUMMARY:Schadstoffannahme Entsorgungszentrum Horm
+DESCRIPTION:Schadstoffannahme im Entsorgungszentrum Horm\, 8:00–13:00 Uhr
+ \nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Schadstoffe
+LOCATION:Entsorgungszentrum Horm\, Pfarrer-Pleus-Straße 46\, 52393 Hürtge
+ nwald
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-grau-20260805@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260805
+DTEND;VALUE=DATE:20260806
+TRANSP:TRANSPARENT
+SUMMARY:Restmülltonne
+DESCRIPTION:Abfuhr: Restmülltonne\nQuelle: Abfallkalender 2026 Gemeinde Kr
+ euzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Restmülltonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-braun-20260812@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260812
+DTEND;VALUE=DATE:20260813
+TRANSP:TRANSPARENT
+SUMMARY:Biotonne
+DESCRIPTION:Abfuhr: Biotonne\nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\
+ , Ortsteil Kreuzau
+CATEGORIES:Abfall,Biotonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-gelb-20260813@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260813
+DTEND;VALUE=DATE:20260814
+TRANSP:TRANSPARENT
+SUMMARY:Gelbe Tonne/Gelber Sack
+DESCRIPTION:Abfuhr: Gelbe Tonne/Gelber Sack\nQuelle: Abfallkalender 2026 Ge
+ meinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Gelbe Tonne/Gelber Sack
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-horm-20260814@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;TZID=Europe/Berlin:20260814T080000
+DTEND;TZID=Europe/Berlin:20260814T130000
+TRANSP:OPAQUE
+SUMMARY:Schadstoffannahme Entsorgungszentrum Horm
+DESCRIPTION:Schadstoffannahme im Entsorgungszentrum Horm\, 8:00–13:00 Uhr
+ \nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Schadstoffe
+LOCATION:Entsorgungszentrum Horm\, Pfarrer-Pleus-Straße 46\, 52393 Hürtge
+ nwald
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-blau-20260815@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260815
+DTEND;VALUE=DATE:20260816
+TRANSP:TRANSPARENT
+SUMMARY:Altpapiersammlung
+DESCRIPTION:Abfuhr: Altpapiersammlung\nQuelle: Abfallkalender 2026 Gemeinde
+  Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Altpapiersammlung
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-grau-20260819@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260819
+DTEND;VALUE=DATE:20260820
+TRANSP:TRANSPARENT
+SUMMARY:Restmülltonne
+DESCRIPTION:Abfuhr: Restmülltonne\nQuelle: Abfallkalender 2026 Gemeinde Kr
+ euzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Restmülltonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-braun-20260826@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260826
+DTEND;VALUE=DATE:20260827
+TRANSP:TRANSPARENT
+SUMMARY:Biotonne
+DESCRIPTION:Abfuhr: Biotonne\nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\
+ , Ortsteil Kreuzau
+CATEGORIES:Abfall,Biotonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-gelb-20260827@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260827
+DTEND;VALUE=DATE:20260828
+TRANSP:TRANSPARENT
+SUMMARY:Gelbe Tonne/Gelber Sack
+DESCRIPTION:Abfuhr: Gelbe Tonne/Gelber Sack\nQuelle: Abfallkalender 2026 Ge
+ meinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Gelbe Tonne/Gelber Sack
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-horm-20260829@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;TZID=Europe/Berlin:20260829T080000
+DTEND;TZID=Europe/Berlin:20260829T130000
+TRANSP:OPAQUE
+SUMMARY:Schadstoffannahme Entsorgungszentrum Horm
+DESCRIPTION:Schadstoffannahme im Entsorgungszentrum Horm\, 8:00–13:00 Uhr
+ \nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Schadstoffe
+LOCATION:Entsorgungszentrum Horm\, Pfarrer-Pleus-Straße 46\, 52393 Hürtge
+ nwald
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-grau-20260902@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260902
+DTEND;VALUE=DATE:20260903
+TRANSP:TRANSPARENT
+SUMMARY:Restmülltonne
+DESCRIPTION:Abfuhr: Restmülltonne\nQuelle: Abfallkalender 2026 Gemeinde Kr
+ euzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Restmülltonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-braun-20260909@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260909
+DTEND;VALUE=DATE:20260910
+TRANSP:TRANSPARENT
+SUMMARY:Biotonne
+DESCRIPTION:Abfuhr: Biotonne\nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\
+ , Ortsteil Kreuzau
+CATEGORIES:Abfall,Biotonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-mobil-20260909@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;TZID=Europe/Berlin:20260909T100000
+DTEND;TZID=Europe/Berlin:20260909T104500
+TRANSP:OPAQUE
+SUMMARY:Schadstoffmobil
+DESCRIPTION:Schadstoffmobil (Abgabe bis 15 kg / 15 l)\nStandorte am selben 
+ Tag:\nKreuzau 10:00–10:45 Uhr\, Windener Weg\nObermaubach 11:00–11:45 
+ Uhr\, Parkplatz Seestraße\, Ortseingang\nDrove 12:45–13:30 Uhr\, Parkpl
+ atz Wewordenstraße\, Kirmesplatz\nStockheim 14:00–14:45 Uhr\, Parkplatz
+  „An der Tränke“\nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\, Orts
+ teil Kreuzau
+CATEGORIES:Abfall,Schadstoffe
+LOCATION:Windener Weg\, Kreuzau
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-gelb-20260910@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260910
+DTEND;VALUE=DATE:20260911
+TRANSP:TRANSPARENT
+SUMMARY:Gelbe Tonne/Gelber Sack
+DESCRIPTION:Abfuhr: Gelbe Tonne/Gelber Sack\nQuelle: Abfallkalender 2026 Ge
+ meinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Gelbe Tonne/Gelber Sack
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-horm-20260911@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;TZID=Europe/Berlin:20260911T080000
+DTEND;TZID=Europe/Berlin:20260911T130000
+TRANSP:OPAQUE
+SUMMARY:Schadstoffannahme Entsorgungszentrum Horm
+DESCRIPTION:Schadstoffannahme im Entsorgungszentrum Horm\, 8:00–13:00 Uhr
+ \nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Schadstoffe
+LOCATION:Entsorgungszentrum Horm\, Pfarrer-Pleus-Straße 46\, 52393 Hürtge
+ nwald
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-grau-20260916@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260916
+DTEND;VALUE=DATE:20260917
+TRANSP:TRANSPARENT
+SUMMARY:Restmülltonne
+DESCRIPTION:Abfuhr: Restmülltonne\nQuelle: Abfallkalender 2026 Gemeinde Kr
+ euzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Restmülltonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-blau-20260919@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260919
+DTEND;VALUE=DATE:20260920
+TRANSP:TRANSPARENT
+SUMMARY:Altpapiersammlung
+DESCRIPTION:Abfuhr: Altpapiersammlung\nQuelle: Abfallkalender 2026 Gemeinde
+  Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Altpapiersammlung
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-braun-20260923@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260923
+DTEND;VALUE=DATE:20260924
+TRANSP:TRANSPARENT
+SUMMARY:Biotonne
+DESCRIPTION:Abfuhr: Biotonne\nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\
+ , Ortsteil Kreuzau
+CATEGORIES:Abfall,Biotonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-gelb-20260924@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260924
+DTEND;VALUE=DATE:20260925
+TRANSP:TRANSPARENT
+SUMMARY:Gelbe Tonne/Gelber Sack
+DESCRIPTION:Abfuhr: Gelbe Tonne/Gelber Sack\nQuelle: Abfallkalender 2026 Ge
+ meinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Gelbe Tonne/Gelber Sack
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-horm-20260926@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;TZID=Europe/Berlin:20260926T080000
+DTEND;TZID=Europe/Berlin:20260926T130000
+TRANSP:OPAQUE
+SUMMARY:Schadstoffannahme Entsorgungszentrum Horm
+DESCRIPTION:Schadstoffannahme im Entsorgungszentrum Horm\, 8:00–13:00 Uhr
+ \nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Schadstoffe
+LOCATION:Entsorgungszentrum Horm\, Pfarrer-Pleus-Straße 46\, 52393 Hürtge
+ nwald
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-grau-20260930@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20260930
+DTEND;VALUE=DATE:20261001
+TRANSP:TRANSPARENT
+SUMMARY:Restmülltonne
+DESCRIPTION:Abfuhr: Restmülltonne\nQuelle: Abfallkalender 2026 Gemeinde Kr
+ euzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Restmülltonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-braun-20261007@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20261007
+DTEND;VALUE=DATE:20261008
+TRANSP:TRANSPARENT
+SUMMARY:Biotonne
+DESCRIPTION:Abfuhr: Biotonne\nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\
+ , Ortsteil Kreuzau
+CATEGORIES:Abfall,Biotonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-gelb-20261008@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20261008
+DTEND;VALUE=DATE:20261009
+TRANSP:TRANSPARENT
+SUMMARY:Gelbe Tonne/Gelber Sack
+DESCRIPTION:Abfuhr: Gelbe Tonne/Gelber Sack\nQuelle: Abfallkalender 2026 Ge
+ meinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Gelbe Tonne/Gelber Sack
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-horm-20261009@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;TZID=Europe/Berlin:20261009T080000
+DTEND;TZID=Europe/Berlin:20261009T130000
+TRANSP:OPAQUE
+SUMMARY:Schadstoffannahme Entsorgungszentrum Horm
+DESCRIPTION:Schadstoffannahme im Entsorgungszentrum Horm\, 8:00–13:00 Uhr
+ \nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Schadstoffe
+LOCATION:Entsorgungszentrum Horm\, Pfarrer-Pleus-Straße 46\, 52393 Hürtge
+ nwald
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-blau-20261010@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20261010
+DTEND;VALUE=DATE:20261011
+TRANSP:TRANSPARENT
+SUMMARY:Altpapiersammlung
+DESCRIPTION:Abfuhr: Altpapiersammlung\nQuelle: Abfallkalender 2026 Gemeinde
+  Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Altpapiersammlung
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-grau-20261014@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20261014
+DTEND;VALUE=DATE:20261015
+TRANSP:TRANSPARENT
+SUMMARY:Restmülltonne
+DESCRIPTION:Abfuhr: Restmülltonne\nQuelle: Abfallkalender 2026 Gemeinde Kr
+ euzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Restmülltonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-braun-20261021@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20261021
+DTEND;VALUE=DATE:20261022
+TRANSP:TRANSPARENT
+SUMMARY:Biotonne
+DESCRIPTION:Abfuhr: Biotonne\nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\
+ , Ortsteil Kreuzau
+CATEGORIES:Abfall,Biotonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-gelb-20261022@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20261022
+DTEND;VALUE=DATE:20261023
+TRANSP:TRANSPARENT
+SUMMARY:Gelbe Tonne/Gelber Sack
+DESCRIPTION:Abfuhr: Gelbe Tonne/Gelber Sack\nQuelle: Abfallkalender 2026 Ge
+ meinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Gelbe Tonne/Gelber Sack
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-horm-20261024@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;TZID=Europe/Berlin:20261024T080000
+DTEND;TZID=Europe/Berlin:20261024T130000
+TRANSP:OPAQUE
+SUMMARY:Schadstoffannahme Entsorgungszentrum Horm
+DESCRIPTION:Schadstoffannahme im Entsorgungszentrum Horm\, 8:00–13:00 Uhr
+ \nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Schadstoffe
+LOCATION:Entsorgungszentrum Horm\, Pfarrer-Pleus-Straße 46\, 52393 Hürtge
+ nwald
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-grau-20261028@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20261028
+DTEND;VALUE=DATE:20261029
+TRANSP:TRANSPARENT
+SUMMARY:Restmülltonne
+DESCRIPTION:Abfuhr: Restmülltonne\nQuelle: Abfallkalender 2026 Gemeinde Kr
+ euzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Restmülltonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-braun-20261104@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20261104
+DTEND;VALUE=DATE:20261105
+TRANSP:TRANSPARENT
+SUMMARY:Biotonne
+DESCRIPTION:Abfuhr: Biotonne\nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\
+ , Ortsteil Kreuzau
+CATEGORIES:Abfall,Biotonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-gelb-20261105@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20261105
+DTEND;VALUE=DATE:20261106
+TRANSP:TRANSPARENT
+SUMMARY:Gelbe Tonne/Gelber Sack
+DESCRIPTION:Abfuhr: Gelbe Tonne/Gelber Sack\nQuelle: Abfallkalender 2026 Ge
+ meinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Gelbe Tonne/Gelber Sack
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-horm-20261106@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;TZID=Europe/Berlin:20261106T080000
+DTEND;TZID=Europe/Berlin:20261106T130000
+TRANSP:OPAQUE
+SUMMARY:Schadstoffannahme Entsorgungszentrum Horm
+DESCRIPTION:Schadstoffannahme im Entsorgungszentrum Horm\, 8:00–13:00 Uhr
+ \nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Schadstoffe
+LOCATION:Entsorgungszentrum Horm\, Pfarrer-Pleus-Straße 46\, 52393 Hürtge
+ nwald
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-blau-20261107@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20261107
+DTEND;VALUE=DATE:20261108
+TRANSP:TRANSPARENT
+SUMMARY:Altpapiersammlung
+DESCRIPTION:Abfuhr: Altpapiersammlung\nQuelle: Abfallkalender 2026 Gemeinde
+  Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Altpapiersammlung
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-grau-20261111@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20261111
+DTEND;VALUE=DATE:20261112
+TRANSP:TRANSPARENT
+SUMMARY:Restmülltonne
+DESCRIPTION:Abfuhr: Restmülltonne\nQuelle: Abfallkalender 2026 Gemeinde Kr
+ euzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Restmülltonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-braun-20261118@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20261118
+DTEND;VALUE=DATE:20261119
+TRANSP:TRANSPARENT
+SUMMARY:Biotonne
+DESCRIPTION:Abfuhr: Biotonne\nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\
+ , Ortsteil Kreuzau
+CATEGORIES:Abfall,Biotonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-gelb-20261119@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20261119
+DTEND;VALUE=DATE:20261120
+TRANSP:TRANSPARENT
+SUMMARY:Gelbe Tonne/Gelber Sack
+DESCRIPTION:Abfuhr: Gelbe Tonne/Gelber Sack\nQuelle: Abfallkalender 2026 Ge
+ meinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Gelbe Tonne/Gelber Sack
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-horm-20261121@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;TZID=Europe/Berlin:20261121T080000
+DTEND;TZID=Europe/Berlin:20261121T130000
+TRANSP:OPAQUE
+SUMMARY:Schadstoffannahme Entsorgungszentrum Horm
+DESCRIPTION:Schadstoffannahme im Entsorgungszentrum Horm\, 8:00–13:00 Uhr
+ \nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Schadstoffe
+LOCATION:Entsorgungszentrum Horm\, Pfarrer-Pleus-Straße 46\, 52393 Hürtge
+ nwald
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-grau-20261125@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20261125
+DTEND;VALUE=DATE:20261126
+TRANSP:TRANSPARENT
+SUMMARY:Restmülltonne
+DESCRIPTION:Abfuhr: Restmülltonne\nQuelle: Abfallkalender 2026 Gemeinde Kr
+ euzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Restmülltonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-mobil-20261125@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;TZID=Europe/Berlin:20261125T100000
+DTEND;TZID=Europe/Berlin:20261125T104500
+TRANSP:OPAQUE
+SUMMARY:Schadstoffmobil
+DESCRIPTION:Schadstoffmobil (Abgabe bis 15 kg / 15 l)\nStandorte am selben 
+ Tag:\nKreuzau 10:00–10:45 Uhr\, Windener Weg\nObermaubach 11:00–11:45 
+ Uhr\, Parkplatz Seestraße\, Ortseingang\nDrove 12:45–13:30 Uhr\, Parkpl
+ atz Wewordenstraße\, Kirmesplatz\nStockheim 14:00–14:45 Uhr\, Parkplatz
+  „An der Tränke“\nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\, Orts
+ teil Kreuzau
+CATEGORIES:Abfall,Schadstoffe
+LOCATION:Windener Weg\, Kreuzau
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-braun-20261202@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20261202
+DTEND;VALUE=DATE:20261203
+TRANSP:TRANSPARENT
+SUMMARY:Biotonne
+DESCRIPTION:Abfuhr: Biotonne\nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\
+ , Ortsteil Kreuzau
+CATEGORIES:Abfall,Biotonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-gelb-20261203@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20261203
+DTEND;VALUE=DATE:20261204
+TRANSP:TRANSPARENT
+SUMMARY:Gelbe Tonne/Gelber Sack
+DESCRIPTION:Abfuhr: Gelbe Tonne/Gelber Sack\nQuelle: Abfallkalender 2026 Ge
+ meinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Gelbe Tonne/Gelber Sack
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-horm-20261204@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;TZID=Europe/Berlin:20261204T080000
+DTEND;TZID=Europe/Berlin:20261204T130000
+TRANSP:OPAQUE
+SUMMARY:Schadstoffannahme Entsorgungszentrum Horm
+DESCRIPTION:Schadstoffannahme im Entsorgungszentrum Horm\, 8:00–13:00 Uhr
+ \nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Schadstoffe
+LOCATION:Entsorgungszentrum Horm\, Pfarrer-Pleus-Straße 46\, 52393 Hürtge
+ nwald
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-grau-20261209@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20261209
+DTEND;VALUE=DATE:20261210
+TRANSP:TRANSPARENT
+SUMMARY:Restmülltonne
+DESCRIPTION:Abfuhr: Restmülltonne\nQuelle: Abfallkalender 2026 Gemeinde Kr
+ euzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Restmülltonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-blau-20261212@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20261212
+DTEND;VALUE=DATE:20261213
+TRANSP:TRANSPARENT
+SUMMARY:Altpapiersammlung
+DESCRIPTION:Abfuhr: Altpapiersammlung\nQuelle: Abfallkalender 2026 Gemeinde
+  Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Altpapiersammlung
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-braun-20261216@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20261216
+DTEND;VALUE=DATE:20261217
+TRANSP:TRANSPARENT
+SUMMARY:Biotonne
+DESCRIPTION:Abfuhr: Biotonne\nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\
+ , Ortsteil Kreuzau
+CATEGORIES:Abfall,Biotonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-gelb-20261217@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20261217
+DTEND;VALUE=DATE:20261218
+TRANSP:TRANSPARENT
+SUMMARY:Gelbe Tonne/Gelber Sack
+DESCRIPTION:Abfuhr: Gelbe Tonne/Gelber Sack\nQuelle: Abfallkalender 2026 Ge
+ meinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Gelbe Tonne/Gelber Sack
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-horm-20261219@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;TZID=Europe/Berlin:20261219T080000
+DTEND;TZID=Europe/Berlin:20261219T130000
+TRANSP:OPAQUE
+SUMMARY:Schadstoffannahme Entsorgungszentrum Horm
+DESCRIPTION:Schadstoffannahme im Entsorgungszentrum Horm\, 8:00–13:00 Uhr
+ \nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Schadstoffe
+LOCATION:Entsorgungszentrum Horm\, Pfarrer-Pleus-Straße 46\, 52393 Hürtge
+ nwald
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-grau-20261223@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20261223
+DTEND;VALUE=DATE:20261224
+TRANSP:TRANSPARENT
+SUMMARY:Restmülltonne
+DESCRIPTION:Abfuhr: Restmülltonne\nQuelle: Abfallkalender 2026 Gemeinde Kr
+ euzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Restmülltonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-braun-20261230@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20261230
+DTEND;VALUE=DATE:20261231
+TRANSP:TRANSPARENT
+SUMMARY:Biotonne
+DESCRIPTION:Abfuhr: Biotonne\nQuelle: Abfallkalender 2026 Gemeinde Kreuzau\
+ , Ortsteil Kreuzau
+CATEGORIES:Abfall,Biotonne
+STATUS:CONFIRMED
+END:VEVENT
+BEGIN:VEVENT
+UID:abfall-kreuzau-2026-gelb-20261231@abfallkalender-kreuzau
+DTSTAMP:20261113T000000Z
+DTSTART;VALUE=DATE:20261231
+DTEND;VALUE=DATE:20270101
+TRANSP:TRANSPARENT
+SUMMARY:Gelbe Tonne/Gelber Sack
+DESCRIPTION:Abfuhr: Gelbe Tonne/Gelber Sack\nQuelle: Abfallkalender 2026 Ge
+ meinde Kreuzau\, Ortsteil Kreuzau
+CATEGORIES:Abfall,Gelbe Tonne/Gelber Sack
+STATUS:CONFIRMED
+END:VEVENT
+END:VCALENDAR

@@ -227,6 +227,49 @@ final class ExternalSourcesTest extends TestCase
         self::assertSame(0, (int) $db->value("SELECT COUNT(*) FROM events WHERE summary LIKE '%/2026%'"));
     }
 
+    /** Echter Abfallkalender 2026 (Ortsteil Kreuzau): ganztägige Abfuhren und Termine mit Uhrzeit, auf zwei Kalender verteilt */
+    public function testAbfallkalenderFile(): void
+    {
+        $this->admin();
+        $db = $this->app->db();
+        $src = $this->source('abfall-kreuzau');
+        $abfall = $this->calendar('abfall-kreuzau', 'Abfall Kreuzau');
+        $schad = $this->calendar('schadstoffe', 'Schadstoffannahme');
+        $now = $this->clock->nowDb();
+        $f = fn (int $cal, array $cond) => $db->insert('calendar_feeds', ['calendar_id' => $cal, 'source_id' => $src['id'],
+            'filter' => json_encode(['conditions' => [$cond]]), 'source_note' => 0, 'show_stand' => 1, 'active' => 1, 'created_at' => $now, 'updated_at' => $now]);
+        $f($abfall, ['field' => 'summary', 'op' => 'regex', 'value' => '^(?!Schadstoff)']);   // alles außer Schadstoffen
+        $f($schad, ['field' => 'categories', 'op' => 'contains', 'value' => 'Schadstoffe']);
+
+        $this->web('POST', "/admin/quellen/{$src['id']}/datei", ['x' => '1'], ['datei' => $this->upload((string) file_get_contents(__DIR__ . '/fixtures/abfall-kreuzau-2026.ics'), 'Abfallkalender_Kreuzau_2026.ics')]);
+        $p = (int) $db->value("SELECT id FROM source_files WHERE status = 'pending'");
+        $preview = (string) $this->web('GET', "/admin/quellen/datei/$p")->getBody();
+        self::assertStringContainsString('122 Termine erkannt, 02.01.2026 – 31.12.2026', $preview);
+        self::assertStringContainsString('<strong>92</strong> neu', $preview);
+        self::assertStringContainsString('<strong>30</strong> neu', $preview);
+        self::assertStringNotContainsString('Nicht übernommen', $preview, 'jeder Termin hat einen Kalender');
+        $this->web('POST', "/admin/quellen/datei/$p/uebernehmen", ['x' => '1']);
+
+        self::assertSame(92, (int) $db->value('SELECT COUNT(*) FROM events WHERE calendar_id = ? AND all_day = 1', [$abfall]));
+        self::assertSame(0, (int) $db->value('SELECT COUNT(*) FROM events WHERE calendar_id = ? AND all_day = 0', [$abfall]));
+        self::assertSame(30, (int) $db->value('SELECT COUNT(*) FROM events WHERE calendar_id = ?', [$schad]));
+
+        // ganztägig: als Datum, ein Tag, „frei“ (blockiert in Outlook nicht den ganzen Tag)
+        $ics = (string) $db->value("SELECT ics FROM events WHERE calendar_id = ? ORDER BY starts_at DESC LIMIT 1", [$abfall]);
+        self::assertStringContainsString('DTSTART;VALUE=DATE:20261231', $ics, 'letzte Abfuhr am Jahresende');
+        self::assertStringContainsString('DTEND;VALUE=DATE:20270101', $ics);
+        self::assertStringContainsString('TRANSP:TRANSPARENT', $ics);
+        // Schadstoffmobil: mehrzeilige Beschreibung und Ort mit Kommas bleiben erhalten
+        $mobil = $db->one("SELECT * FROM events WHERE summary = 'Schadstoffmobil' ORDER BY starts_at LIMIT 1");
+        self::assertSame('Windener Weg, Kreuzau', $mobil['location']);
+        self::assertStringContainsString("Stockheim 14:00–14:45 Uhr, Parkplatz „An der Tränke“\n", (string) $mobil['description']);
+        self::assertStringEndsWith('Stand ' . $this->clock->now()->format('d.m.Y'), (string) $mobil['description']);
+        $vcal = \Sabre\VObject\Reader::read((string) $mobil['ics']);
+        self::assertSame('Windener Weg, Kreuzau', (string) $vcal->VEVENT->LOCATION);
+        self::assertSame('20260304T100000', $vcal->VEVENT->DTSTART->getDateTime()->format('Ymd\THis'));
+        self::assertSame('Europe/Berlin', $vcal->VEVENT->DTSTART->getDateTime()->getTimezone()->getName());
+    }
+
     public function testUnmatchedGroupedByTitle(): void
     {
         foreach ([
@@ -251,6 +294,9 @@ final class ExternalSourcesTest extends TestCase
         self::assertSame(3, $groups[0]['count']);
         self::assertSame(['01.02.2027 08:00', '08.02.2027 08:00', '15.02.2027 08:00'], array_column($groups[0]['items'], 'when'));
         self::assertSame('Düren', $groups[0]['items'][0]['location']);
+        $utc = IcalProcessor::groupByTitle([['summary' => 'X', 'start' => new \DateTimeImmutable('2027-01-05 07:00', new \DateTimeZone('UTC')),
+            'end' => new \DateTimeImmutable('2027-01-05 09:00', new \DateTimeZone('UTC')), 'all_day' => false, 'location' => null]]);
+        self::assertSame('05.01.2027 08:00', $utc[0]['items'][0]['when'], 'Zeit in UTC wird in deutscher Zeit angezeigt');
     }
 
     public function testRejectedUploadsAndDiscard(): void

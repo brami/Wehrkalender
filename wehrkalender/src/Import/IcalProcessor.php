@@ -334,7 +334,7 @@ final class IcalProcessor
             $g['count']++;
             $g['last'] = max($g['last'], $e['end']);
             $g['items'][] = [
-                'when' => $e['start']->format($e['all_day'] ? 'd.m.Y' : 'd.m.Y H:i'),
+                'when' => self::when($e),
                 'summary' => (string) $e['summary'],
                 'location' => $e['location'] !== null && $e['location'] !== '' ? (string) $e['location'] : null,
             ];
@@ -347,6 +347,12 @@ final class IcalProcessor
     /** @param array<string,mixed> $e */
     private function label(array $e): string
     {
-        return $e['start']->format($e['all_day'] ? 'd.m.Y' : 'd.m.Y H:i') . ' ' . $e['summary'];
+        return self::when($e) . ' ' . $e['summary'];
+    }
+
+    /** Datum (ganztägig) bzw. Datum und Uhrzeit in deutscher Zeit, auch bei Zeitangaben in UTC */
+    private static function when(array $e): string
+    {
+        return $e['all_day'] ? $e['start']->format('d.m.Y') : $e['start']->setTimezone(Clock::localTz())->format('d.m.Y H:i');
     }
 }

@@ -5,7 +5,7 @@
 <p><a href="/admin/quellen">← Quellen</a></p>
 <h1>Vorschau: {{ file.name }}</h1>
 <p class="muted">Quelle „{{ source.name }}“ · {{ replaced ? 'neue Fassung von „' ~ replaced.name ~ '“' : 'weitere Datei' }} ·
-  {{ plan.events_total }} Termine erkannt{% if plan.first_start %}, {{ plan.first_start|date('d.m.Y') }} – {{ plan.last_end|date('d.m.Y') }}{% endif %}.
+  {{ plan.events_total }} Termine erkannt{% if plan.first_start %}, {{ plan.first_start|date('d.m.Y', 'Europe/Berlin') }} – {{ plan.last_end|date('d.m.Y', 'Europe/Berlin') }}{% endif %}.
   Noch ist nichts geändert.</p>
 
 {% if same_file %}<div class="flash flash-info">Die Datei ist identisch mit der bisherigen Fassung. Geändert wird nur, was sich aus neuen oder geänderten Befüllungen ergibt.</div>{% endif %}
@@ -49,7 +49,7 @@
           <ul>{% for i in g.items %}<li>{{ i.when }} {{ i.summary }}{% if i.location %} <span class="muted">· {{ i.location }}</span>{% endif %}</li>{% endfor %}</ul>
         </details></td>
         <td>{{ g.count }}</td>
-        <td>{{ g.first|date('d.m.') }}{% if g.first|date('Y') != g.last|date('Y') %}{{ g.first|date('Y') }}{% endif %}{% if g.count > 1 or g.first|date('Ymd') != g.last|date('Ymd') %}–{{ g.last|date('d.m.Y') }}{% else %}{{ g.first|date('Y') }}{% endif %}</td>
+        <td>{{ g.first|date('d.m.', 'Europe/Berlin') }}{% if g.first|date('Y', 'Europe/Berlin') != g.last|date('Y', 'Europe/Berlin') %}{{ g.first|date('Y', 'Europe/Berlin') }}{% endif %}{% if g.count > 1 or g.first|date('Ymd', 'Europe/Berlin') != g.last|date('Ymd', 'Europe/Berlin') %}–{{ g.last|date('d.m.Y', 'Europe/Berlin') }}{% else %}{{ g.first|date('Y', 'Europe/Berlin') }}{% endif %}</td>
       </tr>
     {% endfor %}
     </tbody>
