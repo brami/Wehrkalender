@@ -1,0 +1,281 @@
+% =====================================================================
+%  Wehrkalender -- Vorschlag für die Exportschnittstelle von MP Feuer
+%  Vorlage: deb-support (debsupport.sty, siehe latex/README.md)
+%  Übersetzen mit:  pdflatex schnittstelle_mp_feuer.tex   (2x, wegen Seitenzahl)
+% =====================================================================
+\documentclass[a4paper,fontsize=10pt]{scrartcl}
+\usepackage[bericht]{debsupport}
+
+\usepackage{listings}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\colorlet{grauhell}{dshell}
+\colorlet{grau}{dsgrau}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{grauhell},
+  frame=single, rulecolor=\color{grau!40},
+  framesep=4pt, xleftmargin=6pt, xrightmargin=6pt,
+  columns=fullflexible, keepspaces=true,
+  breaklines=true, showstringspaces=false,
+  literate={ä}{{\"a}}1 {ö}{{\"o}}1 {ü}{{\"u}}1 {Ä}{{\"A}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1 {ß}{{\ss}}1 {–}{{--}}1
+}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\renewcommand*{\dsdokumentart}{Schnittstellenvorschlag}
+\renewcommand*{\dskurztitel}{Export aus MP Feuer für den Wehrkalender}
+\renewcommand*{\dsbeleg}{}
+\setlength{\emergencystretch}{3em}
+
+\begin{document}
+
+\dstitel{Export aus MP Feuer}
+        {Vorschlag für Inhalt und Format der Schnittstelle zum Wehrkalender}
+        {Datum:   & \today\\
+         Autor:   & \dsInhaber\\
+         Projekt: & Wehrkalender (erster Einsatz: FF Kreuzau)\\
+         Version: & Vorschlag 1}
+
+\tableofcontents
+
+% ------------------------------------------------------------------
+\section{Zweck}
+
+Der \emph{Wehrkalender} bringt die Termine einer Feuerwehr aus MP Feuer nur
+lesend auf die Smartphones, Tablets und in das Outlook der Mitglieder. Jedes
+Mitglied sieht die Kalender seiner Einheiten, Gruppen und Lehrgänge. Der
+Kalenderserver übernimmt dazu regelmäßig Mitglieder, Zuordnungen und Termine
+aus MP Feuer. Es werden keine Daten nach MP Feuer zurückgeschrieben.
+
+Dieses Dokument beschreibt, welche Daten der Wehrkalender braucht und in
+welcher Form er sie am einfachsten verarbeiten kann. Es ist ein Vorschlag:
+Wenn MP Feuer Daten bereits in anderer Form bereitstellt, passen wir uns an,
+solange die Inhalte aus Abschnitt~\ref{sec:muss} enthalten sind. Der
+Quellcode des Wehrkalenders ist öffentlich
+(\code{https://github.com/brami/Wehrkalender}, AGPL-3.0).
+
+% ------------------------------------------------------------------
+\section{Grundsätze}\label{sec:muss}
+
+\begin{enumerate}
+  \item \textbf{Vollständiger Stand statt Änderungen:} Jeder Abruf liefert den
+        vollständigen aktuellen Stand aller Mitglieder und Termine des
+        vereinbarten Zeitraums. Was fehlt, gilt als entfernt. Änderungslisten
+        (\glqq geändert seit\grqq) sind nicht nötig.
+  \item \textbf{Stabile Kennungen:} Mitglieder, Bereiche (Einheiten, Gruppen,
+        Lehrgänge) und Termine haben je eine eindeutige Kennung, die sich nie
+        ändert -- auch nicht bei einer Namensänderung, einem Umzug des Termins
+        oder einer Umbenennung -- und die nie neu vergeben wird.
+  \item \textbf{Gleiche Schlüssel:} Termine und Mitgliedschaften verwenden
+        dieselben Schlüssel für Bereiche. Nur so lässt sich ein Termin dem
+        Kalender zuordnen, den die Mitglieder dieses Bereichs sehen.
+  \item \textbf{Ganz oder gar nicht:} Ein Abruf ist vollständig oder schlägt
+        mit Fehlercode fehl. Ein halber Export würde beim Abgleich Mitglieder
+        und Termine löschen. Zur Kontrolle enthält jeder Export die Anzahl der
+        Einträge.
+  \item \textbf{Datensparsamkeit:} Nur die unten genannten Felder. Keine
+        Geburtsdaten, Anschriften, Telefonnummern, Qualifikationen oder
+        Gesundheitsdaten.
+\end{enumerate}
+
+% ------------------------------------------------------------------
+\section{Bereitstellung}
+
+Bevorzugt ist ein \textbf{Abruf über HTTPS} durch den Kalenderserver:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{L{4.2cm}X}
+\toprule
+\textbf{Punkt} & \textbf{Vorschlag} \\
+\midrule
+Adressen & \code{GET …/export/mitglieder}, \code{GET …/export/bereiche},
+  \code{GET …/export/termine} (oder ein gemeinsamer Abruf mit allen drei
+  Teilen) \\
+Anmeldung & API-Schlüssel je Feuerwehr im Header
+  (\code{Authorization: Bearer …}); nur Lesezugriff auf den Export \\
+Format & JSON, UTF-8; Zeitangaben ISO~8601 \\
+Häufigkeit & Abruf alle 15 Minuten; bei unverändertem Stand Antwort
+  \code{304 Not Modified} über \code{ETag}/\code{If-None-Match} (wünschenswert,
+  nicht zwingend) \\
+Fehler & HTTP-Statuscode $\neq$ 200 und kein Inhalt; niemals ein
+  unvollständiger Export mit 200 \\
+Umfang & eine Feuerwehr je API-Schlüssel; bei rund 200 Mitgliedern und
+  einigen Hundert Terminen ohne Seitenaufteilung \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\textbf{Alternativ} legt MP Feuer die drei Dateien regelmäßig per SFTP auf dem
+Kalenderserver ab (eigener Zugang nur per SSH-Schlüssel). Damit keine halb
+geschriebene Datei gelesen wird: zuerst unter \code{*.part} hochladen und erst
+danach umbenennen.
+
+% ------------------------------------------------------------------
+\section{Inhalt}
+
+Alle drei Teile beginnen mit einem Kopf; die eigentlichen Einträge stehen in
+\code{eintraege}:
+
+\begin{lstlisting}
+{
+  "feuerwehr": "FF Kreuzau",
+  "erstellt": "2027-01-15T06:00:00+01:00",
+  "anzahl": 214,
+  "eintraege": [ … ]
+}
+\end{lstlisting}
+
+\subsection{Mitglieder}
+
+Alle aktiven Mitglieder einschließlich Jugend- und Kinderfeuerwehr.
+Ausgeschiedene Mitglieder fehlen im Export.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{L{3.6cm}L{1.6cm}X}
+\toprule
+\textbf{Feld} & \textbf{Pflicht} & \textbf{Bedeutung} \\
+\midrule
+\code{id} & ja & unveränderliche Kennung des Mitglieds \\
+\code{vorname}, \code{nachname} & ja & für Benutzername und Anrede \\
+\code{email} & ja, falls vorhanden & für Zugang und Benachrichtigungen;
+  leer, wenn keine hinterlegt ist. Mehrere Mitglieder dürfen dieselbe
+  Adresse haben (z.\,B.\ Geschwister). \\
+\code{mitgliedschaften} & ja & Liste der Schlüssel aller Bereiche, denen das
+  Mitglied angehört (\code{schluessel}), optional mit \code{rolle}, z.\,B.\
+  \code{teilnehmer}, \code{betreuer}, \code{ausbilder} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}
+{ "id": "4711",
+  "vorname": "Jürgen", "nachname": "Müller",
+  "email": "juergen.mueller@example.org",
+  "mitgliedschaften": [
+    { "schluessel": "LG-DROVE" },
+    { "schluessel": "JF-GR1", "rolle": "betreuer" },
+    { "schluessel": "LEHRGANG-KREIS-MASCH-2027-2",
+      "rolle": "teilnehmer" } ] }
+\end{lstlisting}
+
+\subsection{Bereiche}
+
+Alle Einheiten, Gruppen, Abteilungen und Lehrgänge -- auch solche ohne
+Termine. Daraus legt der Kalenderserver die Kalender an.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{L{3.6cm}L{1.6cm}X}
+\toprule
+\textbf{Feld} & \textbf{Pflicht} & \textbf{Bedeutung} \\
+\midrule
+\code{schluessel} & ja & unveränderlicher Schlüssel, z.\,B.\
+  \code{LG-DROVE}, \code{JF-GR1} \\
+\code{bezeichnung} & ja & Anzeigename, z.\,B.\ \glqq LG Drove\grqq \\
+\code{art} & ja & \code{einheit}, \code{gruppe}, \code{abteilung},
+  \code{lehrgang} oder \code{sonstiges} \\
+\code{uebergeordnet} & nein & Schlüssel des übergeordneten Bereichs \\
+\multicolumn{3}{@{}l}{\emph{nur bei \code{art = lehrgang}:}} \\
+\code{ebene} & ja & \code{gemeinde}, \code{kreis}, \code{bezirk} oder
+  \code{land} \\
+\code{lehrgang} & ja & Bezeichnung \emph{genau wie beim Ausrichter},
+  z.\,B.\ \glqq Maschinist 2/2027\grqq\ (mit laufender Nummer und Jahr) \\
+\code{beginn}, \code{ende} & ja & erster und letzter Lehrgangstag
+  (\code{JJJJ-MM-TT}) \\
+\code{ausrichter\_kennung} & nein & Lehrgangsnummer des Ausrichters, falls
+  vorhanden \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}
+{ "schluessel": "LEHRGANG-KREIS-MASCH-2027-2",
+  "bezeichnung": "Maschinist 2/2027",
+  "art": "lehrgang", "ebene": "kreis",
+  "lehrgang": "Maschinist 2/2027",
+  "beginn": "2027-06-05", "ende": "2027-06-26" }
+\end{lstlisting}
+
+\textbf{Warum diese Lehrgangsangaben?} Die Termine der Kreislehrgänge
+veröffentlicht der Kreis als Kalenderdatei. MP Feuer kennt die Teilnehmer.
+Mit Ebene, Bezeichnung und Beginn ordnet der Wehrkalender einen Lehrgang aus
+MP Feuer automatisch den Terminen des Kreises zu und zeigt sie nur den
+Teilnehmern -- ohne dass die Termine in MP Feuer doppelt gepflegt werden
+müssen. Fehlt die laufende Nummer in der Bezeichnung, genügt der Beginn zur
+eindeutigen Zuordnung. Wo MP Feuer die Termine eines Lehrgangs selbst führt
+(z.\,B.\ auf Gemeindeebene), kommen sie wie alle anderen Termine über den
+Export.
+
+\subsection{Termine}
+
+Zeitraum: Termine ab zwölf Monaten in der Vergangenheit und alle künftigen.
+Serientermine werden als einzelne Termine geliefert.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{L{3.6cm}L{1.6cm}X}
+\toprule
+\textbf{Feld} & \textbf{Pflicht} & \textbf{Bedeutung} \\
+\midrule
+\code{id} & ja & unveränderliche Kennung des Termins; bei Serien je
+  Einzeltermin \\
+\code{bereich} & ja & Schlüssel des Bereichs (wie in den Mitgliedschaften) \\
+\code{titel} & ja & \\
+\code{beginn}, \code{ende} & ja & mit Uhrzeit und Zeitzone, z.\,B.\
+  \code{2027-03-04T19:00:00+01:00}; bei ganztägigen Terminen nur das Datum,
+  \code{ende} ist der letzte Tag \\
+\code{ganztaegig} & ja & \code{true}/\code{false} \\
+\code{ort}, \code{beschreibung} & nein & \\
+\code{abgesagt} & ja & \code{true}, solange ein abgesagter Termin noch
+  angezeigt werden soll; danach entfällt er aus dem Export \\
+\code{geaendert} & nein & Zeitpunkt der letzten Änderung \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{lstlisting}
+{ "id": "T-98765",
+  "bereich": "LG-DROVE",
+  "titel": "Übungsdienst",
+  "beginn": "2027-03-04T19:00:00+01:00",
+  "ende": "2027-03-04T21:00:00+01:00",
+  "ganztaegig": false,
+  "ort": "Gerätehaus Drove",
+  "beschreibung": "Thema: Technische Hilfe",
+  "abgesagt": false,
+  "geaendert": "2027-02-20T10:12:00+01:00" }
+\end{lstlisting}
+
+% ------------------------------------------------------------------
+\section{Was der Wehrkalender damit macht}
+
+Zur Einordnung, nicht Teil der Schnittstelle:
+
+\begin{itemize}
+  \item Mitglieder mit gültiger E-Mail-Adresse erhalten einen Zugang;
+        Mitglieder, die im Export fehlen, werden mit allen Daten gelöscht.
+  \item Je Bereich gibt es einen Kalender; jedes Mitglied sieht genau die
+        Kalender seiner Mitgliedschaften und kann sie einzeln abschalten.
+  \item Bricht ein Export plötzlich stark ein (weniger als 80\,\% der
+        Mitglieder oder Termine des letzten Abrufs), wird nichts übernommen
+        und die Administratoren werden gewarnt.
+  \item Kommt länger als 24 Stunden kein gültiger Export an, werden die
+        Administratoren ebenfalls gewarnt.
+\end{itemize}
+
+% ------------------------------------------------------------------
+\section{Fragen und nächste Schritte}
+
+\begin{enumerate}
+  \item Welche Teile dieses Vorschlags kann MP Feuer umsetzen, und wo weicht
+        das vorhandene Datenmodell ab (z.\,B.\ Lehrgänge, Rollen,
+        Zuordnungen von Terminen zu Bereichen)?
+  \item Werden Lehrgänge in MP Feuer mit der Bezeichnung des Ausrichters
+        angelegt, und sind Ebene sowie Beginn erfasst?
+  \item Abruf über HTTPS oder Ablage per SFTP? Wie erfolgt die Anmeldung?
+  \item Bereitstellung eines Testzugangs bzw.\ anonymisierter Beispieldaten
+        der FF Kreuzau.
+  \item Fallen Kosten an oder ist ein bestimmtes Lizenzmodell nötig?
+\end{enumerate}
+
+Für Rückfragen und eine gemeinsame Abstimmung stehen wir gern zur Verfügung.
+
+\end{document}
