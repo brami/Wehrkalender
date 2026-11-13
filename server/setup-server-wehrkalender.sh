@@ -1573,7 +1573,9 @@ services:
 
   worker:                   # gleiches Image, supercronic: import:run, mail:send, monitor:check, cleanup:run
     <<: *app
-    command: ["supercronic", "-quiet", "/srv/app/docker/crontab"]
+    # absoluter Pfad: supercronic startet sich als PID 1 selbst neu (Zombie-Reaper)
+    # und findet sich über den bloßen Namen nicht („Failed to fork exec“)
+    command: ["/usr/local/bin/supercronic", "-quiet", "/srv/app/docker/crontab"]
     networks: [backend, egress]   # egress: SMTP-Relay, später HTTPS-API von MP Feuer
 
   db:
