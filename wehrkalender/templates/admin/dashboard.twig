@@ -15,9 +15,7 @@
 {% endif %}
 
 {% for src in source_problems %}
-  <div class="flash flash-error">Quelle „{{ src.name }}“:
-    {% if src.state == 'never' %}noch nie erfolgreich abgerufen{% elseif src.state == 'warn' %}seit {{ src.last_success_at|lt }} kein erfolgreicher Abruf{% else %}letzter Abruf fehlgeschlagen{% if src.last_error %} ({{ src.last_error }}){% endif %}{% endif %}.
-    <a href="/admin/quellen">Quellen ansehen</a></div>
+  <div class="flash flash-error">{{ src.problem }} <a href="/admin/quellen">Quellen ansehen</a></div>
 {% endfor %}
 {% for p in problems %}<div class="flash flash-error">{{ p }}</div>{% endfor %}
 

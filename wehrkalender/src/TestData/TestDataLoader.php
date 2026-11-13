@@ -109,7 +109,7 @@ final class TestDataLoader
             ['gjf', 'GJF', '#EA580C', 'Termine der Gemeindejugendfeuerwehr', 1, 0],
             ['jf-gr1', 'JF Gr1', '#CA8A04', 'Termine der Jugendfeuerwehr-Gruppe 1', 1, 0],
             ['kf', 'KF', '#DB2777', 'Termine der Kinderfeuerwehr', 1, 0],
-            ['tm1-2027', 'TM1 2027', '#059669', 'Termine des Lehrgangs Truppmann Teil 1 (2027)', 1, 0],
+            ['maschinist-2-2027', 'Maschinist 2/2027', '#059669', 'Kreislehrgang Maschinist (Termine aus dem Lehrgangsplan des Kreises)', 1, 0],
             ['atemschutz', 'Atemschutz', '#475569', 'Übungen und Belastungsübungen der Atemschutzgeräteträger', 1, 0],
             ['tm1-2025', 'TM1 2025', '#9CA3AF', 'Abgeschlossener Lehrgang (deaktiviert)', 0, 0],
             // aus externen Quellen (iCal): Verband für alle, Abfall je Ort für alle mit Vorgabe „aus“
@@ -130,57 +130,54 @@ final class TestDataLoader
         $sources = [
             'FF-KRZ' => 'ff-krz', 'LG-DROVE' => 'lg-drove', 'LG-KREUZAU' => 'lg-kreuzau', 'LG-STOCKHEIM' => 'lg-stockheim',
             'GJF' => 'gjf', 'JF-GR1' => 'jf-gr1', 'JF-GR1-BETREUER' => 'jf-gr1', 'KF' => 'kf',
-            'LEHRGANG-TM1-2027' => 'tm1-2027', 'AGT' => 'atemschutz', 'LEHRGANG-TM1-2025' => 'tm1-2025',
+            'LEHRGANG-MASCHINIST-2-2027' => 'maschinist-2-2027', 'AGT' => 'atemschutz', 'LEHRGANG-TM1-2025' => 'tm1-2025',
         ];
         foreach ($sources as $key => $slug) {
             $db->insert('calendar_sources', [
                 'mp_key' => $key, 'calendar_id' => $this->cal[$slug],
-                // Lehrgang TM1 2027: Teilnahme aus MP Feuer schaltet frei, die Termine liefert der Kreis
-                'grants_access' => 1, 'fills' => $key === 'LEHRGANG-TM1-2027' ? 0 : 1,
+                // Kreislehrgang: Teilnahme aus MP Feuer schaltet frei, die Termine liefert die Datei des Kreises
+                'grants_access' => 1, 'fills' => $key === 'LEHRGANG-MASCHINIST-2-2027' ? 0 : 1,
                 'created_at' => $this->app->clock()->nowDb(),
             ]);
         }
         $this->sources();
     }
 
-    /**
-     * Externe Quellen (iCal) und Befüllungen. Der Importer ist noch nicht umgesetzt;
-     * die Termine dieser Quellen legt events() direkt an, Abrufzeiten werden simuliert.
-     */
+    /** Externe Quellen (iCal-Feeds und hochgeladene Dateien) und ihre Befüllungen */
     private function sources(): void
     {
         $db = $this->app->db();
         $now = $this->app->clock()->nowDb();
         $defs = [
-            // Schlüssel, Name, URL, Intervall (min), letzter Erfolg, letzter Fehler
-            ['kreis', 'Lehrgänge Kreis', 'https://kreis.example.org/feuerwehr/lehrgaenge.ics', 360, '-2 hours', null],
-            ['kfv', 'Kreisfeuerwehrverband', 'https://kfv.example.org/termine.ics', 720, '-4 days', 'HTTP 404 Not Found'],
-            ['abfall-drove', 'Abfallkalender Drove', 'https://abfall.example.org/ical/drove.ics', 1440, '-5 hours', null],
-            ['abfall-kreuzau', 'Abfallkalender Kreuzau', 'https://abfall.example.org/ical/kreuzau.ics', 1440, '-5 hours', null],
-            ['abfall-stockheim', 'Abfallkalender Stockheim', 'https://abfall.example.org/ical/stockheim.ics', 1440, '-5 hours', null],
-            ['ortsverein-drove', 'Ortsverein Drove', 'https://ortsverein-drove.example.org/kalender.ics', 1440, '-8 hours', null],
+            // Schlüssel, Art, Name, URL, Intervall (min)
+            ['kreis', 'upload', 'Lehrgänge Kreis Düren', null, 1440],
+            ['kfv', 'ical', 'Kreisfeuerwehrverband', 'https://kfv.example.org/termine.ics', 720],
+            ['abfall-drove', 'ical', 'Abfallkalender Drove', 'https://abfall.example.org/ical/drove.ics', 1440],
+            ['abfall-kreuzau', 'ical', 'Abfallkalender Kreuzau', 'https://abfall.example.org/ical/kreuzau.ics', 1440],
+            ['abfall-stockheim', 'ical', 'Abfallkalender Stockheim', 'https://abfall.example.org/ical/stockheim.ics', 1440],
+            ['ortsverein-drove', 'ical', 'Ortsverein Drove', 'https://ortsverein-drove.example.org/kalender.ics', 1440],
         ];
-        foreach ($defs as [$key, $name, $url, $interval, $success, $error]) {
+        foreach ($defs as [$key, $type, $name, $url, $interval]) {
             $this->src[$key] = $db->insert('sources', [
-                'source_key' => $key, 'type' => 'ical', 'name' => $name, 'url' => $url, 'interval_minutes' => $interval, 'active' => 1,
-                'last_run_at' => $this->nowDb($error !== null ? '-1 hour' : $success), 'last_success_at' => $this->nowDb($success),
-                'last_error' => $error, 'created_at' => $now, 'updated_at' => $now,
+                'source_key' => $key, 'type' => $type, 'name' => $name, 'url' => $url, 'interval_minutes' => $interval, 'active' => 1,
+                'created_at' => $now, 'updated_at' => $now,
             ]);
         }
         $feeds = [
-            // Quelle, Kalender, Filter, Hinweis „Quelle: …“
-            ['kreis', 'tm1-2027', '{"conditions":[{"field":"summary","op":"contains","value":"TM1"}],"from":"2027-01-01","to":"2027-12-31"}', 0],
-            ['kfv', 'kfv', null, 0],
-            ['abfall-drove', 'abfall-drove', null, 0],
-            ['abfall-kreuzau', 'abfall-kreuzau', null, 0],
-            ['abfall-stockheim', 'abfall-stockheim', null, 0],
+            // Quelle, Kalender, Filter, Hinweis „Quelle: …“, „Stand“
+            // Der Kreis-Plan nennt schon „Stand …“ in der Beschreibung → hier kein eigener Stand
+            ['kreis', 'maschinist-2-2027', '{"conditions":[{"field":"summary","op":"starts","value":"Maschinist 2/2027"}]}', 0, 0],
+            ['kfv', 'kfv', null, 0, 1],
+            ['abfall-drove', 'abfall-drove', null, 0, 1],
+            ['abfall-kreuzau', 'abfall-kreuzau', null, 0, 1],
+            ['abfall-stockheim', 'abfall-stockheim', null, 0, 1],
             // gemischter Kalender: LG Drove aus MP Feuer und das Dorffest des Ortsvereins
-            ['ortsverein-drove', 'lg-drove', '{"conditions":[{"field":"categories","op":"contains","value":"Feuerwehr"}]}', 1],
+            ['ortsverein-drove', 'lg-drove', '{"conditions":[{"field":"categories","op":"contains","value":"Feuerwehr"}]}', 1, 1],
         ];
-        foreach ($feeds as [$src, $slug, $filter, $note]) {
+        foreach ($feeds as [$src, $slug, $filter, $note, $stand]) {
             $this->feedId[$src . '>' . $slug] = $db->insert('calendar_feeds', [
                 'calendar_id' => $this->cal[$slug], 'source_id' => $this->src[$src], 'filter' => $filter,
-                'source_note' => $note, 'active' => 1, 'created_at' => $now, 'updated_at' => $now,
+                'source_note' => $note, 'show_stand' => $stand, 'active' => 1, 'created_at' => $now, 'updated_at' => $now,
             ]);
         }
     }
@@ -190,7 +187,7 @@ final class TestDataLoader
     private const LABELS = [
         'FF-KRZ' => 'FF KRZ', 'LG-DROVE' => 'LG Drove', 'LG-KREUZAU' => 'LG Kreuzau', 'LG-STOCKHEIM' => 'LG Stockheim',
         'GJF' => 'Gemeindejugendfeuerwehr (GJF)', 'JF-GR1' => 'JF Gruppe 1', 'JF-GR1-BETREUER' => 'JF Gruppe 1 – Betreuer',
-        'KF' => 'Kinderfeuerwehr (KF)', 'LEHRGANG-TM1-2027' => 'TM1 2027', 'LEHRGANG-TM1-2025' => 'TM1 2025',
+        'KF' => 'Kinderfeuerwehr (KF)', 'LEHRGANG-MASCHINIST-2-2027' => 'Maschinist 2/2027 (Kreis)', 'LEHRGANG-TM1-2025' => 'TM1 2025',
         'AGT' => 'Atemschutzgeräteträger', 'FOERDERVEREIN' => 'Förderverein', 'EHRENABTEILUNG' => 'Ehrenabteilung',
         'MUSIKZUG' => 'Musikzug',
     ];
@@ -316,7 +313,7 @@ final class TestDataLoader
         // 8 Sonderzeichen per Transliterator, 9 türkische Buchstaben
         $this->create('1008', 'François', 'Đorđević', 'f.dordevic@example.org', ['LG-KREUZAU', 'FOERDERVEREIN'], '-80 days');
         $this->useWelcome('1008', '-80 days');
-        $this->create('1009', 'Ömer', 'Yılmaz', 'oemer.yilmaz@example.org', ['LG-DROVE', 'LEHRGANG-TM1-2027'], '-60 days');
+        $this->create('1009', 'Ömer', 'Yılmaz', 'oemer.yilmaz@example.org', ['LG-DROVE', 'LEHRGANG-MASCHINIST-2-2027'], '-60 days');
         $this->useWelcome('1009', '-59 days');
         $this->dav('1009', '-1 day', self::UA_IPAD);
 
@@ -344,7 +341,7 @@ final class TestDataLoader
         $this->webLogin('1014', '-10 days');
 
         // 15 Lehrgang + Atemschutz, letzter Abruf vor 40 Tagen ("kein Abruf seit 30 Tagen")
-        $this->create('1015', 'Tim', 'Krämer', 'tim.kraemer@example.org', ['LG-KREUZAU', 'AGT', 'LEHRGANG-TM1-2027'], '-160 days');
+        $this->create('1015', 'Tim', 'Krämer', 'tim.kraemer@example.org', ['LG-KREUZAU', 'AGT', 'LEHRGANG-MASCHINIST-2-2027'], '-160 days');
         $this->useWelcome('1015', '-160 days');
         $this->dav('1015', '-40 days', self::UA_DAVX5);
         $this->feed('1015', 'atemschutz', '-41 days', self::UA_OUTLOOK);
@@ -383,7 +380,7 @@ final class TestDataLoader
         // 21 neuer Kalender seit gestern (Lehrgang hinzugekommen) → Hinweis-E-Mail offen
         $this->create('1021', 'Sophie', 'Klein', 'sophie.klein@example.org', ['LG-DROVE'], '-100 days');
         $this->useWelcome('1021', '-99 days');
-        $this->importUpdate('1021', '-1 day', [], ['LG-DROVE', 'LEHRGANG-TM1-2027']);
+        $this->importUpdate('1021', '-1 day', [], ['LG-DROVE', 'LEHRGANG-MASCHINIST-2-2027']);
         $this->dav('1021', '-5 hours', self::UA_IOS);
 
         // 22 zweiter Administrator; Tippfehler im Namen korrigiert und Benutzername vom Admin umgestellt
@@ -527,60 +524,95 @@ final class TestDataLoader
     }
 
     /**
-     * Termine aus externen Quellen, wie sie der iCal-Importer anlegen würde
-     * (Kennung = Hash aus der UID des Feeds, eigene UID <quelle>-<hash>@<domain>).
+     * Termine aus externen Quellen über die echte Verarbeitung (IcalProcessor):
+     * Kreis-Lehrgänge aus der Datei tests/fixtures/kreis-lehrgaenge-2027.ics (hochgeladen),
+     * Abfallkalender als Serien (RRULE), Verband mit fehlerhaftem letzten Abruf.
      */
     private function externalEvents(DateTimeImmutable $today): void
     {
-        $tz = Clock::localTz();
-        $id = fn (string $source, string $uid) => substr(hash('sha256', $source . '|' . $uid), 0, 24);
+        $db = $this->app->db();
+        $proc = $this->app->icalProcessor();
+        $source = fn (string $key) => $db->one('SELECT * FROM sources WHERE source_key = ?', [$key]);
 
-        // Kreislehrgänge: nur Termine mit „TM1“ in 2027 kommen in den Kalender TM1 2027
-        $tm1 = [];
-        foreach (['01-16', '01-23', '01-30', '02-06'] as $n => $d) {
-            $tm1[] = ['TM1 Ausbildungstag ' . ($n + 1), '2027-' . $d . ' 08:00', '2027-' . $d . ' 17:00', false, 'Feuerwehrhaus Kreuzau, Schulungsraum', 'Verpflegung wird gestellt'];
-        }
-        $tm1[] = ['TM1 Lehrgangswochenende', '2027-02-19', '2027-02-21', true, 'Feuerwehrschule des Kreises', null];
-        $tm1[] = ['TM1 Abschlussprüfung', '2027-02-27 08:00', '2027-02-27 14:00', false, 'Feuerwehrhaus Kreuzau', null];
-        foreach ($tm1 as $n => [$title, $start, $end, $allDay, $loc, $desc]) {
-            $this->event('tm1-2027', $id('kreis', "lg-2027-tm1-$n@kreis.example.org"), $title, $start, $end, $allDay, $loc, $desc, false, 'kreis');
-        }
-        $this->app->db()->execute('UPDATE calendar_feeds SET last_match_count = ? WHERE id = ?', [count($tm1), $this->feedId['kreis>tm1-2027']]);
+        // Kreis: Datei hochgeladen und übernommen (vor 3 Tagen, von Michael)
+        $this->at('-3 days');
+        $ics = (string) file_get_contents(dirname(__DIR__, 2) . '/tests/fixtures/kreis-lehrgaenge-2027.ics');
+        $events = $proc->parse($ics);
+        $fileId = $db->insert('source_files', [
+            'source_id' => $this->src['kreis'], 'name' => 'Lehrgaenge_Kreis_Dueren_2027.ics', 'ics' => $ics, 'sha256' => hash('sha256', $ics),
+            'status' => 'active', 'event_count' => count($events),
+            'first_start' => Clock::toDb($events[0]['start']), 'last_end' => Clock::toDb(end($events)['end']),
+            'uploaded_at' => $this->nowDb('-3 days'), 'uploaded_by' => $this->users['1001']['id'], 'applied_at' => $this->nowDb('-3 days'),
+        ]);
+        $proc->apply($proc->plan($source('kreis'), $events, $fileId), false, $fileId);
+        $this->at('now');
 
-        // Kreisfeuerwehrverband (für alle, Vorgabe an); die Quelle meldet zurzeit einen Fehler
-        $y = (int) $today->format('Y');
-        foreach ([
-            ['Delegiertenversammlung des KFV', ($y + 1) . '-03-20 19:00', ($y + 1) . '-03-20 22:00', false, 'Kreishaus Düren'],
-            ['Leistungsnachweis der Feuerwehren', ($y + 1) . '-06-06', ($y + 1) . '-06-06', true, 'Feuerwehrschule des Kreises'],
-            ['Kreisjugendfeuerwehrtag', $today->modify('+45 days')->format('Y-m-d'), $today->modify('+45 days')->format('Y-m-d'), true, 'Sportplatz Nideggen'],
-        ] as $n => [$title, $start, $end, $allDay, $loc]) {
-            $this->event('kfv', $id('kfv', "kfv-$n"), $title, $start, $end, $allDay, $loc, null, false, 'kfv');
-        }
-
-        // Abfallkalender je Ort (für alle, Vorgabe aus): Rest- und Biotonne im Wechsel, Papier alle 4 Wochen
-        $from = $today->modify('-8 weeks');
-        $to = $today->modify('+26 weeks');
-        foreach (['abfall-drove' => 'tuesday', 'abfall-kreuzau' => 'wednesday', 'abfall-stockheim' => 'thursday'] as $slug => $weekday) {
-            $day = $from->modify("next $weekday");
-            for ($w = 0; $day < $to; $w++, $day = $day->modify('+1 week')) {
-                $title = $w % 2 === 0 ? 'Restmüll' : 'Biotonne';
-                $this->event($slug, $id($slug, $title . $day->format('Ymd')), $title, $day->format('Y-m-d'), $day->format('Y-m-d'), true, null,
-                    'Tonne bitte bis 6:30 Uhr bereitstellen.', false, $slug);
-                if ($w % 4 === 1) {
-                    $paper = $day->modify('+1 day');
-                    $this->event($slug, $id($slug, 'Papier' . $paper->format('Ymd')), 'Papiertonne', $paper->format('Y-m-d'), $paper->format('Y-m-d'), true,
-                        null, null, false, $slug);
-                }
-            }
+        // Abfall: Rest- und Biotonne im Wechsel (je 14-täglich), Papier alle 4 Wochen – als Serie wie bei den Anbietern
+        $start = $today->modify('-8 weeks');
+        foreach (['abfall-drove' => 'tuesday', 'abfall-kreuzau' => 'wednesday', 'abfall-stockheim' => 'thursday'] as $key => $weekday) {
+            $d = $start->modify("next $weekday");
+            $ics = $this->ics($key, [
+                ['rest', 'Restmüll', $d, 'FREQ=WEEKLY;INTERVAL=2;COUNT=18', 'Tonne bitte bis 6:30 Uhr bereitstellen.'],
+                ['bio', 'Biotonne', $d->modify('+1 week'), 'FREQ=WEEKLY;INTERVAL=2;COUNT=18', 'Tonne bitte bis 6:30 Uhr bereitstellen.'],
+                ['papier', 'Papiertonne', $d->modify('+1 week +1 day'), 'FREQ=WEEKLY;INTERVAL=4;COUNT=9', null],
+            ]);
+            $this->applyFeed($key, $ics, '-5 hours');
         }
 
-        // Gemischter Kalender: Dorffest des Ortsvereins im Kalender LG Drove, mit Hinweis auf die Quelle
+        // Kreisfeuerwehrverband: Termine aus einem früheren Abruf, der letzte Abruf ist fehlgeschlagen
+        $y = (int) $today->format('Y') + 1;
+        $this->applyFeed('kfv', $this->ics('kfv', [
+            ['dv', 'Delegiertenversammlung des KFV', new DateTimeImmutable("$y-03-20 19:00", Clock::localTz()), null, null, '22:00', 'Kreishaus Düren'],
+            ['ln', 'Leistungsnachweis der Feuerwehren', new DateTimeImmutable("$y-06-06", Clock::localTz()), null, null, null, 'Feuerwehrschule des Kreises'],
+            ['kjf', 'Kreisjugendfeuerwehrtag', $today->modify('+45 days'), null, null, null, 'Sportplatz Nideggen'],
+        ]), '-4 days');
+        $db->update('sources', ['last_run_at' => $this->nowDb('-1 hour'), 'last_error' => 'HTTP 404'], ['id' => $this->src['kfv']]);
+
+        // Ortsverein: nur das Dorffest (Kategorie Feuerwehr) kommt in den Kalender LG Drove, das Konzert nicht
         $fest = $today->modify('+40 days');
-        $this->event('lg-drove', $id('ortsverein-drove', 'dorffest'), 'Dorffest Drove (Brandwache der LG)', $fest->format('Y-m-d'),
-            $fest->modify('+1 day')->format('Y-m-d'), true, 'Dorfplatz Drove', "Die LG stellt die Brandwache, Einteilung folgt.\n\nQuelle: Ortsverein Drove",
-            false, 'ortsverein-drove');
-        $this->app->db()->execute('UPDATE calendar_feeds SET last_match_count = 1 WHERE id = ?', [$this->feedId['ortsverein-drove>lg-drove']]);
-        unset($tz);
+        $this->applyFeed('ortsverein-drove', $this->ics('ortsverein-drove', [
+            ['fest', 'Dorffest Drove (Brandwache der LG)', $fest, null, 'Die LG stellt die Brandwache, Einteilung folgt.', null, 'Dorfplatz Drove', 'Fest, Feuerwehr', 2],
+            ['konzert', 'Konzert des Musikvereins', $fest->modify('+14 days')->setTime(19, 0), null, null, '22:00', 'Bürgerhaus Drove', 'Musik'],
+        ]), '-8 hours');
+    }
+
+    /**
+     * Kleine iCal-Datei bauen. Termine: [id, Titel, Beginn, RRULE, Beschreibung, Ende (Uhrzeit) oder null = ganztägig,
+     * Ort, Kategorien, Tage]
+     * @param list<array<int,mixed>> $events
+     */
+    private function ics(string $key, array $events): string
+    {
+        $out = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Beispiel//{$key}//DE\r\n";
+        foreach ($events as $e) {
+            [$id, $title, $start] = $e;
+            $rrule = $e[3] ?? null;
+            $desc = $e[4] ?? null;
+            $endTime = $e[5] ?? null;
+            $out .= "BEGIN:VEVENT\r\nUID:{$key}-{$id}@example.org\r\nDTSTAMP:20261101T000000Z\r\nSUMMARY:{$title}\r\n";
+            if ($endTime === null && $start->format('H:i') === '00:00') {
+                $out .= 'DTSTART;VALUE=DATE:' . $start->format('Ymd') . "\r\nDTEND;VALUE=DATE:" . $start->modify('+' . ($e[8] ?? 1) . ' days')->format('Ymd') . "\r\n";
+            } else {
+                [$h, $m] = explode(':', $endTime ?? '23:00');
+                $out .= 'DTSTART;TZID=Europe/Berlin:' . $start->format('Ymd\THis') . "\r\nDTEND;TZID=Europe/Berlin:" . $start->setTime((int) $h, (int) $m)->format('Ymd\THis') . "\r\n";
+            }
+            $out .= ($rrule ? "RRULE:{$rrule}\r\n" : '') . ($desc ? "DESCRIPTION:{$desc}\r\n" : '')
+                . (isset($e[6]) ? "LOCATION:{$e[6]}\r\n" : '') . (isset($e[7]) ? 'CATEGORIES:' . str_replace(', ', ',', $e[7]) . "\r\n" : '')
+                . "END:VEVENT\r\n";
+        }
+        return $out . "END:VCALENDAR\r\n";
+    }
+
+    /** Feed-Inhalt übernehmen, als wäre er vor $ago abgerufen worden */
+    private function applyFeed(string $key, string $ics, string $ago): void
+    {
+        $db = $this->app->db();
+        $this->at($ago);
+        $proc = $this->app->icalProcessor();
+        $source = $db->one('SELECT * FROM sources WHERE source_key = ?', [$key]);
+        $proc->apply($proc->plan($source, $proc->parse($ics)));
+        $db->update('sources', ['last_run_at' => $this->nowDb($ago), 'last_success_at' => $this->nowDb($ago)], ['id' => $source['id']]);
+        $this->at('now');
     }
 
     private function event(string $slug, string $id, string $title, string $start, string $end, bool $allDay, ?string $loc, ?string $desc,
@@ -700,11 +732,11 @@ final class TestDataLoader
             'users_created' => 1, 'users_updated' => 4, 'users_deleted' => 1, 'users_locked' => 1, 'emails_changed' => 1,
             'memberships_changed' => 2, 'events_added' => 2, 'events_modified' => 3, 'events_deleted' => 1, 'mails_queued' => 3,
             'events_by_calendar' => ['LG Drove' => ['added' => 1, 'modified' => 1], 'LG Kreuzau' => ['modified' => 1],
-                'LG Stockheim' => ['deleted' => 1], 'TM1 2027' => ['added' => 1], 'FF KRZ' => ['modified' => 1]],
+                'LG Stockheim' => ['deleted' => 1], 'Maschinist 2/2027' => ['added' => 1], 'FF KRZ' => ['modified' => 1]],
         ], [
             ['info', 'user_created', '1023', 'Neues Mitglied Dieter Langer (dieter.langer2) angelegt; „dieter.langer“ ist reserviert.'],
             ['info', 'email_changed', '1027', 'E-Mail-Adresse geändert: markus.weber@alt.example.org → markus.weber@example.org; Begrüßung an neue Adresse eingereiht.'],
-            ['info', 'membership_changed', '1021', 'Mitgliedschaft hinzugekommen: TM1 2027 → Kalender „TM1 2027“ freigeschaltet.'],
+            ['info', 'membership_changed', '1021', 'Mitgliedschaft hinzugekommen: Maschinist 2/2027 (Kreis) → Kalender „Maschinist 2/2027“ freigeschaltet.'],
             ['info', 'membership_changed', '1020', 'Mitgliedschaft entfallen: LG Stockheim → Kalender „LG Stockheim“ entzogen.'],
             ['warning', 'user_locked_email', '1011', 'Zugang gesperrt: Domain „gmx.dee“ hat keinen MX- oder A-Eintrag (thomas.schroeder@gmx.dee).'],
             ['warning', 'user_locked_email', '1010', 'Zugang bleibt gesperrt: „sabine.weiss@gmx“ ist keine gültige E-Mail-Adresse.'],

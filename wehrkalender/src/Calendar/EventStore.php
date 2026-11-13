@@ -63,7 +63,7 @@ final class EventStore
      *
      * @param array{external_id:string,source?:string,feed_id?:?int,calendar_id:int,summary:string,
      *              location?:?string,description?:?string,start:DateTimeImmutable,end:DateTimeImmutable,
-     *              all_day?:bool,cancelled?:bool} $data
+     *              all_day?:bool,cancelled?:bool,file_id?:?int,source_hash?:?string} $data
      *        source: Schlüssel der Quelle (Vorgabe "mp"); external_id: Kennung des Termins in der Quelle.
      *        Bei ganztägigen Terminen ist "end" der letzte Tag (einschließlich).
      * @return string "added" | "modified" | "unchanged"
@@ -95,10 +95,17 @@ final class EventStore
         $sourceKey = $data['source'] ?? self::SOURCE_MP;
         $sourceId = $this->sourceId($sourceKey);
         $row['feed_id'] = isset($data['feed_id']) ? (int) $data['feed_id'] : null;
+        $row['file_id'] = isset($data['file_id']) ? (int) $data['file_id'] : null;
+        $row['source_hash'] = $data['source_hash'] ?? null;
         return $this->db->transaction(function () use ($data, $row, $hash, $sourceKey, $sourceId): string {
             $existing = $this->db->one('SELECT * FROM events WHERE source_id = ? AND external_id = ?', [$sourceId, $data['external_id']]);
             $now = $this->clock->nowDb();
             if ($existing !== null && $existing['content_hash'] === $hash) {
+                // Inhalt gleich; Verwaltungsangaben (Befüllung, Datei, Rohdaten-Hash) ohne Änderungsmeldung nachführen
+                $meta = ['feed_id' => $row['feed_id'], 'file_id' => $row['file_id'], 'source_hash' => $row['source_hash']];
+                if ($meta['feed_id'] != $existing['feed_id'] || $meta['file_id'] != $existing['file_id'] || $meta['source_hash'] !== $existing['source_hash']) {
+                    $this->db->update('events', $meta, ['id' => $existing['id']]);
+                }
                 return 'unchanged';
             }
             $calendarName = (string) $this->db->value('SELECT display_name FROM calendars WHERE id = ?', [$row['calendar_id']]);
@@ -127,6 +134,8 @@ final class EventStore
             $this->db->update('events', [
                 'calendar_id' => $row['calendar_id'],
                 'feed_id' => $row['feed_id'],
+                'file_id' => $row['file_id'],
+                'source_hash' => $row['source_hash'],
                 'summary' => $row['summary'],
                 'location' => $row['location'],
                 'description' => $row['description'],

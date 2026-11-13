@@ -1,5 +1,6 @@
 # Zeitgesteuerte Jobs (supercronic im worker-Container), Zeiten in UTC
 */15 * * * *  php /srv/app/bin/console import:run
+7-59/15 * * * * php /srv/app/bin/console sources:fetch
 * * * * *     php /srv/app/bin/console mail:send
 17 6 * * *    php /srv/app/bin/console monitor:check
 43 2 * * *    php /srv/app/bin/console cleanup:run

@@ -90,7 +90,7 @@ final class IcsBuilder
      *
      * @param list<string> $eventIcs
      */
-    public function buildFeed(string $calendarName, string $color, array $eventIcs): string
+    public function buildFeed(string $calendarName, string $color, array $eventIcs, ?string $description = null): string
     {
         $out = "BEGIN:VCALENDAR\r\n"
             . "VERSION:2.0\r\n"
@@ -98,6 +98,7 @@ final class IcsBuilder
             . "CALSCALE:GREGORIAN\r\n"
             . "METHOD:PUBLISH\r\n"
             . $this->fold('X-WR-CALNAME:' . $this->escapeText($calendarName))
+            . ($description !== null && $description !== '' ? $this->fold('X-WR-CALDESC:' . $this->escapeText($description)) : '')
             . "X-WR-TIMEZONE:Europe/Berlin\r\n"
             . $this->fold('X-APPLE-CALENDAR-COLOR:' . $color)
             . "REFRESH-INTERVAL;VALUE=DURATION:PT1H\r\n"

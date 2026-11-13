@@ -154,3 +154,5 @@ a.tile .btn { margin-top: .25rem; }
 .filter-row input[type=date] { width: auto; margin: 0; }
 .filter-row label { margin: 0; }
 .chip-off { opacity: .5; text-decoration: line-through; }
+.cal-stand { display: block; color: var(--muted, #6b7280); }
+.cal-stand.stale { color: #B45309; font-weight: 600; }

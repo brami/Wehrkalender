@@ -27,6 +27,11 @@ final class MemberController extends Controller
         $outdated = $accounts->isUsernameOutdated($user);
         $year = (int) $this->app->clock()->now()->setTimezone(Clock::localTz())->format('Y');
         [$calendars, $unmapped] = $this->calendarsWithOrigin((int) $user['id'], $year);
+        $stands = $this->app->sourceState()->calendarStands();
+        foreach ($calendars as &$c) {
+            $c['stand'] = $stands[(int) $c['id']] ?? null;
+        }
+        unset($c);
         $on = array_values(array_filter($calendars, fn ($c) => (int) $c['enabled'] === 1));
         $off = array_values(array_filter($calendars, fn ($c) => (int) $c['enabled'] !== 1));
         return $this->render($response, 'member/home.twig', [

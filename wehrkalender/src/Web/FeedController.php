@@ -20,7 +20,7 @@ final class FeedController extends Controller
         $db = $this->app->db();
         $token = (string) $args['token'];
         $row = preg_match('/^[A-Za-z0-9_-]{43}$/', $token) ? $db->one(
-            "SELECT f.id AS feed_id, f.user_id, f.calendar_id, c.display_name, c.color, c.sync_token,
+            "SELECT f.id AS feed_id, f.user_id, f.calendar_id, c.display_name, c.color, c.sync_token, c.description,
                     CASE WHEN " . CalendarChoice::enabledSql() . " THEN 1 ELSE 0 END AS enabled
                FROM feed_tokens f
                JOIN users u ON u.id = f.user_id
@@ -75,7 +75,9 @@ final class FeedController extends Controller
             'SELECT ics FROM events WHERE calendar_id = ? AND ends_at >= ? ORDER BY starts_at',
             [$row['calendar_id'], $this->app->clock()->db('-12 months')]
         );
-        $body = $this->app->ics()->buildFeed($row['display_name'], $row['color'], $ics);
+        $stand = $this->app->sourceState()->calendarStands()[(int) $row['calendar_id']] ?? null;
+        $desc = trim(implode(' · ', array_filter([(string) ($row['description'] ?? ''), $stand['text'] ?? ''])));
+        $body = $this->app->ics()->buildFeed($row['display_name'], $row['color'], $ics, $desc);
         $response->getBody()->write($body);
         $response = $response->withHeader('Content-Type', 'text/calendar; charset=utf-8')
             ->withHeader('Content-Disposition', 'inline; filename="' . preg_replace('/[^A-Za-z0-9_-]+/', '-', $row['display_name']) . '.ics"');

@@ -57,6 +57,7 @@ return [
         url VARCHAR(500) NULL,
         interval_minutes INTEGER NOT NULL DEFAULT 360,
         active SMALLINT NOT NULL DEFAULT 1,
+        id_from_content SMALLINT NOT NULL DEFAULT 0,
         http_etag VARCHAR(255) NULL,
         http_last_modified VARCHAR(100) NULL,
         last_run_at DATETIME NULL,
@@ -76,6 +77,7 @@ return [
         source_id INTEGER NOT NULL,
         filter TEXT NULL,
         source_note SMALLINT NOT NULL DEFAULT 0,
+        show_stand SMALLINT NOT NULL DEFAULT 1,
         active SMALLINT NOT NULL DEFAULT 1,
         last_match_count INTEGER NULL,
         created_at DATETIME NOT NULL,
@@ -84,6 +86,27 @@ return [
         CONSTRAINT fk_cf_source FOREIGN KEY (source_id) REFERENCES sources (id) ON DELETE CASCADE
     ) {TABLE}",
     "CREATE INDEX ix_cf_source ON calendar_feeds (source_id)",
+
+    // Hochgeladene iCal-Dateien einer Quelle der Art upload. status: pending (Vorschau) | active.
+    // Eine neue Fassung (replaces_id) übernimmt beim Übernehmen die Stelle der alten Datei.
+    "CREATE TABLE source_files (
+        id {PK},
+        source_id INTEGER NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        ics {LONGTEXT} NOT NULL,
+        sha256 CHAR(64) NOT NULL,
+        status VARCHAR(10) NOT NULL,
+        replaces_id INTEGER NULL,
+        event_count INTEGER NOT NULL DEFAULT 0,
+        first_start DATETIME NULL,
+        last_end DATETIME NULL,
+        uploaded_at DATETIME NOT NULL,
+        uploaded_by INTEGER NULL,
+        applied_at DATETIME NULL,
+        CONSTRAINT fk_sf_source FOREIGN KEY (source_id) REFERENCES sources (id) ON DELETE CASCADE,
+        CONSTRAINT fk_sf_user FOREIGN KEY (uploaded_by) REFERENCES users (id) ON DELETE SET NULL
+    ) {TABLE}",
+    "CREATE INDEX ix_sf_source ON source_files (source_id, status)",
 
     // Zuordnungen aus MP Feuer: Bereichsschlüssel → Kalender.
     // grants_access: Mitgliedschaft schaltet den Kalender frei; fills: Termine des Bereichs kommen hinein
@@ -123,6 +146,8 @@ return [
         source_id INTEGER NOT NULL,
         external_id VARCHAR(150) NOT NULL,
         feed_id INTEGER NULL,
+        file_id INTEGER NULL,
+        source_hash CHAR(64) NULL,
         calendar_id INTEGER NOT NULL,
         uid VARCHAR(255) NOT NULL,
         summary VARCHAR(500) NOT NULL,

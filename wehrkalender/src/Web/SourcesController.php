@@ -9,6 +9,8 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Wehrkalender\Calendar\FeedFilter;
 use Wehrkalender\Clock;
+use Wehrkalender\Import\IcalError;
+use Psr\Http\Message\UploadedFileInterface;
 
 /**
  * Verwaltung der Quellen (MP Feuer, externe iCal-Feeds) und der Befüllungen
@@ -18,7 +20,8 @@ use Wehrkalender\Clock;
  */
 final class SourcesController extends Controller
 {
-    public const TYPES = ['mpfeuer' => 'MP Feuer', 'ical' => 'iCal-Feed'];
+    public const TYPES = ['mpfeuer' => 'MP Feuer', 'ical' => 'iCal-Feed', 'upload' => 'iCal-Datei'];
+    public const UPLOAD_MAX = 2 * 1024 * 1024;
     private const MIN_INTERVAL = 60;
     private const MAX_INTERVAL = 10080;
 
@@ -28,7 +31,8 @@ final class SourcesController extends Controller
         $sources = $db->all(
             'SELECT s.*,
                     (SELECT COUNT(*) FROM events e WHERE e.source_id = s.id) AS events,
-                    (SELECT COUNT(*) FROM calendar_feeds f WHERE f.source_id = s.id) AS feeds
+                    (SELECT COUNT(*) FROM calendar_feeds f WHERE f.source_id = s.id) AS feeds,
+                    (SELECT MAX(sf.applied_at) FROM source_files sf WHERE sf.source_id = s.id AND sf.status = \'active\') AS last_file_at
                FROM sources s ORDER BY CASE WHEN s.type = \'mpfeuer\' THEN 0 ELSE 1 END, s.name'
         );
         $feeds = $db->all(
@@ -43,19 +47,31 @@ final class SourcesController extends Controller
         }
         unset($f);
         foreach ($sources as &$s) {
-            $s['state'] = self::state($s, $this->app->clock());
+            $s['state'] = $this->app->sourceState()->state($s);
+            $s['problem'] = $this->app->sourceState()->problem($s);
         }
         unset($s);
         $mpFills = $db->all(
             'SELECT cs.mp_key, c.display_name, c.color FROM calendar_sources cs JOIN calendars c ON c.id = cs.calendar_id
               WHERE cs.fills = 1 ORDER BY c.display_name, cs.mp_key'
         );
+        $files = [];
+        foreach ($db->all(
+            "SELECT f.id, f.source_id, f.name, f.status, f.event_count, f.first_start, f.last_end, f.uploaded_at, f.applied_at, u.first_name AS uploader_first, u.last_name AS uploader_last,
+                    (SELECT COUNT(*) FROM events e WHERE e.file_id = f.id) AS events
+               FROM source_files f LEFT JOIN users u ON u.id = f.uploaded_by
+              WHERE f.status = 'active' ORDER BY f.first_start, f.id"
+        ) as $f) {
+            $files[(int) $f['source_id']][] = $f;
+        }
         return $this->render($response, 'admin/sources.twig', [
+            'files' => $files,
             'sources' => $sources,
             'feeds' => $feeds,
             'mp_fills' => $mpFills,
             'calendars' => $db->all('SELECT id, display_name FROM calendars ORDER BY display_name'),
-            'ical_sources' => array_values(array_filter($sources, fn ($s) => $s['type'] === 'ical')),
+            'ical_sources' => array_values(array_filter($sources, fn ($s) => $s['type'] !== 'mpfeuer')),
+            'upload_max_mb' => intdiv(self::UPLOAD_MAX, 1024 * 1024),
             'fields' => FeedFilter::FIELDS,
             'ops' => FeedFilter::OPS,
             'types' => self::TYPES,
@@ -69,9 +85,10 @@ final class SourcesController extends Controller
         $p = $this->post($request);
         $id = isset($args['id']) ? (int) $args['id'] : null;
         $existing = $id !== null ? $db->one('SELECT * FROM sources WHERE id = ?', [$id]) : null;
-        if ($id !== null && ($existing === null || $existing['type'] !== 'ical')) {
+        if ($id !== null && ($existing === null || $existing['type'] === 'mpfeuer')) {
             $this->notFound($request);
         }
+        $type = $existing['type'] ?? (($p['type'] ?? 'ical') === 'upload' ? 'upload' : 'ical');
         $key = strtolower(trim((string) ($p['source_key'] ?? '')));
         $name = trim((string) ($p['name'] ?? ''));
         $url = trim((string) ($p['url'] ?? ''));
@@ -87,8 +104,12 @@ final class SourcesController extends Controller
         if ($name === '') {
             $errors[] = 'Bitte einen Namen angeben.';
         }
-        if ($error = self::urlError($url)) {
+        if ($type === 'ical' && ($error = self::urlError($url))) {
             $errors[] = $error;
+        }
+        if ($type === 'upload') {
+            $url = '';
+            $interval = max(self::MIN_INTERVAL, min(self::MAX_INTERVAL, $interval));
         }
         if ($interval < self::MIN_INTERVAL || $interval > self::MAX_INTERVAL) {
             $errors[] = 'Abrufintervall: ' . self::MIN_INTERVAL . ' bis ' . self::MAX_INTERVAL . ' Minuten.';
@@ -102,16 +123,18 @@ final class SourcesController extends Controller
         $now = $this->app->clock()->nowDb();
         $data = [
             'name' => $name,
-            'url' => $url,
+            'url' => $url !== '' ? $url : null,
+            'id_from_content' => !empty($p['id_from_content']) ? 1 : 0,
             'interval_minutes' => $interval,
             'active' => !empty($p['active']) ? 1 : 0,
             'updated_at' => $now,
         ];
         if ($existing === null) {
-            $db->insert('sources', $data + ['source_key' => $key, 'type' => 'ical', 'created_at' => $now]);
-            $this->session->flash('success', "Quelle „{$name}“ angelegt. Legen Sie jetzt fest, welche Kalender sie befüllt.");
+            $db->insert('sources', $data + ['source_key' => $key, 'type' => $type, 'created_at' => $now]);
+            $this->session->flash('success', "Quelle „{$name}“ angelegt. Legen Sie jetzt fest, welche Kalender sie befüllt"
+                . ($type === 'upload' ? ', und laden Sie dann die Datei hoch.' : '.'));
         } else {
-            if ($existing['url'] !== $url) {
+            if (($existing['url'] ?? '') !== $url) {
                 // Neue Adresse: Zwischenspeicher für bedingte Abrufe verwerfen
                 $data += ['http_etag' => null, 'http_last_modified' => null];
             }
@@ -126,7 +149,7 @@ final class SourcesController extends Controller
     {
         $db = $this->app->db();
         $s = $db->one('SELECT * FROM sources WHERE id = ?', [(int) $args['id']]);
-        if ($s === null || $s['type'] !== 'ical') {
+        if ($s === null || $s['type'] === 'mpfeuer') {
             $this->notFound($request);
         }
         if ((int) $db->value('SELECT COUNT(*) FROM events WHERE source_id = ?', [$s['id']]) > 0) {
@@ -150,7 +173,7 @@ final class SourcesController extends Controller
         }
         $sourceId = $existing !== null ? (int) $existing['source_id'] : (int) ($p['source_id'] ?? 0);
         $calendarId = $existing !== null ? (int) $existing['calendar_id'] : (int) ($p['calendar_id'] ?? 0);
-        $source = $db->one("SELECT * FROM sources WHERE id = ? AND type = 'ical'", [$sourceId]);
+        $source = $db->one("SELECT * FROM sources WHERE id = ? AND type <> 'mpfeuer'", [$sourceId]);
         $calendar = $db->one('SELECT * FROM calendars WHERE id = ?', [$calendarId]);
         if ($source === null || $calendar === null) {
             $this->session->flash('error', 'Bitte eine iCal-Quelle und einen Kalender auswählen.');
@@ -166,6 +189,7 @@ final class SourcesController extends Controller
         $data = [
             'filter' => $filter->toJson(),
             'source_note' => !empty($p['source_note']) ? 1 : 0,
+            'show_stand' => !empty($p['show_stand']) ? 1 : 0,
             'active' => !empty($p['active']) ? 1 : 0,
             'updated_at' => $now,
         ];
@@ -173,7 +197,8 @@ final class SourcesController extends Controller
             $db->insert('calendar_feeds', $data + ['calendar_id' => $calendarId, 'source_id' => $sourceId, 'created_at' => $now]);
             $mixed = $db->value('SELECT 1 FROM calendar_sources WHERE calendar_id = ? AND fills = 1', [$calendarId]) !== null
                 || (int) $db->value('SELECT COUNT(*) FROM calendar_feeds WHERE calendar_id = ?', [$calendarId]) > 1;
-            $this->session->flash('success', "„{$source['name']}“ befüllt jetzt den Kalender „{$calendar['display_name']}“ ({$filter->describe()}). Die Termine erscheinen nach dem nächsten Abruf.");
+            $this->session->flash('success', "„{$source['name']}“ befüllt jetzt den Kalender „{$calendar['display_name']}“ ({$filter->describe()}). "
+                . ($source['type'] === 'upload' ? 'Die Termine erscheinen, sobald Sie eine Datei hochladen bzw. erneut übernehmen.' : 'Die Termine erscheinen nach dem nächsten Abruf („Jetzt abrufen“).'));
             if ($mixed) {
                 $this->session->flash('info', "Der Kalender „{$calendar['display_name']}“ wird damit aus mehreren Quellen befüllt. Fällt eine Quelle aus, fehlt still ein Teil der Termine – eigene Kalender je Quelle sind übersichtlicher.");
             }
@@ -206,27 +231,150 @@ final class SourcesController extends Controller
         return $this->redirect($response, '/admin/quellen');
     }
 
-    /**
-     * Zustand einer Quelle für die Anzeige: ok | warn | error | never | off | mp
-     * @param array<string,mixed> $s
-     */
-    public static function state(array $s, Clock $clock): string
+    /** iCal-Datei hochladen (POST /admin/quellen/{id}/datei) → Vorschau */
+    public function fileUpload(Request $request, Response $response, array $args): Response
     {
-        if ($s['type'] === 'mpfeuer') {
-            return 'mp';
+        $db = $this->app->db();
+        $source = $db->one("SELECT * FROM sources WHERE id = ? AND type = 'upload'", [(int) $args['id']]);
+        if ($source === null) {
+            $this->notFound($request);
         }
-        if ((int) $s['active'] !== 1) {
-            return 'off';
+        $p = $this->post($request);
+        $file = $request->getUploadedFiles()['datei'] ?? null;
+        if (!$file instanceof UploadedFileInterface || $file->getError() !== UPLOAD_ERR_OK) {
+            $tooBig = $file instanceof UploadedFileInterface && in_array($file->getError(), [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE], true);
+            $this->session->flash('error', $tooBig ? 'Die Datei ist zu groß (höchstens ' . intdiv(self::UPLOAD_MAX, 1048576) . ' MB).' : 'Bitte eine iCal-Datei (.ics) auswählen.');
+            return $this->redirect($response, '/admin/quellen');
         }
-        if ($s['last_success_at'] === null) {
-            return $s['last_error'] !== null ? 'error' : 'never';
+        $ics = (string) $file->getStream();
+        $replaces = (int) ($p['replaces_id'] ?? 0) ?: null;
+        if ($replaces !== null && $db->value("SELECT 1 FROM source_files WHERE id = ? AND source_id = ? AND status = 'active'", [$replaces, $source['id']]) === null) {
+            $replaces = null;
         }
-        if ($s['last_error'] !== null && $s['last_run_at'] !== null && $s['last_run_at'] > $s['last_success_at']) {
-            return 'error';
+        try {
+            $events = $this->app->icalProcessor()->parse($ics, self::UPLOAD_MAX);
+        } catch (IcalError $e) {
+            $this->session->flash('error', 'Datei „' . $file->getClientFilename() . '“: ' . $e->getMessage());
+            return $this->redirect($response, '/admin/quellen');
         }
-        // länger als zwei Intervalle (mind. 1 Tag) kein erfolgreicher Abruf
-        $limit = $clock->db('-' . max(1440, 2 * (int) $s['interval_minutes']) . ' minutes');
-        return $s['last_success_at'] < $limit ? 'warn' : 'ok';
+        $user = $this->currentUser($request);
+        // ältere, nicht übernommene Vorschauen dieser Quelle verwerfen
+        $db->execute("DELETE FROM source_files WHERE source_id = ? AND status = 'pending'", [$source['id']]);
+        $name = trim((string) $file->getClientFilename()) ?: 'kalender.ics';
+        $id = $db->insert('source_files', [
+            'source_id' => $source['id'],
+            'name' => mb_substr(basename(str_replace('\\', '/', $name)), 0, 255),
+            'ics' => $ics,
+            'sha256' => hash('sha256', $ics),
+            'status' => 'pending',
+            'replaces_id' => $replaces,
+            'event_count' => count($events),
+            'first_start' => $events === [] ? null : Clock::toDb(min(array_map(fn ($e) => $e['start'], $events))),
+            'last_end' => $events === [] ? null : Clock::toDb(max(array_map(fn ($e) => $e['end'], $events))),
+            'uploaded_at' => $this->app->clock()->nowDb(),
+            'uploaded_by' => (int) $user['id'],
+        ]);
+        return $this->redirect($response, '/admin/quellen/datei/' . $id);
+    }
+
+    /** Vorschau einer hochgeladenen Datei: was ändert sich je Befüllung? */
+    public function filePreview(Request $request, Response $response, array $args): Response
+    {
+        [$file, $source, $plan] = $this->pendingPlan($request, (int) $args['id']);
+        $replaced = $file['replaces_id'] !== null ? $this->app->db()->one('SELECT * FROM source_files WHERE id = ?', [$file['replaces_id']]) : null;
+        $same = $replaced !== null && $replaced['sha256'] === $file['sha256'];
+        foreach ($plan['feeds'] as &$p) {
+            $p['filter_text'] = FeedFilter::fromJson($p['feed']['filter'])->describe();
+        }
+        unset($p);
+        return $this->render($response, 'admin/source_file.twig', [
+            'file' => $file, 'source' => $source, 'plan' => $plan, 'replaced' => $replaced, 'same_file' => $same,
+            'blocked' => array_filter($plan['feeds'], fn ($f) => $f['blocked'] !== null) !== [],
+        ]);
+    }
+
+    /** Vorschau übernehmen */
+    public function fileApply(Request $request, Response $response, array $args): Response
+    {
+        $db = $this->app->db();
+        [$file, $source, $plan] = $this->pendingPlan($request, (int) $args['id']);
+        $force = !empty($this->post($request)['force']);
+        $target = $file['replaces_id'] !== null ? (int) $file['replaces_id'] : (int) $file['id'];
+        $stats = $db->transaction(function () use ($db, $file, $plan, $force, $target): array {
+            $stats = $this->app->icalProcessor()->apply($plan, $force, $target);
+            $now = $this->app->clock()->nowDb();
+            $meta = ['name' => $file['name'], 'ics' => $file['ics'], 'sha256' => $file['sha256'], 'event_count' => $file['event_count'],
+                     'first_start' => $file['first_start'], 'last_end' => $file['last_end'], 'uploaded_at' => $file['uploaded_at'],
+                     'uploaded_by' => $file['uploaded_by'], 'applied_at' => $now, 'status' => 'active', 'replaces_id' => null];
+            if ($target !== (int) $file['id']) {
+                $db->update('source_files', $meta, ['id' => $target]);
+                $db->execute('DELETE FROM source_files WHERE id = ?', [$file['id']]);
+            } else {
+                $db->update('source_files', $meta, ['id' => $target]);
+            }
+            $db->update('sources', ['last_run_at' => $now, 'last_success_at' => $now, 'last_error' => null, 'updated_at' => $now], ['id' => $file['source_id']]);
+            return $stats;
+        });
+        $this->session->flash('success', sprintf('„%s“ übernommen: %d neu, %d geändert, %d entfernt, %d unverändert.',
+            $file['name'], $stats['added'], $stats['changed'], $stats['removed'], $stats['unchanged']));
+        foreach ($stats['blocked'] as $b) {
+            $this->session->flash('error', 'Nicht übernommen – ' . $b);
+        }
+        return $this->redirect($response, '/admin/quellen');
+    }
+
+    /** Vorschau verwerfen */
+    public function fileDiscard(Request $request, Response $response, array $args): Response
+    {
+        $this->app->db()->execute("DELETE FROM source_files WHERE id = ? AND status = 'pending'", [(int) $args['id']]);
+        $this->session->flash('info', 'Hochgeladene Datei verworfen; es wurde nichts geändert.');
+        return $this->redirect($response, '/admin/quellen');
+    }
+
+    /** Übernommene Datei entfernen; ihre Termine verschwinden */
+    public function fileDelete(Request $request, Response $response, array $args): Response
+    {
+        $db = $this->app->db();
+        $f = $db->one("SELECT f.*, s.source_key FROM source_files f JOIN sources s ON s.id = f.source_id WHERE f.id = ? AND f.status = 'active'", [(int) $args['id']]);
+        if ($f === null) {
+            $this->notFound($request);
+        }
+        $removed = 0;
+        foreach ($db->column('SELECT external_id FROM events WHERE file_id = ?', [$f['id']]) as $externalId) {
+            $removed += $this->app->events()->delete((string) $externalId, (string) $f['source_key']) ? 1 : 0;
+        }
+        $db->execute('DELETE FROM source_files WHERE id = ?', [$f['id']]);
+        $this->session->flash('success', "Datei „{$f['name']}“ entfernt ({$removed} Termine entfernt).");
+        return $this->redirect($response, '/admin/quellen');
+    }
+
+    /** @return array{0:array<string,mixed>,1:array<string,mixed>,2:array<string,mixed>} */
+    private function pendingPlan(Request $request, int $fileId): array
+    {
+        $db = $this->app->db();
+        $file = $db->one("SELECT * FROM source_files WHERE id = ? AND status = 'pending'", [$fileId]);
+        $source = $file !== null ? $db->one('SELECT * FROM sources WHERE id = ?', [$file['source_id']]) : null;
+        if ($file === null || $source === null) {
+            $this->session->flash('info', 'Diese Vorschau gibt es nicht mehr (bereits übernommen oder verworfen).');
+            $this->notFound($request);
+        }
+        $processor = $this->app->icalProcessor();
+        $plan = $processor->plan($source, $processor->parse((string) $file['ics'], self::UPLOAD_MAX),
+            $file['replaces_id'] !== null ? (int) $file['replaces_id'] : (int) $file['id']);
+        return [$file, $source, $plan];
+    }
+
+    /** Feed jetzt abrufen (POST /admin/quellen/{id}/abrufen), optional trotz Plausibilitätsproblem übernehmen */
+    public function fetchNow(Request $request, Response $response, array $args): Response
+    {
+        $source = $this->app->db()->one("SELECT * FROM sources WHERE id = ? AND type = 'ical'", [(int) $args['id']]);
+        if ($source === null) {
+            $this->notFound($request);
+        }
+        $force = !empty($this->post($request)['force']);
+        $result = $this->app->sourceFetcher()->fetch($source, $force);
+        $this->session->flash(in_array($result['status'], ['ok', 'unchanged'], true) ? 'success' : 'error', "„{$source['name']}“: " . $result['message']);
+        return $this->redirect($response, '/admin/quellen');
     }
 
     /**

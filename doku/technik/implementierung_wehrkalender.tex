@@ -713,16 +713,16 @@ unverändert.
 \section{Weitere Quellen und Kalenderauswahl}\label{sec:quellen}
 
 \begin{dshinweis}[title=Stand]
-Abgestimmt am 12.11.2026. \textbf{Umgesetzt} (12.11.2026): Datenmodell,
+Abgestimmt am 12.11.2026, \textbf{umgesetzt} am 12./13.11.2026: Datenmodell,
 UID-Schema, Trennung von Freischaltung und Befüllung, Kalenderauswahl durch
-die Mitglieder vollständig, Verwaltung der Quellen und Befüllungen mit
-Filtern, Anzeige des Quellenzustands, Testdaten. \textbf{Noch offen:} der
-iCal-Importer (Abruf, Serienauflösung, Anwenden der Filter, Löschen und
-Plausibilität je Befüllung), der Datei-Upload
-(Abschnitt~\ref{sec:quellen-upload}), der \glqq Stand\grqq\ in Terminen und
-Kalendern (Abschnitt~\ref{sec:quellen-stand}) sowie die Überwachung externer
-Quellen in \code{/health} und per E-Mail; die Status-Seite zeigt Probleme
-bereits an.
+die Mitglieder, Verwaltung der Quellen und Befüllungen mit Filtern,
+Verarbeitung externer Termine (\code{Wehrkalender\textbackslash Import\textbackslash
+IcalProcessor}) für Feeds (\code{sources:fetch}) und Datei-Uploads mit
+Vorschau, \glqq Stand\grqq\ in Terminen und Kalendern, Überwachung (Status-Seite,
+\code{/health}, Warn-E-Mails). Getestet mit dem Lehrgangsplan des Kreises
+Düren 2027 (105 Termine, \code{tests/fixtures/kreis-lehrgaenge-2027.ics}).
+\textbf{Offen:} Vorschlag von Lehrgangskalendern aus neuen
+Lehrgangsschlüsseln (hängt vom Export aus MP Feuer ab).
 \end{dshinweis}
 
 Neben MP Feuer sollen weitere Quellen Termine liefern können, z.\,B.\ die
@@ -755,7 +755,7 @@ Jeder Kalender ist abschaltbar; der Admin legt die Vorgabe (an/aus) fest. \\
 
 Für MP Feuer legt eine Zuordnung in \code{calendar\_sources} beides fest,
 jeweils abschaltbar: Der Bereich \code{LG-DROVE} schaltet den Kalender frei
-\emph{und} befüllt ihn; der Lehrgangsschlüssel \code{LEHRGANG-TM1-2027}
+\emph{und} befüllt ihn; der Lehrgangsschlüssel \code{LEHRGANG-MASCHINIST-2-2027}
 schaltet nur frei, weil die Termine aus dem Kreis-Feed kommen. Befüllungen
 aus externen Quellen stehen in \code{calendar\_feeds}. In der Verwaltung:
 \glqq Kalender \& Zuordnungen\grqq\ (Kalender, Vorgabe, Zuordnungen aus MP
@@ -772,8 +772,9 @@ Feuer) und \glqq Quellen\grqq\ (Quellen, Befüllungen, Filter, Zustand).
 LG Drove & Mitgliedschaft \code{LG-DROVE} & MP Feuer, Bereich
   \code{LG-DROVE} & an \\
 \addlinespace
-TM1 2027 & Teilnahme \code{LEHRGANG-TM1-2027} (MP Feuer) & iCal des Kreises,
-  Filter: Titel enthält \glqq TM1\grqq, Zeitraum 2027 & an \\
+Maschinist 2/2027 & Teilnahme \code{LEHRGANG-MASCHINIST-2-2027} (MP Feuer) &
+  Lehrgangsplan des Kreises (Datei), Filter: Titel beginnt mit
+  \glqq Maschinist 2/2027\grqq & an \\
 \addlinespace
 Abfall Drove & für alle Mitglieder & iCal der Gemeinde für Drove & aus \\
 \addlinespace
@@ -1000,6 +1001,49 @@ laden, und die Versionsnummer (\code{SEQUENCE}) stiege ständig.
         einschalten.
 \end{itemize}
 
+\subsection{Erfahrungen mit dem Lehrgangsplan des Kreises}
+
+Der Plan 2027 des Kreises Düren (eine Datei, 105 Termine aus 35 Lehrgängen
+und 17 Lehrgangsarten) zeigt, worauf es bei Filtern ankommt:
+
+\begin{itemize}
+  \item Die Kategorie nennt nur die Lehrgangs\emph{art} (\glqq Kreislehrgang,
+        Maschinist\grqq), der einzelne Lehrgang steht nur im Titel
+        (\glqq Maschinist 2/2027 – Tag 1/4\grqq). Ein Kalender je Lehrgang
+        braucht daher \glqq Titel beginnt mit \dots\grqq.
+  \item \glqq enthält\grqq\ kann zu viel treffen: Kategorie enthält
+        \glqq Messtrupp\grqq\ trifft auch \glqq Messtrupp Fortbildung\grqq.
+        Die Vorschau zeigt solche Fehlgriffe.
+  \item Lehrgänge aus mehreren Bausteinen (Truppführer: Vorbereitung,
+        Zulassungstest, Theorie, Praxis) füllt man über mehrere Befüllungen
+        derselben Quelle in denselben Kalender (\glqq oder\grqq) oder einen
+        regulären Ausdruck, z.\,B.\ \code{\textasciicircum Truppführer (Theorie|Praxis) 1/2027}.
+  \item Die Beschreibung enthält schon \glqq Stand 09.09.2026\grqq; der
+        eigene Stand ist für diese Befüllungen ausgeschaltet.
+  \item Kennungen (UID) sind stabil und sprechend; ein Änderungsdatum je
+        Termin fehlt, Änderungen werden am Inhalt erkannt.
+\end{itemize}
+
+\subsection{Bedienung in der Verwaltung}
+
+\begin{itemize}
+  \item \textbf{Quelle anlegen} (Seite \glqq Quellen\grqq): Art
+        \glqq iCal-Feed\grqq\ (Adresse, Intervall) oder \glqq iCal-Datei\grqq.
+        Der Schlüssel wird Teil der Kennungen auf den Geräten und ist danach
+        nicht mehr änderbar.
+  \item \textbf{Befüllung anlegen:} Quelle, Kalender, Filter, Hinweis
+        \glqq Quelle\grqq\ und \glqq Stand\grqq\ in der Beschreibung.
+  \item \textbf{Datei hochladen:} als weitere Datei oder neue Fassung einer
+        vorhandenen. Die Vorschau zeigt je Befüllung neu, geändert, entfernt
+        und Auffälligkeiten; erst \glqq Übernehmen\grqq\ ändert die Kalender.
+        Nicht übernommene Vorschauen löscht \code{cleanup:run} nach einem Tag.
+  \item \textbf{Feeds} ruft \code{sources:fetch} alle 15 Minuten auf; abgerufen
+        werden nur Quellen, deren Intervall abgelaufen ist. \glqq Jetzt
+        abrufen\grqq\ in der Verwaltung bzw.\ \code{sources:fetch -{}-quelle=<schlüssel>}
+        ruft sofort ab; mit \glqq trotzdem übernehmen\grqq\ bzw.\
+        \code{-{}-force} auch bei Plausibilitätsproblemen.
+\end{itemize}
+
 \subsection{Kalenderauswahl durch Mitglieder}
 
 \textbf{Wirksam} ist ein Kalender für ein Mitglied, wenn er freigeschaltet und
@@ -1062,11 +1106,8 @@ Kalenderauswahl durch Mitglieder (Schalter, CalDAV, Feed, PDF, E-Mails) &
 
 Der Import aus MP Feuer selbst ist darin nicht enthalten (Arbeitspakete 3
 und 3a). Sinnvolle Reihenfolge: Datenmodell und UID-Schema zusammen mit dem
-MP-Feuer-Import, danach Kalenderauswahl, danach iCal-Quellen. Umgesetzt sind
-(12.11.2026) Datenmodell, Kalenderauswahl und Verwaltung (rund 3 PT); offen
-sind die gemeinsame Verarbeitung von Feeds und Uploads, beginnend mit dem
-Upload (er lässt sich sofort mit echten Dateien testen), der Stand und die
-Überwachung (rund 3,5--5 PT).
+MP-Feuer-Import, danach Kalenderauswahl, danach iCal-Quellen. Bis auf den
+Vorschlag von Lehrgangskalendern ist alles umgesetzt (12./13.11.2026).
 
 % ------------------------------------------------------------------
 \section{CalDAV-Server}

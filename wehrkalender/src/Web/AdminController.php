@@ -46,13 +46,7 @@ final class AdminController extends Controller
                FROM memberships m LEFT JOIN calendar_sources cs ON cs.mp_key = m.mp_key
               WHERE cs.id IS NULL GROUP BY m.mp_key ORDER BY m.mp_key'
         );
-        $sourceProblems = [];
-        foreach ($db->all("SELECT * FROM sources WHERE type = 'ical' AND active = 1 ORDER BY name") as $src) {
-            $state = SourcesController::state($src, $this->app->clock());
-            if (in_array($state, ['error', 'warn', 'never'], true)) {
-                $sourceProblems[] = $src + ['state' => $state];
-            }
-        }
+        $sourceProblems = $this->app->sourceState()->problems();
         return $this->render($response, 'admin/dashboard.twig', [
             'source_problems' => $sourceProblems,
             'last_run' => $runs[0] ?? null,

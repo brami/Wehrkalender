@@ -4,7 +4,7 @@
 {% block content %}
 <h1>Quellen</h1>
 {% include 'admin/_nav.twig' %}
-<p class="muted">Termine kommen aus <strong>MP Feuer</strong> und optional aus externen <strong>iCal-Feeds</strong>, z. B. Lehrgänge des Kreises oder Abfallkalender der Gemeinde. Wer einen Kalender <em>sehen</em> darf, bestimmen weiterhin allein die Mitgliedschaften aus MP Feuer bzw. „für alle Mitglieder“ (siehe <a href="/admin/kalender">Kalender &amp; Zuordnungen</a>).</p>
+<p class="muted">Termine kommen aus <strong>MP Feuer</strong> und optional aus externen <strong>iCal-Feeds</strong> (Internetadresse, regelmäßiger Abruf) oder <strong>iCal-Dateien</strong> (Upload), z. B. Lehrgänge des Kreises oder Abfallkalender der Gemeinde. Wer einen Kalender <em>sehen</em> darf, bestimmen weiterhin allein die Mitgliedschaften aus MP Feuer bzw. „für alle Mitglieder“ (siehe <a href="/admin/kalender">Kalender &amp; Zuordnungen</a>).</p>
 
 {% macro state(s) %}
   {%- if s.state == 'mp' %}<span class="badge b-info">über Zuordnungen</span>
@@ -12,6 +12,8 @@
   {%- elseif s.state == 'never' %}<span class="badge b-warn">noch nie abgerufen</span>
   {%- elseif s.state == 'error' %}<span class="badge b-err">Fehler</span>
   {%- elseif s.state == 'warn' %}<span class="badge b-warn">länger kein Abruf</span>
+  {%- elseif s.state == 'empty' %}<span class="badge b-warn">keine Datei</span>
+  {%- elseif s.state == 'ending' %}<span class="badge b-warn">Dateien laufen aus</span>
   {%- else %}<span class="badge b-ok">in Ordnung</span>{% endif -%}
 {% endmacro %}
 {% import _self as m %}
@@ -24,21 +26,32 @@
     <tr>
       <td><strong>{{ s.name }}</strong><br><span class="mono small muted">{{ s.source_key }}</span>
         {% if s.url %}<br><span class="small muted" style="word-break:break-all">{{ s.url }}</span>{% endif %}</td>
-      <td>{{ types[s.type] }}{% if s.type == 'ical' %}<br><span class="small muted">alle {{ s.interval_minutes >= 60 and s.interval_minutes % 60 == 0 ? (s.interval_minutes / 60) ~ ' h' : s.interval_minutes ~ ' min' }}</span>{% endif %}</td>
-      <td>{{ m.state(s) }}{% if s.last_error and s.state == 'error' %}<br><span class="small" style="color:var(--err)">{{ s.last_error }}</span>{% endif %}</td>
-      <td class="small">{% if s.type == 'mpfeuer' %}siehe <a href="/admin">Status</a>{% elseif s.last_success_at %}{{ s.last_success_at|lt }}{% else %}–{% endif %}</td>
+      <td>{{ types[s.type] }}{% if s.type == 'ical' %}<br><span class="small muted">alle {{ s.interval_minutes >= 60 and s.interval_minutes % 60 == 0 ? (s.interval_minutes / 60) ~ ' h' : s.interval_minutes ~ ' min' }}</span>{% endif %}
+        {%- if s.id_from_content %}<br><span class="small muted">Kennung aus Datum + Titel</span>{% endif %}</td>
+      <td>{{ m.state(s) }}{% if s.problem and s.state != 'never' %}<br><span class="small" style="color:var(--err)">{{ s.problem }}</span>{% endif %}</td>
+      <td class="small">{% if s.type == 'mpfeuer' %}siehe <a href="/admin">Status</a>{% elseif s.type == 'upload' %}{{ s.last_file_at ? 'Datei vom ' ~ s.last_file_at|lt('d.m.Y') : '–' }}{% elseif s.last_success_at %}{{ s.last_success_at|lt }}{% else %}–{% endif %}
+        {%- if s.type == 'ical' %}
+        <form method="post" action="/admin/quellen/{{ s.id }}/abrufen" class="inline" style="margin-top:.35rem">
+          <input type="hidden" name="_csrf" value="{{ csrf }}">
+          <button class="btn btn-small btn-secondary" type="submit">Jetzt abrufen</button>
+          {% if s.state == 'error' and s.last_error starts with 'Nicht übernommen' %}<label class="check small"><input type="checkbox" name="force" value="1"> trotzdem übernehmen</label>{% endif %}
+        </form>
+        {%- endif %}</td>
       <td>{{ s.type == 'mpfeuer' ? mp_fills|length : s.feeds }}</td>
       <td>{{ s.events }}</td>
       <td>
-        {% if s.type == 'ical' %}
+        {% if s.type != 'mpfeuer' %}
         <details>
           <summary class="small">bearbeiten</summary>
           <form method="post" action="/admin/quellen/{{ s.id }}">
             <input type="hidden" name="_csrf" value="{{ csrf }}">
             <label for="sn{{ s.id }}">Name</label><input type="text" id="sn{{ s.id }}" name="name" value="{{ s.name }}" required>
+            {% if s.type == 'ical' %}
             <label for="su{{ s.id }}">Adresse des Feeds</label><input type="url" id="su{{ s.id }}" name="url" value="{{ s.url }}" required>
             <label for="si{{ s.id }}">Abrufintervall (Minuten)</label><input type="number" id="si{{ s.id }}" name="interval_minutes" value="{{ s.interval_minutes }}" min="60" max="10080" step="30">
-            <label class="check"><input type="checkbox" name="active" value="1" {% if s.active %}checked{% endif %}> aktiv (regelmäßig abrufen)</label>
+            {% endif %}
+            <label class="check"><input type="checkbox" name="id_from_content" value="1" {% if s.id_from_content %}checked{% endif %}> Kennung aus Datum und Titel bilden <span class="muted small">(nur, wenn der Anbieter bei jedem Export neue UIDs vergibt)</span></label>
+            <label class="check"><input type="checkbox" name="active" value="1" {% if s.active %}checked{% endif %}> aktiv</label>
             <div class="actions"><button class="btn btn-small" type="submit">Speichern</button></div>
           </form>
           {% if s.events == 0 %}
@@ -55,15 +68,61 @@
   </tbody>
 </table></div>
 
+{% for s in sources|filter(s => s.type == 'upload') %}
+<div class="box" style="margin-top:1rem">
+  <h3 style="margin-top:0">Dateien: {{ s.name }}</h3>
+  {% set fl = files[s.id] ?? [] %}
+  {% if fl is empty %}<p class="muted small">Noch keine Datei übernommen.</p>{% else %}
+  <div class="table-wrap"><table class="small">
+    <thead><tr><th>Datei</th><th>Zeitraum</th><th>Termine</th><th>hochgeladen</th><th></th></tr></thead>
+    <tbody>
+    {% for f in fl %}
+      <tr>
+        <td>{{ f.name }}</td>
+        <td>{{ f.first_start ? f.first_start|lt('d.m.Y') : '–' }} – {{ f.last_end ? f.last_end|lt('d.m.Y') : '–' }}</td>
+        <td>{{ f.event_count }} in der Datei<br><span class="muted">{{ f.events }} in Kalendern</span></td>
+        <td>{{ f.applied_at|lt }}{% if f.uploader_last %}<br><span class="muted">{{ f.uploader_first }} {{ f.uploader_last }}</span>{% endif %}</td>
+        <td>
+          <form method="post" action="/admin/quellen/datei/{{ f.id }}/loeschen" class="inline">
+            <input type="hidden" name="_csrf" value="{{ csrf }}">
+            <button class="btn btn-secondary btn-small" type="submit">Datei entfernen</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% endif %}
+  <form method="post" action="/admin/quellen/{{ s.id }}/datei" enctype="multipart/form-data">
+    <input type="hidden" name="_csrf" value="{{ csrf }}">
+    <label for="up{{ s.id }}">iCal-Datei (.ics, höchstens {{ upload_max_mb }} MB)</label>
+    <input type="file" id="up{{ s.id }}" name="datei" accept=".ics,text/calendar" required>
+    {% if fl is not empty %}
+    <label for="rp{{ s.id }}">Die Datei ist …</label>
+    <select id="rp{{ s.id }}" name="replaces_id">
+      <option value="">eine weitere Datei (z. B. das nächste Jahr)</option>
+      {% for f in fl %}<option value="{{ f.id }}">eine neue Fassung von „{{ f.name }}“</option>{% endfor %}
+    </select>
+    {% endif %}
+    <div class="actions"><button class="btn btn-small" type="submit">Hochladen und Vorschau anzeigen</button></div>
+  </form>
+</div>
+{% endfor %}
+
 <details class="box" style="margin-top:1rem">
-  <summary><strong>Neue iCal-Quelle anlegen</strong></summary>
+  <summary><strong>Neue externe Quelle anlegen</strong></summary>
   <form method="post" action="/admin/quellen">
     <input type="hidden" name="_csrf" value="{{ csrf }}">
     <label for="nk">Schlüssel (Teil der Termin-Kennung auf den Geräten, später nicht änderbar)</label>
     <input type="text" id="nk" name="source_key" required pattern="[a-z][a-z0-9-]{1,38}" placeholder="z. B. kreis oder abfall-drove">
     <label for="nn">Name</label><input type="text" id="nn" name="name" required placeholder="z. B. Lehrgänge Kreis">
-    <label for="nu">Adresse des Feeds (https://…; aus webcal:// wird https://)</label><input type="url" id="nu" name="url" required placeholder="https://…/kalender.ics">
+    <fieldset class="plain"><legend class="small">Art</legend>
+      <label class="check"><input type="radio" name="type" value="ical" checked> iCal-Feed: Internetadresse, wird regelmäßig abgerufen</label>
+      <label class="check"><input type="radio" name="type" value="upload"> iCal-Datei: wird hochgeladen (z. B. Abfallkalender eines Jahres)</label>
+    </fieldset>
+    <label for="nu">Adresse des Feeds (nur bei iCal-Feed; https://…, aus webcal:// wird https://)</label><input type="url" id="nu" name="url" placeholder="https://…/kalender.ics">
     <label for="ni">Abrufintervall (Minuten)</label><input type="number" id="ni" name="interval_minutes" value="360" min="60" max="10080" step="30">
+    <label class="check"><input type="checkbox" name="id_from_content" value="1"> Kennung aus Datum und Titel bilden <span class="muted small">(nur nötig, wenn der Anbieter bei jedem Export neue UIDs vergibt; die Vorschau zeigt es)</span></label>
     <label class="check"><input type="checkbox" name="active" value="1" checked> aktiv</label>
     <div class="actions"><button class="btn" type="submit">Anlegen</button></div>
   </form>
@@ -88,7 +147,7 @@
       <td>{{ f.source_name }}</td>
       <td><span class="swatch" style="background: {{ f.color }}"></span> {{ f.display_name }}</td>
       <td class="small">{{ f.filter_text }}
-        {%- if f.source_note %}<br><span class="muted">mit Hinweis „Quelle: {{ f.source_name }}“</span>{% endif %}
+        {%- if f.source_note or f.show_stand %}<br><span class="muted">im Termin: {{ [f.source_note ? 'Quelle' : null, f.show_stand ? 'Stand' : null]|filter(v => v)|join(' + ') }}</span>{% endif %}
         {%- if not f.active %}<br><span class="badge b-suppressed">deaktiviert</span>{% endif %}
         {%- if f.last_match_count is not null %}<br><span class="muted">zuletzt {{ f.last_match_count }} Treffer</span>{% endif %}</td>
       <td>{{ f.events }}</td>
@@ -100,6 +159,7 @@
             <input type="hidden" name="_csrf" value="{{ csrf }}">
             {% include 'admin/_filter_fields.twig' with {prefix: 'f' ~ f.id, flt: flt} %}
             <label class="check"><input type="checkbox" name="source_note" value="1" {% if f.source_note %}checked{% endif %}> Hinweis „Quelle: …“ in die Beschreibung</label>
+            <label class="check"><input type="checkbox" name="show_stand" value="1" {% if f.show_stand %}checked{% endif %}> „Stand TT.MM.JJJJ“ (Datum der letzten Änderung des Termins) in die Beschreibung</label>
             <label class="check"><input type="checkbox" name="active" value="1" {% if f.active %}checked{% endif %}> aktiv</label>
             <div class="actions"><button class="btn btn-small" type="submit">Speichern</button></div>
           </form>
@@ -128,11 +188,12 @@
     <select id="bc" name="calendar_id">{% for c in calendars %}<option value="{{ c.id }}">{{ c.display_name }}</option>{% endfor %}</select>
     {% include 'admin/_filter_fields.twig' with {prefix: 'new', flt: null} %}
     <label class="check"><input type="checkbox" name="source_note" value="1"> Hinweis „Quelle: …“ in die Beschreibung (sinnvoll bei gemischten Kalendern)</label>
+    <label class="check"><input type="checkbox" name="show_stand" value="1" checked> „Stand TT.MM.JJJJ“ (Datum der letzten Änderung des Termins) in die Beschreibung <span class="muted small">(aus, wenn die Quelle selbst schon einen Stand angibt)</span></label>
     <label class="check"><input type="checkbox" name="active" value="1" checked> aktiv</label>
     <div class="actions"><button class="btn" type="submit">Befüllung anlegen</button></div>
   </form>
 </details>
 {% endif %}
 
-<p class="small muted" style="margin-top:1rem">Hinweis: Der Abruf der iCal-Feeds (Importer) ist noch nicht umgesetzt. Quellen und Befüllungen lassen sich bereits einrichten; Termine erscheinen, sobald der Importer läuft.</p>
+<p class="small muted" style="margin-top:1rem">iCal-Feeds werden im eingestellten Intervall automatisch abgerufen. Auffällige Änderungen (Filter trifft plötzlich nichts mehr, mehr als die Hälfte der Termine fällt weg, leerer Feed) werden nicht übernommen, sondern gemeldet.</p>
 {% endblock %}

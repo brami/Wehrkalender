@@ -27,6 +27,7 @@
             {%- if c.all_members %}für alle Mitglieder{% if c.origins is not empty %} · {% endif %}{% endif -%}
             {%- if c.origins is not empty %}aus: {{ c.origins|join(', ') }}{% endif -%}
           </span>
+          {% if c.stand %}<span class="small cal-stand{{ c.stand.stale ? ' stale' : '' }}"{% if c.stand.stale %} title="Diese Quelle ist möglicherweise nicht aktuell."{% endif %}>{{ c.stand.text }}</span>{% endif %}
         </span>
         <span class="cal-count">{{ c.event_count }} {{ c.event_count == 1 ? 'Termin' : 'Termine' }} in {{ year }}</span>
         <form method="post" action="/kalender/{{ c.slug }}/{{ c.enabled ? 'aus' : 'ein' }}" class="cal-toggle">

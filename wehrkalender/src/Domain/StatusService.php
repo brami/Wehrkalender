@@ -7,6 +7,7 @@ namespace Wehrkalender\Domain;
 use Wehrkalender\Clock;
 use Wehrkalender\Config;
 use Wehrkalender\Database\Db;
+use Wehrkalender\Import\SourceState;
 use Wehrkalender\Mail\MailQueue;
 use Throwable;
 
@@ -92,6 +93,9 @@ final class StatusService
             $problems[] = sprintf('Der letzte Import vom %s ist %s.',
                 Clock::toLocal($last['started_at'])?->format('d.m.Y H:i'),
                 $last['status'] === 'failed' ? 'fehlgeschlagen' : 'abgebrochen (Plausibilitätsprüfung)');
+        }
+        foreach ((new SourceState($this->db, $this->clock))->problems() as $src) {
+            $problems[] = $src['problem'];
         }
         return $problems;
     }

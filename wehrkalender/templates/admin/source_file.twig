@@ -1,0 +1,48 @@
+{% extends 'layout.twig' %}
+{% block title %}Vorschau: {{ file.name }} – {{ app_name }}{% endblock %}
+{% block main_class %} wide{% endblock %}
+{% block content %}
+<p><a href="/admin/quellen">← Quellen</a></p>
+<h1>Vorschau: {{ file.name }}</h1>
+<p class="muted">Quelle „{{ source.name }}“ · {{ replaced ? 'neue Fassung von „' ~ replaced.name ~ '“' : 'weitere Datei' }} ·
+  {{ plan.events_total }} Termine erkannt{% if plan.first_start %}, {{ plan.first_start|date('d.m.Y') }} – {{ plan.last_end|date('d.m.Y') }}{% endif %}.
+  Noch ist nichts geändert.</p>
+
+{% if same_file %}<div class="flash flash-info">Die Datei ist identisch mit der bisherigen Fassung.</div>{% endif %}
+{% for w in plan.warnings %}<div class="flash flash-error">{{ w }}</div>{% endfor %}
+
+{% for p in plan.feeds %}
+<div class="box">
+  <h2 style="margin-top:0">{{ p.calendar }}</h2>
+  <p class="small muted">Filter: {{ p.filter_text }}
+    · {{ p.matched }} Treffer
+    {%- if p.previous is not null %} (zuletzt {{ p.previous }}){% endif %}</p>
+  {% if p.blocked %}<div class="flash flash-error">Auffällig: {{ p.blocked }} Wird nur übernommen, wenn Sie unten „trotzdem übernehmen“ wählen.</div>{% endif %}
+  <p><strong>{{ p.added|length }}</strong> neu · <strong>{{ p.changed|length }}</strong> geändert · <strong>{{ p.removed|length }}</strong> entfernt · {{ p.unchanged }} unverändert</p>
+  {% for label, list in {'Neu': p.added, 'Geändert': p.changed} %}
+    {% if list is not empty %}
+    <details{% if list|length <= 12 %} open{% endif %}><summary class="small">{{ label }} ({{ list|length }})</summary>
+      <ul class="small">{% for l in list %}<li>{{ l }}</li>{% endfor %}</ul>
+    </details>
+    {% endif %}
+  {% endfor %}
+  {% if p.removed is not empty %}
+    <details open><summary class="small">Entfernt ({{ p.removed|length }})</summary>
+      <ul class="small">{% for r in p.removed %}<li>{{ r.label }}</li>{% endfor %}</ul>
+    </details>
+  {% endif %}
+</div>
+{% endfor %}
+
+<div class="actions">
+  <form method="post" action="/admin/quellen/datei/{{ file.id }}/uebernehmen" class="inline">
+    <input type="hidden" name="_csrf" value="{{ csrf }}">
+    {% if blocked %}<label class="check"><input type="checkbox" name="force" value="1"> auffällige Kalender trotzdem übernehmen</label>{% endif %}
+    <button class="btn" type="submit">Übernehmen</button>
+  </form>
+  <form method="post" action="/admin/quellen/datei/{{ file.id }}/verwerfen" class="inline">
+    <input type="hidden" name="_csrf" value="{{ csrf }}">
+    <button class="btn btn-secondary" type="submit">Verwerfen</button>
+  </form>
+</div>
+{% endblock %}

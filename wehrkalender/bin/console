@@ -16,6 +16,7 @@ $console->addCommands([
     new Console\UserAdminCommand($app),
     new Console\MailSendCommand($app),
     new Console\MailTestCommand($app),
+    new Console\SourcesFetchCommand($app),
     new Console\MonitorCheckCommand($app),
     new Console\CleanupCommand($app),
     new Console\ImportRunCommand($app),

@@ -136,6 +136,21 @@ final class App
         return $this->get(MembershipService::class, fn () => new MembershipService($this->db(), $this->clock(), $this->config, $this->mailQueue(), $this->accounts()));
     }
 
+    public function icalProcessor(): \Wehrkalender\Import\IcalProcessor
+    {
+        return $this->get(\Wehrkalender\Import\IcalProcessor::class, fn () => new \Wehrkalender\Import\IcalProcessor($this));
+    }
+
+    public function sourceState(): \Wehrkalender\Import\SourceState
+    {
+        return $this->get(\Wehrkalender\Import\SourceState::class, fn () => new \Wehrkalender\Import\SourceState($this->db(), $this->clock()));
+    }
+
+    public function sourceFetcher(): \Wehrkalender\Import\SourceFetcher
+    {
+        return $this->get(\Wehrkalender\Import\SourceFetcher::class, fn () => new \Wehrkalender\Import\SourceFetcher($this));
+    }
+
     public function calendarChoice(): CalendarChoice
     {
         return $this->get(CalendarChoice::class, fn () => new CalendarChoice($this->db(), $this->clock()));

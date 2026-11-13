@@ -22,7 +22,8 @@ final class CalendarBackend extends AbstractBackend implements SyncSupport
 {
     private const READ_ONLY = 'Die Kalender sind schreibgeschützt. Termine werden nur in MP Feuer gepflegt.';
 
-    public function __construct(private Db $db)
+    /** @param (\Closure(): array<int,array{text:string}>)|null $stands Stand externer Quellen je Kalender */
+    public function __construct(private Db $db, private ?\Closure $stands = null)
     {
     }
 
@@ -43,13 +44,16 @@ final class CalendarBackend extends AbstractBackend implements SyncSupport
             [$username]
         );
         $calendars = [];
+        $stands = $this->stands !== null ? ($this->stands)() : [];
         foreach ($rows as $i => $c) {
             $calendars[] = [
                 'id' => (int) $c['id'],
                 'uri' => $c['slug'],
                 'principaluri' => $principalUri,
                 '{DAV:}displayname' => $c['display_name'],
-                '{urn:ietf:params:xml:ns:caldav}calendar-description' => (string) ($c['description'] ?? ''),
+                '{urn:ietf:params:xml:ns:caldav}calendar-description' => trim(implode(' · ', array_filter([
+                    (string) ($c['description'] ?? ''), $stands[(int) $c['id']]['text'] ?? '',
+                ]))),
                 '{urn:ietf:params:xml:ns:caldav}calendar-timezone' => null,
                 '{http://apple.com/ns/ical/}calendar-color' => $c['color'],
                 '{http://apple.com/ns/ical/}calendar-order' => (string) ($i + 1),

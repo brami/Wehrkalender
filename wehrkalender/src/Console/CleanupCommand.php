@@ -23,6 +23,7 @@ final class CleanupCommand extends Command
         $db = $this->app->db();
         $clock = $this->app->clock();
         $n = [];
+        $n['nicht übernommene iCal-Uploads'] = $db->execute("DELETE FROM source_files WHERE status = 'pending' AND uploaded_at < ?", [$clock->db('-1 day')]);
         $n['Einmal-Links'] = $db->execute('DELETE FROM login_tokens WHERE expires_at < ?', [$clock->db('-1 day')]);
         $n['Anmeldeversuche'] = $db->execute('DELETE FROM login_attempts WHERE attempted_at < ?', [$clock->db('-1 day')]);
         $n['Importprotokolle (90 Tage)'] = $db->execute('DELETE FROM import_runs WHERE started_at < ?', [$clock->db('-90 days')]);

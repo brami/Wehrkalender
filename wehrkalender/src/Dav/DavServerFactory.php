@@ -28,7 +28,7 @@ final class DavServerFactory
             return $p === null ? null : trim($p, '/');
         };
         $principalBackend = new PrincipalBackend($db, \Closure::fromCallable($current));
-        $calendarBackend = new CalendarBackend($db);
+        $calendarBackend = new CalendarBackend($db, fn () => $app->sourceState()->calendarStands());
 
         $tree = [
             new CalDAV\Principal\Collection($principalBackend, 'principals'),

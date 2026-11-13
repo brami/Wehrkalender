@@ -44,11 +44,16 @@ final class TestDataTest extends TestCase
             'SELECT c.display_name FROM user_calendars uc JOIN calendars c ON c.id = uc.calendar_id
               WHERE uc.user_id = ? AND ' . \Wehrkalender\Domain\CalendarChoice::enabledSql() . ' ORDER BY c.display_name',
             [$users['1002']['id']]));
-        // Quellen: TM1 2027 kommt aus dem Kreis-Feed (Teilnahme aus MP Feuer schaltet nur frei)
+        // Quellen: Maschinist 2/2027 kommt aus der hochgeladenen Kreisdatei (Teilnahme aus MP Feuer schaltet nur frei)
         self::assertSame(['abfall-drove', 'abfall-kreuzau', 'abfall-stockheim', 'kfv', 'kreis', 'mp', 'ortsverein-drove'],
             $db->column('SELECT source_key FROM sources ORDER BY source_key'));
-        self::assertSame(['kreis'], $db->column(
-            "SELECT DISTINCT s.source_key FROM events e JOIN sources s ON s.id = e.source_id JOIN calendars c ON c.id = e.calendar_id WHERE c.slug = 'tm1-2027'"));
+        self::assertSame(['Maschinist 2/2027 – Tag 1/4', 'Maschinist 2/2027 – Tag 2/4', 'Maschinist 2/2027 – Tag 3/4', 'Maschinist 2/2027 – Tag 4/4'], $db->column(
+            "SELECT e.summary FROM events e JOIN sources s ON s.id = e.source_id JOIN calendars c ON c.id = e.calendar_id
+              WHERE c.slug = 'maschinist-2-2027' AND s.source_key = 'kreis' ORDER BY e.starts_at"));
+        self::assertSame(105, (int) $db->value("SELECT event_count FROM source_files WHERE status = 'active'"));
+        self::assertSame(45, (int) $db->value("SELECT COUNT(*) FROM events e JOIN calendars c ON c.id = e.calendar_id WHERE c.slug = 'abfall-drove'"), 'Serien aufgelöst');
+        self::assertStringContainsString('Quelle: Ortsverein Drove · Stand ', (string) $db->value("SELECT description FROM events WHERE summary LIKE 'Dorffest%'"));
+        self::assertNull($db->value("SELECT id FROM events WHERE summary LIKE 'Konzert%'"), 'vom Filter ausgeschlossen');
         self::assertSame(0, (int) $db->value("SELECT COUNT(*) FROM events WHERE uid NOT LIKE 'mp-%' AND source_id = (SELECT id FROM sources WHERE source_key = 'mp')"));
         self::assertGreaterThan(0, (int) $db->value("SELECT COUNT(*) FROM events WHERE uid LIKE 'kreis-%'"));
         // gemischter Kalender LG Drove: MP Feuer + Ortsverein
@@ -56,8 +61,8 @@ final class TestDataTest extends TestCase
             "SELECT COUNT(DISTINCT e.source_id) FROM events e JOIN calendars c ON c.id = e.calendar_id WHERE c.slug = 'lg-drove'"));
         // Felix: LG Stockheim entzogen
         self::assertSame(0, (int) $db->value("SELECT COUNT(*) FROM user_calendars uc JOIN calendars c ON c.id = uc.calendar_id WHERE uc.user_id = ? AND c.slug = 'lg-stockheim'", [$users['1020']['id']]));
-        // Status-Prüfung meldet keine Probleme
-        self::assertSame([], $this->app->status()->problems());
+        // Status-Prüfung meldet nur die absichtlich fehlerhafte Quelle
+        self::assertSame(['Quelle „Kreisfeuerwehrverband“: letzter Abruf fehlgeschlagen (HTTP 404).'], $this->app->status()->problems());
         self::assertNotEmpty(array_filter($result['logins'], fn ($l) => $l['password'] !== ''));
         // alle gespeicherten iCalendar-Texte sind gültig
         foreach ($db->column('SELECT ics FROM events') as $ics) {
