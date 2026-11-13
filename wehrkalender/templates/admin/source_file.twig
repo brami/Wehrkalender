@@ -16,7 +16,8 @@
   <h2 style="margin-top:0">{{ p.calendar }}</h2>
   <p class="small muted">Filter: {{ p.filter_text }}
     · {{ p.matched }} Treffer
-    {%- if p.previous is not null %} (zuletzt {{ p.previous }}){% endif %}</p>
+    {%- if p.previous_scope == 'file' %}{% if replaced %} (bisher {{ p.previous }} aus dieser Datei){% endif %}
+    {%- elseif p.previous is not null %} (zuletzt {{ p.previous }}){% endif %}</p>
   {% if p.blocked %}<div class="flash flash-error">Auffällig: {{ p.blocked }} Wird nur übernommen, wenn Sie unten „trotzdem übernehmen“ wählen.</div>{% endif %}
   <p><strong>{{ p.added|length }}</strong> neu · <strong>{{ p.changed|length }}</strong> geändert · <strong>{{ p.removed|length }}</strong> entfernt · {{ p.unchanged }} unverändert</p>
   {% for label, list in {'Neu': p.added, 'Geändert': p.changed} %}

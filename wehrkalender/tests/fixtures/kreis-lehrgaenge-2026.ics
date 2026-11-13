@@ -1,0 +1,1236 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Deb Support//Lehrgaenge Kreis Dueren 2026//DE
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Kreislehrgänge Düren 2026
+X-WR-TIMEZONE:Europe/Berlin
+BEGIN:VTIMEZONE
+TZID:Europe/Berlin
+BEGIN:DAYLIGHT
+TZOFFSETFROM:+0100
+TZOFFSETTO:+0200
+TZNAME:CEST
+DTSTART:19700329T020000
+RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU
+END:DAYLIGHT
+BEGIN:STANDARD
+TZOFFSETFROM:+0200
+TZOFFSETTO:+0100
+TZNAME:CET
+DTSTART:19701025T030000
+RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+UID:kreis-2026-sprechfunker-1-tag1@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260117T080000
+DTEND;TZID=Europe/Berlin:20260117T170000
+SUMMARY:Sprechfunker 1/2026 – Tag 1/2
+DESCRIPTION:Kreislehrgang Sprechfunker 1/2026\nTag 1 von 2\nQuelle: Terminp
+ lan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Sprechfunker
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-sprechfunker-1-tag2@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260124T080000
+DTEND;TZID=Europe/Berlin:20260124T170000
+SUMMARY:Sprechfunker 1/2026 – Tag 2/2
+DESCRIPTION:Kreislehrgang Sprechfunker 1/2026\nTag 2 von 2\nQuelle: Terminp
+ lan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Sprechfunker
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-truppfuehrer-zulassungstest-1-tag1@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260119T180000
+DTEND;TZID=Europe/Berlin:20260119T201500
+SUMMARY:Truppführer Zulassungstest 1/2026
+DESCRIPTION:Kreislehrgang Truppführer Zulassungstest 1/2026\nTag 1 von 1\n
+ Quelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Truppführer Zulassungstest
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-abc-1-modul-1-grundlagen-1-tag1@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260124T080000
+DTEND;TZID=Europe/Berlin:20260124T170000
+SUMMARY:ABC 1 Modul 1 - Grundlagen 1/2026 – Tag 1/3
+DESCRIPTION:Kreislehrgang ABC 1 Modul 1 - Grundlagen 1/2026\nTag 1 von 3\nT
+ eilnehmer: 24\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,ABC 1 Modul 1 - Grundlagen
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-abc-1-modul-1-grundlagen-1-tag2@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260131T090000
+DTEND;TZID=Europe/Berlin:20260131T110000
+SUMMARY:ABC 1 Modul 1 - Grundlagen 1/2026 – Tag 2/3
+DESCRIPTION:Kreislehrgang ABC 1 Modul 1 - Grundlagen 1/2026\nTag 2 von 3\nT
+ eilnehmer: 24\nOnline-Termin\nQuelle: Terminplan Kreis Düren 2026\, Stand
+  01.08.2025
+CATEGORIES:Kreislehrgang,ABC 1 Modul 1 - Grundlagen
+LOCATION:Online
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-abc-1-modul-1-grundlagen-1-tag3@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260207T080000
+DTEND;TZID=Europe/Berlin:20260207T170000
+SUMMARY:ABC 1 Modul 1 - Grundlagen 1/2026 – Tag 3/3
+DESCRIPTION:Kreislehrgang ABC 1 Modul 1 - Grundlagen 1/2026\nTag 3 von 3\nT
+ eilnehmer: 24\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,ABC 1 Modul 1 - Grundlagen
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-th-vu-1-tag1@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260130T180000
+DTEND;TZID=Europe/Berlin:20260130T220000
+SUMMARY:TH VU 1/2026 – Tag 1/3
+DESCRIPTION:Kreislehrgang TH VU 1/2026\nTag 1 von 3\nTeilnehmer: 24\nQuelle
+ : Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,TH VU
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-th-vu-1-tag2@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260131T080000
+DTEND;TZID=Europe/Berlin:20260131T170000
+SUMMARY:TH VU 1/2026 – Tag 2/3
+DESCRIPTION:Kreislehrgang TH VU 1/2026\nTag 2 von 3\nTeilnehmer: 24\nQuelle
+ : Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,TH VU
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-th-vu-1-tag3@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260207T080000
+DTEND;TZID=Europe/Berlin:20260207T170000
+SUMMARY:TH VU 1/2026 – Tag 3/3
+DESCRIPTION:Kreislehrgang TH VU 1/2026\nTag 3 von 3\nTeilnehmer: 24\nQuelle
+ : Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,TH VU
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-atemschutzgeraetetraeger-1-tag1@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260221T080000
+DTEND;TZID=Europe/Berlin:20260221T170000
+SUMMARY:Atemschutzgeräteträger 1/2026 – Tag 1/4
+DESCRIPTION:Kreislehrgang Atemschutzgeräteträger 1/2026\nTag 1 von 4\nTei
+ lnehmer: 24\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Atemschutzgeräteträger
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-atemschutzgeraetetraeger-1-tag2@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260228T080000
+DTEND;TZID=Europe/Berlin:20260228T170000
+SUMMARY:Atemschutzgeräteträger 1/2026 – Tag 2/4
+DESCRIPTION:Kreislehrgang Atemschutzgeräteträger 1/2026\nTag 2 von 4\nTei
+ lnehmer: 24\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Atemschutzgeräteträger
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-atemschutzgeraetetraeger-1-tag3@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260307T080000
+DTEND;TZID=Europe/Berlin:20260307T170000
+SUMMARY:Atemschutzgeräteträger 1/2026 – Tag 3/4
+DESCRIPTION:Kreislehrgang Atemschutzgeräteträger 1/2026\nTag 3 von 4\nTei
+ lnehmer: 24\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Atemschutzgeräteträger
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-atemschutzgeraetetraeger-1-tag4@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260314T080000
+DTEND;TZID=Europe/Berlin:20260314T170000
+SUMMARY:Atemschutzgeräteträger 1/2026 – Tag 4/4
+DESCRIPTION:Kreislehrgang Atemschutzgeräteträger 1/2026\nTag 4 von 4\nTei
+ lnehmer: 24\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Atemschutzgeräteträger
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-technische-hilfeleistung-wald-1-tag1@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260228T080000
+DTEND;TZID=Europe/Berlin:20260228T170000
+SUMMARY:Technische Hilfeleistung Wald 1/2026 – Tag 1/3
+DESCRIPTION:Kreislehrgang Technische Hilfeleistung Wald 1/2026\nTag 1 von 3
+ \nTeilnehmer: 24\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Technische Hilfeleistung Wald
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-technische-hilfeleistung-wald-1-tag2@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260307T080000
+DTEND;TZID=Europe/Berlin:20260307T170000
+SUMMARY:Technische Hilfeleistung Wald 1/2026 – Tag 2/3
+DESCRIPTION:Kreislehrgang Technische Hilfeleistung Wald 1/2026\nTag 2 von 3
+ \nTeilnehmer: 24\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Technische Hilfeleistung Wald
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-technische-hilfeleistung-wald-1-tag3@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260314T080000
+DTEND;TZID=Europe/Berlin:20260314T170000
+SUMMARY:Technische Hilfeleistung Wald 1/2026 – Tag 3/3
+DESCRIPTION:Kreislehrgang Technische Hilfeleistung Wald 1/2026\nTag 3 von 3
+ \nTeilnehmer: 24\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Technische Hilfeleistung Wald
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-truppfuehrer-theorie-1-tag1@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260228T080000
+DTEND;TZID=Europe/Berlin:20260228T170000
+SUMMARY:Truppführer Theorie 1/2026 – Tag 1/5
+DESCRIPTION:Kreislehrgang Truppführer Theorie 1/2026\nTag 1 von 5\nTeilneh
+ mer: 18\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Truppführer Theorie
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-truppfuehrer-theorie-1-tag2@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260304T180000
+DTEND;TZID=Europe/Berlin:20260304T214500
+SUMMARY:Truppführer Theorie 1/2026 – Tag 2/5
+DESCRIPTION:Kreislehrgang Truppführer Theorie 1/2026\nTag 2 von 5\nTeilneh
+ mer: 18\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Truppführer Theorie
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-truppfuehrer-theorie-1-tag3@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260307T080000
+DTEND;TZID=Europe/Berlin:20260307T170000
+SUMMARY:Truppführer Theorie 1/2026 – Tag 3/5
+DESCRIPTION:Kreislehrgang Truppführer Theorie 1/2026\nTag 3 von 5\nTeilneh
+ mer: 18\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Truppführer Theorie
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-truppfuehrer-theorie-1-tag4@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260310T180000
+DTEND;TZID=Europe/Berlin:20260310T214500
+SUMMARY:Truppführer Theorie 1/2026 – Tag 4/5
+DESCRIPTION:Kreislehrgang Truppführer Theorie 1/2026\nTag 4 von 5\nTeilneh
+ mer: 18\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Truppführer Theorie
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-truppfuehrer-theorie-1-tag5@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260314T080000
+DTEND;TZID=Europe/Berlin:20260314T170000
+SUMMARY:Truppführer Theorie 1/2026 – Tag 5/5
+DESCRIPTION:Kreislehrgang Truppführer Theorie 1/2026\nTag 5 von 5\nTeilneh
+ mer: 18\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Truppführer Theorie
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-sprechfunker-2-tag1@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260307T080000
+DTEND;TZID=Europe/Berlin:20260307T170000
+SUMMARY:Sprechfunker 2/2026 – Tag 1/2
+DESCRIPTION:Kreislehrgang Sprechfunker 2/2026\nTag 1 von 2\nQuelle: Terminp
+ lan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Sprechfunker
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-sprechfunker-2-tag2@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260314T080000
+DTEND;TZID=Europe/Berlin:20260314T170000
+SUMMARY:Sprechfunker 2/2026 – Tag 2/2
+DESCRIPTION:Kreislehrgang Sprechfunker 2/2026\nTag 2 von 2\nQuelle: Terminp
+ lan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Sprechfunker
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-abc-1-modul-1-grundlagen-2-tag1@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260307T080000
+DTEND;TZID=Europe/Berlin:20260307T170000
+SUMMARY:ABC 1 Modul 1 - Grundlagen 2/2026 – Tag 1/3
+DESCRIPTION:Kreislehrgang ABC 1 Modul 1 - Grundlagen 2/2026\nTag 1 von 3\nT
+ eilnehmer: 24\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,ABC 1 Modul 1 - Grundlagen
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-abc-1-modul-1-grundlagen-2-tag2@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260314T090000
+DTEND;TZID=Europe/Berlin:20260314T110000
+SUMMARY:ABC 1 Modul 1 - Grundlagen 2/2026 – Tag 2/3
+DESCRIPTION:Kreislehrgang ABC 1 Modul 1 - Grundlagen 2/2026\nTag 2 von 3\nT
+ eilnehmer: 24\nOnline-Termin\nQuelle: Terminplan Kreis Düren 2026\, Stand
+  01.08.2025
+CATEGORIES:Kreislehrgang,ABC 1 Modul 1 - Grundlagen
+LOCATION:Online
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-abc-1-modul-1-grundlagen-2-tag3@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260321T080000
+DTEND;TZID=Europe/Berlin:20260321T170000
+SUMMARY:ABC 1 Modul 1 - Grundlagen 2/2026 – Tag 3/3
+DESCRIPTION:Kreislehrgang ABC 1 Modul 1 - Grundlagen 2/2026\nTag 3 von 3\nT
+ eilnehmer: 24\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,ABC 1 Modul 1 - Grundlagen
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-maschinist-1-tag1@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260411T080000
+DTEND;TZID=Europe/Berlin:20260411T170000
+SUMMARY:Maschinist 1/2026 – Tag 1/4
+DESCRIPTION:Kreislehrgang Maschinist 1/2026\nTag 1 von 4\nTeilnehmer: 24\nQ
+ uelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Maschinist
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-maschinist-1-tag2@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260418T080000
+DTEND;TZID=Europe/Berlin:20260418T170000
+SUMMARY:Maschinist 1/2026 – Tag 2/4
+DESCRIPTION:Kreislehrgang Maschinist 1/2026\nTag 2 von 4\nTeilnehmer: 24\nQ
+ uelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Maschinist
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-maschinist-1-tag3@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260425T080000
+DTEND;TZID=Europe/Berlin:20260425T170000
+SUMMARY:Maschinist 1/2026 – Tag 3/4
+DESCRIPTION:Kreislehrgang Maschinist 1/2026\nTag 3 von 4\nTeilnehmer: 24\nQ
+ uelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Maschinist
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-maschinist-1-tag4@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260509T080000
+DTEND;TZID=Europe/Berlin:20260509T170000
+SUMMARY:Maschinist 1/2026 – Tag 4/4
+DESCRIPTION:Kreislehrgang Maschinist 1/2026\nTag 4 von 4\nTeilnehmer: 24\nQ
+ uelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Maschinist
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-truppfuehrer-praxis-1-tag1@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260411T080000
+DTEND;TZID=Europe/Berlin:20260411T170000
+SUMMARY:Truppführer Praxis 1/2026 – Tag 1/4
+DESCRIPTION:Kreislehrgang Truppführer Praxis 1/2026\nTag 1 von 4\nTeilnehm
+ er: 18\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Truppführer Praxis
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-truppfuehrer-praxis-1-tag2@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260418T080000
+DTEND;TZID=Europe/Berlin:20260418T170000
+SUMMARY:Truppführer Praxis 1/2026 – Tag 2/4
+DESCRIPTION:Kreislehrgang Truppführer Praxis 1/2026\nTag 2 von 4\nTeilnehm
+ er: 18\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Truppführer Praxis
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-truppfuehrer-praxis-1-tag3@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260425T080000
+DTEND;TZID=Europe/Berlin:20260425T170000
+SUMMARY:Truppführer Praxis 1/2026 – Tag 3/4
+DESCRIPTION:Kreislehrgang Truppführer Praxis 1/2026\nTag 3 von 4\nTeilnehm
+ er: 18\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Truppführer Praxis
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-truppfuehrer-praxis-1-tag4@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260509T080000
+DTEND;TZID=Europe/Berlin:20260509T170000
+SUMMARY:Truppführer Praxis 1/2026 – Tag 4/4
+DESCRIPTION:Kreislehrgang Truppführer Praxis 1/2026\nTag 4 von 4\nTeilnehm
+ er: 18\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Truppführer Praxis
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-absturzsicherung-1-tag1@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260508T180000
+DTEND;TZID=Europe/Berlin:20260508T220000
+SUMMARY:Absturzsicherung 1/2026 – Tag 1/3
+DESCRIPTION:Kreislehrgang Absturzsicherung 1/2026\nTag 1 von 3\nTeilnehmer:
+  16\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Absturzsicherung
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-absturzsicherung-1-tag2@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260509T080000
+DTEND;TZID=Europe/Berlin:20260509T170000
+SUMMARY:Absturzsicherung 1/2026 – Tag 2/3
+DESCRIPTION:Kreislehrgang Absturzsicherung 1/2026\nTag 2 von 3\nTeilnehmer:
+  16\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Absturzsicherung
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-absturzsicherung-1-tag3@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260523T080000
+DTEND;TZID=Europe/Berlin:20260523T170000
+SUMMARY:Absturzsicherung 1/2026 – Tag 3/3
+DESCRIPTION:Kreislehrgang Absturzsicherung 1/2026\nTag 3 von 3\nTeilnehmer:
+  16\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Absturzsicherung
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-truppfuehrer-vorbereitung-1-tag1@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260529T180000
+DTEND;TZID=Europe/Berlin:20260529T214500
+SUMMARY:Truppführer Vorbereitung 1/2026 – Tag 1/2
+DESCRIPTION:Kreislehrgang Truppführer Vorbereitung 1/2026\nTag 1 von 2\nQu
+ elle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Truppführer Vorbereitung
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-truppfuehrer-vorbereitung-1-tag2@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260530T080000
+DTEND;TZID=Europe/Berlin:20260530T170000
+SUMMARY:Truppführer Vorbereitung 1/2026 – Tag 2/2
+DESCRIPTION:Kreislehrgang Truppführer Vorbereitung 1/2026\nTag 2 von 2\nQu
+ elle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Truppführer Vorbereitung
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-truppfuehrer-zulassungstest-2-tag1@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260608T180000
+DTEND;TZID=Europe/Berlin:20260608T201500
+SUMMARY:Truppführer Zulassungstest 2/2026
+DESCRIPTION:Kreislehrgang Truppführer Zulassungstest 2/2026\nTag 1 von 1\n
+ Quelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Truppführer Zulassungstest
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-maschinist-2-tag1@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260613T080000
+DTEND;TZID=Europe/Berlin:20260613T170000
+SUMMARY:Maschinist 2/2026 – Tag 1/4
+DESCRIPTION:Kreislehrgang Maschinist 2/2026\nTag 1 von 4\nTeilnehmer: 24\nQ
+ uelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Maschinist
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-maschinist-2-tag2@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260620T080000
+DTEND;TZID=Europe/Berlin:20260620T170000
+SUMMARY:Maschinist 2/2026 – Tag 2/4
+DESCRIPTION:Kreislehrgang Maschinist 2/2026\nTag 2 von 4\nTeilnehmer: 24\nQ
+ uelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Maschinist
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-maschinist-2-tag3@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260627T080000
+DTEND;TZID=Europe/Berlin:20260627T170000
+SUMMARY:Maschinist 2/2026 – Tag 3/4
+DESCRIPTION:Kreislehrgang Maschinist 2/2026\nTag 3 von 4\nTeilnehmer: 24\nQ
+ uelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Maschinist
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-maschinist-2-tag4@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260704T080000
+DTEND;TZID=Europe/Berlin:20260704T170000
+SUMMARY:Maschinist 2/2026 – Tag 4/4
+DESCRIPTION:Kreislehrgang Maschinist 2/2026\nTag 4 von 4\nTeilnehmer: 24\nQ
+ uelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Maschinist
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-abc-1-modul-2-bc-1-tag1@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260613T080000
+DTEND;TZID=Europe/Berlin:20260613T170000
+SUMMARY:ABC 1 Modul 2 - BC 1/2026 – Tag 1/3
+DESCRIPTION:Kreislehrgang ABC 1 Modul 2 - BC 1/2026\nTag 1 von 3\nTeilnehme
+ r: 24\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,ABC 1 Modul 2 - BC
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-abc-1-modul-2-bc-1-tag2@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260620T080000
+DTEND;TZID=Europe/Berlin:20260620T170000
+SUMMARY:ABC 1 Modul 2 - BC 1/2026 – Tag 2/3
+DESCRIPTION:Kreislehrgang ABC 1 Modul 2 - BC 1/2026\nTag 2 von 3\nTeilnehme
+ r: 24\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,ABC 1 Modul 2 - BC
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-abc-1-modul-2-bc-1-tag3@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260627T080000
+DTEND;TZID=Europe/Berlin:20260627T170000
+SUMMARY:ABC 1 Modul 2 - BC 1/2026 – Tag 3/3
+DESCRIPTION:Kreislehrgang ABC 1 Modul 2 - BC 1/2026\nTag 3 von 3\nTeilnehme
+ r: 24\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,ABC 1 Modul 2 - BC
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-truppfuehrer-theorie-2-tag1@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260627T080000
+DTEND;TZID=Europe/Berlin:20260627T170000
+SUMMARY:Truppführer Theorie 2/2026 – Tag 1/5
+DESCRIPTION:Kreislehrgang Truppführer Theorie 2/2026\nTag 1 von 5\nTeilneh
+ mer: 18\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Truppführer Theorie
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-truppfuehrer-theorie-2-tag2@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260701T180000
+DTEND;TZID=Europe/Berlin:20260701T214500
+SUMMARY:Truppführer Theorie 2/2026 – Tag 2/5
+DESCRIPTION:Kreislehrgang Truppführer Theorie 2/2026\nTag 2 von 5\nTeilneh
+ mer: 18\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Truppführer Theorie
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-truppfuehrer-theorie-2-tag3@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260704T080000
+DTEND;TZID=Europe/Berlin:20260704T170000
+SUMMARY:Truppführer Theorie 2/2026 – Tag 3/5
+DESCRIPTION:Kreislehrgang Truppführer Theorie 2/2026\nTag 3 von 5\nTeilneh
+ mer: 18\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Truppführer Theorie
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-truppfuehrer-theorie-2-tag4@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260707T180000
+DTEND;TZID=Europe/Berlin:20260707T214500
+SUMMARY:Truppführer Theorie 2/2026 – Tag 4/5
+DESCRIPTION:Kreislehrgang Truppführer Theorie 2/2026\nTag 4 von 5\nTeilneh
+ mer: 18\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Truppführer Theorie
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-truppfuehrer-theorie-2-tag5@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260711T080000
+DTEND;TZID=Europe/Berlin:20260711T170000
+SUMMARY:Truppführer Theorie 2/2026 – Tag 5/5
+DESCRIPTION:Kreislehrgang Truppführer Theorie 2/2026\nTag 5 von 5\nTeilneh
+ mer: 18\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Truppführer Theorie
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-atemschutzgeraetetraeger-2-tag1@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260627T080000
+DTEND;TZID=Europe/Berlin:20260627T170000
+SUMMARY:Atemschutzgeräteträger 2/2026 – Tag 1/4
+DESCRIPTION:Kreislehrgang Atemschutzgeräteträger 2/2026\nTag 1 von 4\nTei
+ lnehmer: 24\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Atemschutzgeräteträger
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-atemschutzgeraetetraeger-2-tag2@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260704T080000
+DTEND;TZID=Europe/Berlin:20260704T170000
+SUMMARY:Atemschutzgeräteträger 2/2026 – Tag 2/4
+DESCRIPTION:Kreislehrgang Atemschutzgeräteträger 2/2026\nTag 2 von 4\nTei
+ lnehmer: 24\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Atemschutzgeräteträger
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-atemschutzgeraetetraeger-2-tag3@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260711T080000
+DTEND;TZID=Europe/Berlin:20260711T170000
+SUMMARY:Atemschutzgeräteträger 2/2026 – Tag 3/4
+DESCRIPTION:Kreislehrgang Atemschutzgeräteträger 2/2026\nTag 3 von 4\nTei
+ lnehmer: 24\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Atemschutzgeräteträger
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-atemschutzgeraetetraeger-2-tag4@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260718T080000
+DTEND;TZID=Europe/Berlin:20260718T170000
+SUMMARY:Atemschutzgeräteträger 2/2026 – Tag 4/4
+DESCRIPTION:Kreislehrgang Atemschutzgeräteträger 2/2026\nTag 4 von 4\nTei
+ lnehmer: 24\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Atemschutzgeräteträger
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-abc-1-modul-3-a-gefahren-1-tag1@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260829T080000
+DTEND;TZID=Europe/Berlin:20260829T170000
+SUMMARY:ABC 1 Modul 3 - A-Gefahren 1/2026 – Tag 1/2
+DESCRIPTION:Kreislehrgang ABC 1 Modul 3 - A-Gefahren 1/2026\nTag 1 von 2\nT
+ eilnehmer: 24\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,ABC 1 Modul 3 - A-Gefahren
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-abc-1-modul-3-a-gefahren-1-tag2@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260912T080000
+DTEND;TZID=Europe/Berlin:20260912T170000
+SUMMARY:ABC 1 Modul 3 - A-Gefahren 1/2026 – Tag 2/2
+DESCRIPTION:Kreislehrgang ABC 1 Modul 3 - A-Gefahren 1/2026\nTag 2 von 2\nT
+ eilnehmer: 24\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,ABC 1 Modul 3 - A-Gefahren
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-atemschutzgeraetetraeger-3-tag1@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260829T080000
+DTEND;TZID=Europe/Berlin:20260829T170000
+SUMMARY:Atemschutzgeräteträger 3/2026 – Tag 1/4
+DESCRIPTION:Kreislehrgang Atemschutzgeräteträger 3/2026\nTag 1 von 4\nTei
+ lnehmer: 24\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Atemschutzgeräteträger
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-atemschutzgeraetetraeger-3-tag2@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260905T080000
+DTEND;TZID=Europe/Berlin:20260905T170000
+SUMMARY:Atemschutzgeräteträger 3/2026 – Tag 2/4
+DESCRIPTION:Kreislehrgang Atemschutzgeräteträger 3/2026\nTag 2 von 4\nTei
+ lnehmer: 24\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Atemschutzgeräteträger
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-atemschutzgeraetetraeger-3-tag3@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260912T080000
+DTEND;TZID=Europe/Berlin:20260912T170000
+SUMMARY:Atemschutzgeräteträger 3/2026 – Tag 3/4
+DESCRIPTION:Kreislehrgang Atemschutzgeräteträger 3/2026\nTag 3 von 4\nTei
+ lnehmer: 24\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Atemschutzgeräteträger
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-atemschutzgeraetetraeger-3-tag4@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260919T080000
+DTEND;TZID=Europe/Berlin:20260919T170000
+SUMMARY:Atemschutzgeräteträger 3/2026 – Tag 4/4
+DESCRIPTION:Kreislehrgang Atemschutzgeräteträger 3/2026\nTag 4 von 4\nTei
+ lnehmer: 24\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Atemschutzgeräteträger
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-maschinist-3-tag1@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260905T080000
+DTEND;TZID=Europe/Berlin:20260905T170000
+SUMMARY:Maschinist 3/2026 – Tag 1/4
+DESCRIPTION:Kreislehrgang Maschinist 3/2026\nTag 1 von 4\nTeilnehmer: 24\nQ
+ uelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Maschinist
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-maschinist-3-tag2@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260912T080000
+DTEND;TZID=Europe/Berlin:20260912T170000
+SUMMARY:Maschinist 3/2026 – Tag 2/4
+DESCRIPTION:Kreislehrgang Maschinist 3/2026\nTag 2 von 4\nTeilnehmer: 24\nQ
+ uelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Maschinist
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-maschinist-3-tag3@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260919T080000
+DTEND;TZID=Europe/Berlin:20260919T170000
+SUMMARY:Maschinist 3/2026 – Tag 3/4
+DESCRIPTION:Kreislehrgang Maschinist 3/2026\nTag 3 von 4\nTeilnehmer: 24\nQ
+ uelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Maschinist
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-maschinist-3-tag4@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260926T080000
+DTEND;TZID=Europe/Berlin:20260926T170000
+SUMMARY:Maschinist 3/2026 – Tag 4/4
+DESCRIPTION:Kreislehrgang Maschinist 3/2026\nTag 4 von 4\nTeilnehmer: 24\nQ
+ uelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Maschinist
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-absturzsicherung-2-tag1@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260904T180000
+DTEND;TZID=Europe/Berlin:20260904T220000
+SUMMARY:Absturzsicherung 2/2026 – Tag 1/3
+DESCRIPTION:Kreislehrgang Absturzsicherung 2/2026\nTag 1 von 3\nTeilnehmer:
+  16\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Absturzsicherung
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-absturzsicherung-2-tag2@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260905T080000
+DTEND;TZID=Europe/Berlin:20260905T170000
+SUMMARY:Absturzsicherung 2/2026 – Tag 2/3
+DESCRIPTION:Kreislehrgang Absturzsicherung 2/2026\nTag 2 von 3\nTeilnehmer:
+  16\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Absturzsicherung
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-absturzsicherung-2-tag3@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260912T080000
+DTEND;TZID=Europe/Berlin:20260912T170000
+SUMMARY:Absturzsicherung 2/2026 – Tag 3/3
+DESCRIPTION:Kreislehrgang Absturzsicherung 2/2026\nTag 3 von 3\nTeilnehmer:
+  16\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Absturzsicherung
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-sprechfunker-3-tag1@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260919T080000
+DTEND;TZID=Europe/Berlin:20260919T170000
+SUMMARY:Sprechfunker 3/2026 – Tag 1/2
+DESCRIPTION:Kreislehrgang Sprechfunker 3/2026\nTag 1 von 2\nQuelle: Terminp
+ lan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Sprechfunker
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-sprechfunker-3-tag2@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260926T080000
+DTEND;TZID=Europe/Berlin:20260926T170000
+SUMMARY:Sprechfunker 3/2026 – Tag 2/2
+DESCRIPTION:Kreislehrgang Sprechfunker 3/2026\nTag 2 von 2\nQuelle: Terminp
+ lan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Sprechfunker
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-truppfuehrer-praxis-2-tag1@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260919T080000
+DTEND;TZID=Europe/Berlin:20260919T170000
+SUMMARY:Truppführer Praxis 2/2026 – Tag 1/4
+DESCRIPTION:Kreislehrgang Truppführer Praxis 2/2026\nTag 1 von 4\nTeilnehm
+ er: 18\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Truppführer Praxis
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-truppfuehrer-praxis-2-tag2@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20260926T080000
+DTEND;TZID=Europe/Berlin:20260926T170000
+SUMMARY:Truppführer Praxis 2/2026 – Tag 2/4
+DESCRIPTION:Kreislehrgang Truppführer Praxis 2/2026\nTag 2 von 4\nTeilnehm
+ er: 18\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Truppführer Praxis
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-truppfuehrer-praxis-2-tag3@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20261010T080000
+DTEND;TZID=Europe/Berlin:20261010T170000
+SUMMARY:Truppführer Praxis 2/2026 – Tag 3/4
+DESCRIPTION:Kreislehrgang Truppführer Praxis 2/2026\nTag 3 von 4\nTeilnehm
+ er: 18\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Truppführer Praxis
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-truppfuehrer-praxis-2-tag4@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20261017T080000
+DTEND;TZID=Europe/Berlin:20261017T170000
+SUMMARY:Truppführer Praxis 2/2026 – Tag 4/4
+DESCRIPTION:Kreislehrgang Truppführer Praxis 2/2026\nTag 4 von 4\nTeilnehm
+ er: 18\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Truppführer Praxis
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-seminar-messen-1-tag1@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20261009T180000
+DTEND;TZID=Europe/Berlin:20261009T220000
+SUMMARY:Seminar Messen 1/2026 – Tag 1/2
+DESCRIPTION:Kreislehrgang Seminar Messen 1/2026\nTag 1 von 2\nTeilnehmer: 1
+ 5\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Seminar Messen
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-seminar-messen-1-tag2@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20261010T080000
+DTEND;TZID=Europe/Berlin:20261010T170000
+SUMMARY:Seminar Messen 1/2026 – Tag 2/2
+DESCRIPTION:Kreislehrgang Seminar Messen 1/2026\nTag 2 von 2\nTeilnehmer: 1
+ 5\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Seminar Messen
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-technische-hilfeleistung-wald-2-tag1@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20261017T080000
+DTEND;TZID=Europe/Berlin:20261017T170000
+SUMMARY:Technische Hilfeleistung Wald 2/2026 – Tag 1/3
+DESCRIPTION:Kreislehrgang Technische Hilfeleistung Wald 2/2026\nTag 1 von 3
+ \nTeilnehmer: 24\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Technische Hilfeleistung Wald
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-technische-hilfeleistung-wald-2-tag2@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20261024T080000
+DTEND;TZID=Europe/Berlin:20261024T170000
+SUMMARY:Technische Hilfeleistung Wald 2/2026 – Tag 2/3
+DESCRIPTION:Kreislehrgang Technische Hilfeleistung Wald 2/2026\nTag 2 von 3
+ \nTeilnehmer: 24\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Technische Hilfeleistung Wald
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-technische-hilfeleistung-wald-2-tag3@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20261031T080000
+DTEND;TZID=Europe/Berlin:20261031T170000
+SUMMARY:Technische Hilfeleistung Wald 2/2026 – Tag 3/3
+DESCRIPTION:Kreislehrgang Technische Hilfeleistung Wald 2/2026\nTag 3 von 3
+ \nTeilnehmer: 24\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Technische Hilfeleistung Wald
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-seminar-messen-2-tag1@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20261106T180000
+DTEND;TZID=Europe/Berlin:20261106T220000
+SUMMARY:Seminar Messen 2/2026 – Tag 1/2
+DESCRIPTION:Kreislehrgang Seminar Messen 2/2026\nTag 1 von 2\nTeilnehmer: 1
+ 5\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Seminar Messen
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-seminar-messen-2-tag2@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20261107T080000
+DTEND;TZID=Europe/Berlin:20261107T170000
+SUMMARY:Seminar Messen 2/2026 – Tag 2/2
+DESCRIPTION:Kreislehrgang Seminar Messen 2/2026\nTag 2 von 2\nTeilnehmer: 1
+ 5\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Seminar Messen
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-atemschutzgeraetetraeger-4-tag1@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20261107T080000
+DTEND;TZID=Europe/Berlin:20261107T170000
+SUMMARY:Atemschutzgeräteträger 4/2026 – Tag 1/4
+DESCRIPTION:Kreislehrgang Atemschutzgeräteträger 4/2026\nTag 1 von 4\nTei
+ lnehmer: 24\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Atemschutzgeräteträger
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-atemschutzgeraetetraeger-4-tag2@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20261114T080000
+DTEND;TZID=Europe/Berlin:20261114T170000
+SUMMARY:Atemschutzgeräteträger 4/2026 – Tag 2/4
+DESCRIPTION:Kreislehrgang Atemschutzgeräteträger 4/2026\nTag 2 von 4\nTei
+ lnehmer: 24\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Atemschutzgeräteträger
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-atemschutzgeraetetraeger-4-tag3@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20261121T080000
+DTEND;TZID=Europe/Berlin:20261121T170000
+SUMMARY:Atemschutzgeräteträger 4/2026 – Tag 3/4
+DESCRIPTION:Kreislehrgang Atemschutzgeräteträger 4/2026\nTag 3 von 4\nTei
+ lnehmer: 24\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Atemschutzgeräteträger
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-atemschutzgeraetetraeger-4-tag4@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20261128T080000
+DTEND;TZID=Europe/Berlin:20261128T170000
+SUMMARY:Atemschutzgeräteträger 4/2026 – Tag 4/4
+DESCRIPTION:Kreislehrgang Atemschutzgeräteträger 4/2026\nTag 4 von 4\nTei
+ lnehmer: 24\nQuelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Atemschutzgeräteträger
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-truppfuehrer-vorbereitung-2-tag1@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20261113T180000
+DTEND;TZID=Europe/Berlin:20261113T214500
+SUMMARY:Truppführer Vorbereitung 2/2026 – Tag 1/2
+DESCRIPTION:Kreislehrgang Truppführer Vorbereitung 2/2026\nTag 1 von 2\nQu
+ elle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Truppführer Vorbereitung
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-truppfuehrer-vorbereitung-2-tag2@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20261114T080000
+DTEND;TZID=Europe/Berlin:20261114T170000
+SUMMARY:Truppführer Vorbereitung 2/2026 – Tag 2/2
+DESCRIPTION:Kreislehrgang Truppführer Vorbereitung 2/2026\nTag 2 von 2\nQu
+ elle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,Truppführer Vorbereitung
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-elw-seminar-1-tag1@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20261120T180000
+DTEND;TZID=Europe/Berlin:20261120T220000
+SUMMARY:ELW Seminar 1/2026 – Tag 1/2
+DESCRIPTION:Kreislehrgang ELW Seminar 1/2026\nTag 1 von 2\nTeilnehmer: 24\n
+ Quelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,ELW Seminar
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-elw-seminar-1-tag2@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20261121T080000
+DTEND;TZID=Europe/Berlin:20261121T170000
+SUMMARY:ELW Seminar 1/2026 – Tag 2/2
+DESCRIPTION:Kreislehrgang ELW Seminar 1/2026\nTag 2 von 2\nTeilnehmer: 24\n
+ Quelle: Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,ELW Seminar
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-th-vu-2-tag1@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20261204T180000
+DTEND;TZID=Europe/Berlin:20261204T220000
+SUMMARY:TH VU 2/2026 – Tag 1/3
+DESCRIPTION:Kreislehrgang TH VU 2/2026\nTag 1 von 3\nTeilnehmer: 24\nQuelle
+ : Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,TH VU
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-th-vu-2-tag2@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20261205T080000
+DTEND;TZID=Europe/Berlin:20261205T170000
+SUMMARY:TH VU 2/2026 – Tag 2/3
+DESCRIPTION:Kreislehrgang TH VU 2/2026\nTag 2 von 3\nTeilnehmer: 24\nQuelle
+ : Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,TH VU
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:kreis-2026-th-vu-2-tag3@lehrgaenge-kreis-dueren
+DTSTAMP:20261112T000000Z
+DTSTART;TZID=Europe/Berlin:20261212T080000
+DTEND;TZID=Europe/Berlin:20261212T170000
+SUMMARY:TH VU 2/2026 – Tag 3/3
+DESCRIPTION:Kreislehrgang TH VU 2/2026\nTag 3 von 3\nTeilnehmer: 24\nQuelle
+ : Terminplan Kreis Düren 2026\, Stand 01.08.2025
+CATEGORIES:Kreislehrgang,TH VU
+LOCATION:FTZ Stockheim
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+END:VCALENDAR

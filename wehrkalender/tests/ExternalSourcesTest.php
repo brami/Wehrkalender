@@ -20,6 +20,7 @@ use Wehrkalender\Web\WebApp;
 final class ExternalSourcesTest extends TestCase
 {
     private const KREIS = __DIR__ . '/fixtures/kreis-lehrgaenge-2027.ics';
+    private const KREIS_2026 = __DIR__ . '/fixtures/kreis-lehrgaenge-2026.ics';
 
     private function source(string $key, string $type = 'upload', array $extra = []): array
     {
@@ -167,6 +168,63 @@ final class ExternalSourcesTest extends TestCase
         // Datei entfernen → Termine weg
         $this->web('POST', '/admin/quellen/datei/' . $file['id'] . '/loeschen', ['x' => '1']);
         self::assertSame(0, (int) $db->value('SELECT COUNT(*) FROM events'));
+    }
+
+    /** Plan des Vorjahres als weitere Datei derselben Quelle (echter Kreisplan 2026) */
+    public function testSecondYearAsAdditionalFile(): void
+    {
+        $this->admin();
+        $db = $this->app->db();
+        $kreis = $this->source('kreis');
+        $m2 = $this->calendar('maschinist-2-2027', 'Maschinist 2/2027');
+        $alle = $this->calendar('maschinisten', 'Maschinisten (alle Lehrgänge)');
+        $this->feed($kreis, $m2, 'Maschinist 2/2027', ['show_stand' => 0]);
+        $this->feed($kreis, $alle, 'Maschinist', ['show_stand' => 0]);
+
+        $this->web('POST', "/admin/quellen/{$kreis['id']}/datei", ['x' => '1'], ['datei' => $this->upload((string) file_get_contents(self::KREIS), 'Lehrgaenge_Kreis_Dueren_2027.ics')]);
+        $p = (int) $db->value("SELECT id FROM source_files WHERE status = 'pending'");
+        $this->web('POST', "/admin/quellen/datei/$p/uebernehmen", ['x' => '1']);
+        self::assertSame(12, (int) $db->value('SELECT COUNT(*) FROM events WHERE calendar_id = ?', [$alle]), '3 Maschinisten-Lehrgänge 2027 à 4 Tage');
+
+        // 2026 als weitere Datei: Vorschau ohne Entfernungen und ohne Plausibilitätswarnung
+        $this->web('POST', "/admin/quellen/{$kreis['id']}/datei", ['replaces_id' => ''], ['datei' => $this->upload((string) file_get_contents(self::KREIS_2026), 'Lehrgaenge_Kreis_Dueren_2026.ics')]);
+        $p26 = $db->one("SELECT * FROM source_files WHERE status = 'pending'");
+        self::assertNull($p26['replaces_id']);
+        self::assertSame(93, (int) $p26['event_count']);
+        $preview = (string) $this->web('GET', '/admin/quellen/datei/' . $p26['id'])->getBody();
+        self::assertStringContainsString('weitere Datei', $preview);
+        self::assertStringContainsString('93 Termine erkannt, 17.01.2026 – 12.12.2026', $preview);
+        self::assertStringNotContainsString('Auffällig', $preview);
+        self::assertStringNotContainsString('zuletzt', $preview, 'weitere Datei: kein Vergleich mit den Treffern der anderen Datei');
+        self::assertSame(0, substr_count($preview, '</strong> entfernt') - substr_count($preview, '<strong>0</strong> entfernt'), 'nichts wird entfernt');
+        self::assertStringContainsString('<strong>12</strong> neu', $preview, 'Maschinisten 2026');
+        self::assertStringContainsString('81 von 93 Terminen', $preview);
+        self::assertStringContainsString('<summary>Technische Hilfeleistung Wald 1/2026</summary>', $preview);
+        $this->web('POST', '/admin/quellen/datei/' . $p26['id'] . '/uebernehmen', ['x' => '1']);
+
+        self::assertSame(2, (int) $db->value("SELECT COUNT(*) FROM source_files WHERE status = 'active'"));
+        self::assertSame(24, (int) $db->value('SELECT COUNT(*) FROM events WHERE calendar_id = ?', [$alle]), '2026 und 2027 nebeneinander');
+        self::assertSame(4, (int) $db->value('SELECT COUNT(*) FROM events WHERE calendar_id = ?', [$m2]), 'Maschinist 2/2027 unberührt');
+        self::assertSame([4, 24], array_map('intval', $db->column('SELECT last_match_count FROM calendar_feeds WHERE calendar_id IN (?, ?) ORDER BY id', [$m2, $alle])),
+            'Treffer über alle Dateien, nicht 0 aus der Datei 2026');
+        self::assertSame([], array_values(array_filter($this->app->status()->problems(), fn ($m) => str_contains($m, 'enden'))),
+            'Dateien enden erst 2027 – keine Warnung, obwohl die Datei 2026 bald endet');
+
+        // neue Fassung 2027 lässt die Termine aus 2026 stehen
+        $f27 = (int) $db->value("SELECT id FROM source_files WHERE name LIKE '%2027%'");
+        $this->web('POST', "/admin/quellen/datei/$f27/erneut", ['x' => '1']);
+        $re = (int) $db->value("SELECT id FROM source_files WHERE status = 'pending'");
+        $prev = (string) $this->web('GET', "/admin/quellen/datei/$re")->getBody();
+        self::assertStringContainsString('<strong>0</strong> entfernt', $prev);
+        self::assertStringContainsString('(bisher 12 aus dieser Datei)', $prev);
+        $this->web('POST', "/admin/quellen/datei/$re/uebernehmen", ['x' => '1']);
+        self::assertSame(24, (int) $db->value('SELECT COUNT(*) FROM events WHERE calendar_id = ?', [$alle]));
+
+        // Datei 2026 entfernen: nur ihre Termine verschwinden
+        $f26 = (int) $db->value("SELECT id FROM source_files WHERE name LIKE '%2026%'");
+        $this->web('POST', "/admin/quellen/datei/$f26/loeschen", ['x' => '1']);
+        self::assertSame(12, (int) $db->value('SELECT COUNT(*) FROM events WHERE calendar_id = ?', [$alle]));
+        self::assertSame(0, (int) $db->value("SELECT COUNT(*) FROM events WHERE summary LIKE '%/2026%'"));
     }
 
     public function testUnmatchedGroupedByTitle(): void

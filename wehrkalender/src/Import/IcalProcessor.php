@@ -187,7 +187,10 @@ final class IcalProcessor
             }
             $p = ['feed' => $feed, 'calendar' => $feed['display_name'], 'matched' => 0, 'save' => [],
                   'added' => [], 'changed' => [], 'removed' => [], 'unchanged' => 0, 'skipped_other_file' => 0,
-                  'previous' => $feed['last_match_count'] !== null ? (int) $feed['last_match_count'] : null, 'blocked' => null];
+                  // Vergleichswert: bei Dateien die bisherigen Termine dieser Datei (eine weitere Datei
+                  // beginnt bei 0), bei Feeds die Treffer des letzten Abrufs
+                  'previous' => $fileId !== null ? count($existing) : ($feed['last_match_count'] !== null ? (int) $feed['last_match_count'] : null),
+                  'previous_scope' => $fileId !== null ? 'file' : 'feed', 'blocked' => null];
             foreach ($events as $i => $e) {
                 if (!$filter->matches($e)) {
                     continue;
@@ -290,7 +293,12 @@ final class IcalProcessor
                 $stats[$result === 'added' ? 'added' : ($result === 'modified' ? 'changed' : 'unchanged')]++;
             }
             $stats['unchanged'] += $p['unchanged'];
-            $db->update('calendar_feeds', ['last_match_count' => $p['matched']], ['id' => $feedId]);
+            // bei Dateien: Treffer über alle Dateien der Quelle (sonst stünde nach einer weiteren
+            // Datei ohne Treffer „zuletzt 0“, obwohl der Kalender Termine aus der anderen Datei hat)
+            $count = $fileId !== null
+                ? (int) $db->value('SELECT COUNT(*) FROM events WHERE feed_id = ?', [$feedId])
+                : $p['matched'];
+            $db->update('calendar_feeds', ['last_match_count' => $count], ['id' => $feedId]);
         }
         return $stats;
     }
