@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Wehrkalender\Tests;
 
+use Wehrkalender\Clock;
 use Wehrkalender\Import\IcalProcessor;
 
 use Psr\Http\Message\ResponseInterface;
@@ -268,6 +269,42 @@ final class ExternalSourcesTest extends TestCase
         self::assertSame('Windener Weg, Kreuzau', (string) $vcal->VEVENT->LOCATION);
         self::assertSame('20260304T100000', $vcal->VEVENT->DTSTART->getDateTime()->format('Ymd\THis'));
         self::assertSame('Europe/Berlin', $vcal->VEVENT->DTSTART->getDateTime()->getTimezone()->getName());
+    }
+
+    /**
+     * Echte Abfallkalender 2027 für Drove und Boich/Thum: gleicher Abfuhrbezirk, nur das Altpapier
+     * unterscheidet sich. Je Ort eine Quelle und ein Kalender; gleiche Termine kollidieren nicht.
+     */
+    public function testAbfallTwoOrtsteile(): void
+    {
+        $this->admin();
+        $db = $this->app->db();
+        $cals = [];
+        foreach (['abfall-drove' => 'Abfall Drove', 'abfall-boich-thum' => 'Abfall Boich/Thum'] as $key => $name) {
+            $src = $this->source($key);
+            $cals[$key] = $this->calendar($key, $name);
+            $this->feed($src, $cals[$key]);
+            $this->web('POST', "/admin/quellen/{$src['id']}/datei", ['x' => '1'],
+                ['datei' => $this->upload((string) file_get_contents(__DIR__ . "/fixtures/$key-2027.ics"), "$key-2027.ics")]);
+            $p = (int) $db->value("SELECT id FROM source_files WHERE status = 'pending'");
+            self::assertStringContainsString('121 Termine erkannt, 04.01.2027 – 30.12.2027', (string) $this->web('GET', "/admin/quellen/datei/$p")->getBody());
+            $this->web('POST', "/admin/quellen/datei/$p/uebernehmen", ['x' => '1']);
+        }
+        foreach ($cals as $cal) {
+            self::assertSame(121, (int) $db->value('SELECT COUNT(*) FROM events WHERE calendar_id = ?', [$cal]));
+        }
+        // Restmüll am selben Tag in beiden Kalendern, aber mit eigener UID (kein Konflikt auf den Geräten)
+        $uids = $db->column("SELECT uid FROM events WHERE summary = 'Restmülltonne' AND starts_at = ? ORDER BY uid", [
+            (string) $db->value("SELECT MIN(starts_at) FROM events WHERE summary = 'Restmülltonne'")]);
+        self::assertCount(2, $uids);
+        self::assertNotSame($uids[0], $uids[1]);
+        // Altpapier unterscheidet sich je Ort
+        $papier = fn (int $cal) => $db->column("SELECT starts_at FROM events WHERE calendar_id = ? AND summary = 'Altpapiersammlung' ORDER BY starts_at", [$cal]);
+        self::assertCount(12, $papier($cals['abfall-drove']));
+        self::assertSame([], array_intersect($papier($cals['abfall-drove']), $papier($cals['abfall-boich-thum'])));
+        // Schadstoffmobil hält in Drove um 12:45
+        $mobil = Clock::toLocal((string) $db->value("SELECT starts_at FROM events WHERE calendar_id = ? AND summary = 'Schadstoffmobil' ORDER BY starts_at", [$cals['abfall-drove']]));
+        self::assertSame('03.03.2027 12:45', $mobil?->format('d.m.Y H:i'));
     }
 
     public function testUnmatchedGroupedByTitle(): void
