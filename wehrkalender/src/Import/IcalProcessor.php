@@ -163,10 +163,12 @@ final class IcalProcessor
             'last_end' => $events === [] ? null : max(array_map(fn ($e) => $e['end'], $events)),
             'feeds' => [],
             'warnings' => [],
+            'unmatched' => [],
         ];
         if ($feeds === []) {
             $plan['warnings'][] = 'Diese Quelle befüllt noch keinen Kalender. Legen Sie zuerst eine Befüllung an.';
         }
+        $hit = [];      // Index des Termins => von mindestens einer Befüllung getroffen
         $claimed = [];  // Kalender-ID => [Kennung => true]: ein Termin je Kalender nur einmal
         $today = $this->app->clock()->now()->format('d.m.Y');
         foreach ($feeds as $feed) {
@@ -185,10 +187,11 @@ final class IcalProcessor
             $p = ['feed' => $feed, 'calendar' => $feed['display_name'], 'matched' => 0, 'save' => [],
                   'added' => [], 'changed' => [], 'removed' => [], 'unchanged' => 0, 'skipped_other_file' => 0,
                   'previous' => $feed['last_match_count'] !== null ? (int) $feed['last_match_count'] : null, 'blocked' => null];
-            foreach ($events as $e) {
+            foreach ($events as $i => $e) {
                 if (!$filter->matches($e)) {
                     continue;
                 }
+                $hit[$i] = true;
                 $p['matched']++;
                 $base = (int) $source['id_from_content'] === 1 || $e['uid'] === ''
                     ? 'k' . substr(hash('sha256', $e['start']->format('c') . '|' . $e['end']->format('c') . '|' . mb_strtolower($e['summary'])), 0, 23)
@@ -248,6 +251,13 @@ final class IcalProcessor
                     $feed['display_name'], $p['skipped_other_file']);
             }
             $plan['feeds'][(int) $feed['id']] = $p;
+        }
+        // Termine, die keine Befüllung trifft (nur Anzeige in der Vorschau)
+        $plan['unmatched'] = [];
+        if ($feeds !== []) {
+            $rest = array_values(array_filter($events, fn ($e, $i) => !isset($hit[$i]), ARRAY_FILTER_USE_BOTH));
+            usort($rest, fn ($a, $b) => $a['start'] <=> $b['start']);
+            $plan['unmatched'] = array_map(fn ($e) => $this->label($e), $rest);
         }
         return $plan;
     }

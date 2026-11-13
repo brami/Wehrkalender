@@ -83,6 +83,10 @@
         <td>{{ f.event_count }} in der Datei<br><span class="muted">{{ f.events }} in Kalendern</span></td>
         <td>{{ f.applied_at|lt }}{% if f.uploader_last %}<br><span class="muted">{{ f.uploader_first }} {{ f.uploader_last }}</span>{% endif %}</td>
         <td>
+          <form method="post" action="/admin/quellen/datei/{{ f.id }}/erneut" class="inline">
+            <input type="hidden" name="_csrf" value="{{ csrf }}">
+            <button class="btn btn-small" type="submit" title="Datei mit den aktuellen Befüllungen neu verarbeiten (mit Vorschau)">Erneut übernehmen</button>
+          </form>
           <form method="post" action="/admin/quellen/datei/{{ f.id }}/loeschen" class="inline">
             <input type="hidden" name="_csrf" value="{{ csrf }}">
             <button class="btn btn-secondary btn-small" type="submit">Datei entfernen</button>
@@ -179,7 +183,7 @@
 
 {% if ical_sources is not empty %}
 <details class="box" style="margin-top:1rem">
-  <summary><strong>Neue Befüllung aus einem iCal-Feed</strong></summary>
+  <summary><strong>Neue Befüllung</strong> <span class="muted small">(Feed oder hochgeladene Datei → Kalender)</span></summary>
   <form method="post" action="/admin/befuellung">
     <input type="hidden" name="_csrf" value="{{ csrf }}">
     <label for="bs">Quelle</label>

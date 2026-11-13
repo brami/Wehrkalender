@@ -8,7 +8,7 @@
   {{ plan.events_total }} Termine erkannt{% if plan.first_start %}, {{ plan.first_start|date('d.m.Y') }} – {{ plan.last_end|date('d.m.Y') }}{% endif %}.
   Noch ist nichts geändert.</p>
 
-{% if same_file %}<div class="flash flash-info">Die Datei ist identisch mit der bisherigen Fassung.</div>{% endif %}
+{% if same_file %}<div class="flash flash-info">Die Datei ist identisch mit der bisherigen Fassung. Geändert wird nur, was sich aus neuen oder geänderten Befüllungen ergibt.</div>{% endif %}
 {% for w in plan.warnings %}<div class="flash flash-error">{{ w }}</div>{% endfor %}
 
 {% for p in plan.feeds %}
@@ -33,6 +33,17 @@
   {% endif %}
 </div>
 {% endfor %}
+
+{% if plan.unmatched is not empty %}
+<div class="box">
+  <h2 style="margin-top:0">Nicht übernommen</h2>
+  <p class="small muted">{{ plan.unmatched|length }} von {{ plan.events_total }} Terminen trifft keine Befüllung; sie kommen in keinen Kalender.
+    Soll einer davon erscheinen, legen Sie unter „Quellen“ eine Befüllung an und übernehmen die Datei erneut.</p>
+  <details{% if plan.unmatched|length <= 12 %} open{% endif %}><summary class="small">Termine anzeigen ({{ plan.unmatched|length }})</summary>
+    <ul class="small">{% for l in plan.unmatched %}<li>{{ l }}</li>{% endfor %}</ul>
+  </details>
+</div>
+{% endif %}
 
 <div class="actions">
   <form method="post" action="/admin/quellen/datei/{{ file.id }}/uebernehmen" class="inline">

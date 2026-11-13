@@ -196,15 +196,16 @@ final class SourcesController extends Controller
         if ($existing === null) {
             $db->insert('calendar_feeds', $data + ['calendar_id' => $calendarId, 'source_id' => $sourceId, 'created_at' => $now]);
             $mixed = $db->value('SELECT 1 FROM calendar_sources WHERE calendar_id = ? AND fills = 1', [$calendarId]) !== null
-                || (int) $db->value('SELECT COUNT(*) FROM calendar_feeds WHERE calendar_id = ?', [$calendarId]) > 1;
+                || (int) $db->value('SELECT COUNT(DISTINCT source_id) FROM calendar_feeds WHERE calendar_id = ?', [$calendarId]) > 1;
             $this->session->flash('success', "„{$source['name']}“ befüllt jetzt den Kalender „{$calendar['display_name']}“ ({$filter->describe()}). "
-                . ($source['type'] === 'upload' ? 'Die Termine erscheinen, sobald Sie eine Datei hochladen bzw. erneut übernehmen.' : 'Die Termine erscheinen nach dem nächsten Abruf („Jetzt abrufen“).'));
+                . ($source['type'] === 'upload' ? 'Die Termine erscheinen, sobald Sie eine Datei hochladen bzw. bei der vorhandenen Datei „Erneut übernehmen“ wählen.' : 'Die Termine erscheinen nach dem nächsten Abruf („Jetzt abrufen“).'));
             if ($mixed) {
                 $this->session->flash('info', "Der Kalender „{$calendar['display_name']}“ wird damit aus mehreren Quellen befüllt. Fällt eine Quelle aus, fehlt still ein Teil der Termine – eigene Kalender je Quelle sind übersichtlicher.");
             }
         } else {
             $db->update('calendar_feeds', $data, ['id' => $id]);
-            $this->session->flash('success', "Befüllung „{$source['name']} → {$calendar['display_name']}“ gespeichert. Ein geänderter Filter wirkt beim nächsten Abruf.");
+            $this->session->flash('success', "Befüllung „{$source['name']} → {$calendar['display_name']}“ gespeichert. "
+                . ($source['type'] === 'upload' ? 'Ein geänderter Filter wirkt mit „Erneut übernehmen“ bei der Datei.' : 'Ein geänderter Filter wirkt beim nächsten Abruf („Jetzt abrufen“).'));
         }
         return $this->redirect($response, '/admin/quellen');
     }
@@ -307,6 +308,13 @@ final class SourcesController extends Controller
                      'first_start' => $file['first_start'], 'last_end' => $file['last_end'], 'uploaded_at' => $file['uploaded_at'],
                      'uploaded_by' => $file['uploaded_by'], 'applied_at' => $now, 'status' => 'active', 'replaces_id' => null];
             if ($target !== (int) $file['id']) {
+                // dieselbe Datei erneut übernommen: Name und Hochladedatum der bisherigen Fassung behalten
+                $old = $db->one('SELECT name, sha256, uploaded_at, uploaded_by FROM source_files WHERE id = ?', [$target]);
+                if ($old !== null && $old['sha256'] === $file['sha256']) {
+                    $meta['name'] = $old['name'];
+                    $meta['uploaded_at'] = $old['uploaded_at'];
+                    $meta['uploaded_by'] = $old['uploaded_by'];
+                }
                 $db->update('source_files', $meta, ['id' => $target]);
                 $db->execute('DELETE FROM source_files WHERE id = ?', [$file['id']]);
             } else {
@@ -321,6 +329,28 @@ final class SourcesController extends Controller
             $this->session->flash('error', 'Nicht übernommen – ' . $b);
         }
         return $this->redirect($response, '/admin/quellen');
+    }
+
+    /**
+     * Bereits übernommene Datei erneut verarbeiten, z. B. nach einer neuen oder geänderten
+     * Befüllung – ohne sie noch einmal hochzuladen. Zeigt dieselbe Vorschau.
+     */
+    public function fileReapply(Request $request, Response $response, array $args): Response
+    {
+        $db = $this->app->db();
+        $f = $db->one("SELECT * FROM source_files WHERE id = ? AND status = 'active'", [(int) $args['id']]);
+        if ($f === null) {
+            $this->notFound($request);
+        }
+        $user = $this->currentUser($request);
+        $db->execute("DELETE FROM source_files WHERE source_id = ? AND status = 'pending'", [$f['source_id']]);
+        $id = $db->insert('source_files', [
+            'source_id' => $f['source_id'], 'name' => $f['name'], 'ics' => $f['ics'], 'sha256' => $f['sha256'],
+            'status' => 'pending', 'replaces_id' => $f['id'], 'event_count' => $f['event_count'],
+            'first_start' => $f['first_start'], 'last_end' => $f['last_end'],
+            'uploaded_at' => $this->app->clock()->nowDb(), 'uploaded_by' => (int) $user['id'],
+        ]);
+        return $this->redirect($response, '/admin/quellen/datei/' . $id);
     }
 
     /** Vorschau verwerfen */

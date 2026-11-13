@@ -114,6 +114,7 @@ final class WebApp
             $g->get('/quellen/datei/{id:\d+}', [$sources, 'filePreview']);
             $g->post('/quellen/datei/{id:\d+}/uebernehmen', [$sources, 'fileApply']);
             $g->post('/quellen/datei/{id:\d+}/verwerfen', [$sources, 'fileDiscard']);
+            $g->post('/quellen/datei/{id:\d+}/erneut', [$sources, 'fileReapply']);
             $g->post('/quellen/datei/{id:\d+}/loeschen', [$sources, 'fileDelete']);
             $g->post('/quellen/{id:\d+}/abrufen', [$sources, 'fetchNow']);
             $g->post('/befuellung', [$sources, 'feedSave']);

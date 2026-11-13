@@ -33,22 +33,32 @@
 #    lokal:    ./logs/setup-<host>-<zeitstempel>.log
 #    Server:   /var/log/wehrkalender-setup/<zeitstempel>.log
 #
-#  Aufruf
-#    ./setup-server-wehrkalender.sh -H <server> -d <domain> [Optionen]
+#  Einstellungen
+#    stehen in einer Datei neben dem Skript (Standard: wehrkalender.env, sonst
+#    -f <datei>). Optionen beim Aufruf überschreiben sie und werden dort
+#    gespeichert; Werte für die Anwendung (APP_NAME, WEHR_NAME, MAIL_*,
+#    BETREIBER_* …) übernimmt das Skript bei jedem Lauf nach /srv/wehrkalender/.env.
+#    Fehlt die Datei, legt das Skript sie mit allen Schlüsseln (auskommentiert) an.
 #
-#  Nur prüfen (ändert nichts am Server)
-#    ./setup-server-wehrkalender.sh -H <server> -d <domain> -T <test-domain> -c
+#  Aufruf
+#    ./setup-server-wehrkalender.sh [-f <datei>] [Optionen]
 #
 #  Beispiele
-#    Erstinstallation als Testsystem mit Testdaten:
+#    Erstinstallation als Testsystem mit Testdaten (speichert -H -d -T -n -E):
 #    ./setup-server-wehrkalender.sh -H 203.0.113.10 -d kalender.example.de \
 #                      -T kalender-test.example.de -n wehrkalender -E test -X -a michael.bramer
 #
-#    Nur eine neue Version der Anwendung einspielen:
-#    ./setup-server-wehrkalender.sh -H 203.0.113.10 -d kalender.example.de -U
+#    Neue Version der Anwendung einspielen (alles andere aus der Datei):
+#    ./setup-server-wehrkalender.sh -U
 #
-#    Nur auf Produktion umstellen (ohne neues ZIP, ohne Neubau):
-#    ./setup-server-wehrkalender.sh -H 203.0.113.10 -d kalender.example.de -U -E prod -Z ""
+#    Geänderte Einstellungen übernehmen, ohne neues ZIP:
+#    ./setup-server-wehrkalender.sh -U -Z ""
+#
+#    Auf Produktion umstellen (wird in der Datei gespeichert):
+#    ./setup-server-wehrkalender.sh -U -Z "" -E prod
+#
+#    Nur prüfen (ändert nichts, speichert nichts):
+#    ./setup-server-wehrkalender.sh -c
 # =============================================================================
 set -Eeuo pipefail
 
@@ -72,73 +82,233 @@ LOAD_TESTDATA=0
 APP_ADMIN=""
 APP_ENV_SET=""        # prod | test; leer = unverändert (neu: prod)
 
+SETTINGS_FILE=""      # -f; Standard: wehrkalender.env neben dem Skript
+
 usage() {
   cat <<EOF
-Aufruf: $0 -H <server> -d <domain> [Optionen]
+Aufruf: $0 [-f <einstellungen.env>] [Optionen]
 
-Pflicht:
-  -H <server>     IP-Adresse oder Name des vServers
-  -d <domain>     Domain des Wehrkalenders, z. B. kalender.example.de
+Einstellungsdatei (-f, Standard: wehrkalender.env neben dem Skript):
+  Alle Einstellungen der Installation stehen in einer Datei auf DEINEM Rechner.
+  Das Skript liest sie bei jedem Aufruf. Optionen beim Aufruf (-H -d -T -e -B
+  -u -n -t -E -S) überschreiben sie und werden dort gespeichert; spätere
+  Aufrufe brauchen sie nicht mehr, z. B. nur: $0 -U
+  Fehlt die Datei, wird sie mit allen Schlüsseln (auskommentiert) angelegt.
+  Werte für die Anwendung (APP_NAME, WEHR_NAME, MAIL_*, BETREIBER_*, SOURCE_URL,
+  …) werden bei jedem Lauf in /srv/wehrkalender/.env auf dem Server übernommen.
+  Mehrere Installationen: je eine Datei, z. B. -f test.env bzw. -f prod.env.
+
+Pflicht (beim ersten Aufruf; danach aus der Einstellungsdatei):
+  -H <server>     IP-Adresse oder Name des vServers                (SERVER)
+  -d <domain>     Domain des Wehrkalenders, z. B. kalender.example.de (DOMAIN)
 
 Anwendung:
   -Z <datei.zip>  ZIP der Anwendung. Standard: die neueste Datei
                   wehrkalender*.zip im Verzeichnis dieses Skripts.
-                  -Z "" = kein ZIP (z. B. nur Umgebung umstellen).
+                  -Z "" = kein ZIP (z. B. nur Einstellungen übernehmen).
                   Ohne ZIP wird nur der Server eingerichtet (Platzhalterseite).
   -U              Nur die Anwendung installieren/aktualisieren/umstellen:
                   überspringt Grundeinrichtung und SSH-Härtung (Server muss
                   schon eingerichtet sein)
-  -E <prod|test>  Umgebung der Anwendung (APP_ENV):
+  -E <prod|test>  Umgebung der Anwendung                           (APP_ENV)
                     test  Testsystem: Hinweisband "Testumgebung", Fehlerdetails
                           im Browser, Testdaten (-X) erlaubt
                     prod  Produktion: keine Fehlerdetails, -X gesperrt
-                  Ohne Angabe bleibt die Einstellung erhalten (neu: prod).
-                  Ohne neues ZIP werden nur die Container neu gestartet.
+                  Ohne Angabe gilt die Einstellungsdatei; steht dort nichts,
+                  bleibt die Einstellung auf dem Server (neu: prod).
   -X              Testdaten laden – LÖSCHT ALLE DATEN der Datenbank wehrkalender!
-                  Nur in der Umgebung test. Rückfrage, außer mit -y.
+                  Nur in der Umgebung test. Rückfrage, außer mit -y. (nur dieser Aufruf)
   -a <benutzer>   Diesem Benutzer der Anwendung Administratorrechte geben,
-                  z. B. michael.bramer (muss in der Datenbank existieren)
+                  z. B. michael.bramer (muss existieren)        (nur dieser Aufruf)
 
 Optional:
-  -T <domain>     Test-Domain, z. B. kalender-test.example.de
+  -f <datei>      Einstellungsdatei (siehe oben)
+  -T <domain>     Test-Domain, z. B. kalender-test.example.de      (TEST_DOMAIN)
                   (eigene Testseite, eigenes Zertifikat)
-  -e <email>      Kontakt-E-Mail für das Konto bei der Zertifikatsstelle.
+  -e <email>      Kontakt-E-Mail bei der Zertifikatsstelle         (ACME_EMAIL)
                   Nicht nötig: Let's Encrypt verschickt seit Juni 2025 keine
                   Ablaufwarnungen mehr. Ohne Angabe funktioniert alles.
-  -B <ziel>       Backup-Ziel (restic-Repository). Standard: lokales
-                  Verzeichnis /var/backups/wehrkalender-restic auf dem Server.
+  -B <ziel>       Backup-Ziel (restic-Repository)                  (BACKUP_REPO)
+                  Standard: lokales Verzeichnis /var/backups/wehrkalender-restic.
                   Extern z. B. sftp://u12345@u12345.your-storagebox.de:23/wehrkalender
-                  oder s3:https://<endpunkt>/<bucket> (Schlüssel dann in
-                  /srv/wehrkalender/.env: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY).
-                  Ohne Angabe bleibt ein bereits eingetragenes Ziel erhalten.
-  -u <benutzer>   Admin-Benutzer des Servers (Standard: $ADMIN_USER)
-  -n <hostname>   Interner Rechnername des Servers, z. B. "wehrkalender".
-                  Erscheint in der Shell und in Protokollen, hat nichts mit
-                  der Domain zu tun (Standard: unverändert)
-  -t <zeitzone>   Zeitzone (Standard: $TIMEZONE)
-  -c              Nur prüfen: SSH-Verbindung, DNS-Einträge und ZIP testen,
-                  fehlende Einträge ausgeben, am Server nichts ändern
-  -S              SSH-Härtung überspringen (root-Login bleibt erlaubt)
+                  oder s3:https://<endpunkt>/<bucket> (Schlüssel dann in der
+                  Einstellungsdatei: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY).
+  -u <benutzer>   Admin-Benutzer des Servers (Standard: $ADMIN_USER)    (SERVER_ADMIN)
+  -n <hostname>   Interner Rechnername des Servers, z. B. "wehrkalender";
+                  hat nichts mit der Domain zu tun                 (SERVER_HOSTNAME)
+  -t <zeitzone>   Zeitzone (Standard: $TIMEZONE)                   (TIMEZONE)
+  -c              Nur prüfen: SSH-Verbindung, DNS-Einträge, ZIP und
+                  Einstellungsdatei testen; nichts ändern, nichts speichern
+  -S              SSH-Härtung überspringen, root-Login bleibt      (SKIP_HARDEN=1)
   -y              Keine Rückfrage vor dem Start
   -h              Diese Hilfe
 EOF
 }
 
-while getopts ":H:d:T:e:B:u:n:t:Z:a:E:cSUXyh" opt; do
+# ----------------------------- Einstellungsdatei -----------------------------
+# Schlüssel des Skripts (Schlüssel → Variable) und Werte für die .env der Anwendung
+declare -A CFG_VAR=(
+  [SERVER]=SERVER [DOMAIN]=DOMAIN [TEST_DOMAIN]=TEST_DOMAIN [ACME_EMAIL]=ACME_EMAIL
+  [BACKUP_REPO]=BACKUP_REPO [SERVER_ADMIN]=ADMIN_USER [SERVER_HOSTNAME]=NEW_HOSTNAME
+  [TIMEZONE]=TIMEZONE [APP_ENV]=APP_ENV_SET [SKIP_HARDEN]=SKIP_HARDEN
+)
+CFG_APP_KEYS=(APP_NAME WEHR_NAME MAIL_DELIVERY MAILER_DSN MAIL_FROM MAIL_FROM_NAME ADMIN_ALERT_EMAILS
+  FEED_BROWSER_NOTICE SOURCE_URL BETREIBER_NAME BETREIBER_ANSCHRIFT BETREIBER_VERTRETEN_DURCH
+  BETREIBER_EMAIL BETREIBER_TELEFON BETREIBER_REGISTER DATENSCHUTZ_KONTAKT
+  BACKUP_PING_URL BACKUP_KEEP_DAYS BACKUP_LOCAL_DAYS AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY)
+# nur auf dem Server: werden dort erzeugt bzw. aus anderen Einstellungen gesetzt
+CFG_SERVER_ONLY=(APP_KEY DB_ROOT_PASSWORD DB_PASSWORD DB_TEST_PASSWORD RESTIC_PASSWORD
+  RESTIC_REPOSITORY APP_DOMAIN)
+declare -A CFG_FROM_CLI=()   # beim Aufruf gesetzte Schlüssel → werden gespeichert
+APP_SETTING_LINES=""         # KEY=WERT je Zeile, für /srv/wehrkalender/.env
+
+in_list() { local x="$1" y; shift; for y in "$@"; do [[ "$x" == "$y" ]] && return 0; done; return 1; }
+# Wert ohne Anführungszeichen: Kommentar „ # …“ und Leerzeichen am Ende entfernen
+cfg_clean() {
+  local v="$1"
+  if [[ ! "$v" =~ ^[\"\'] ]]; then
+    v="$(sed -E 's/[[:space:]]+#.*$//; s/[[:space:]]+$//' <<<"$v")"
+  fi
+  printf '%s' "$v"
+}
+cfg_unquote() {
+  local v="$1"
+  if [[ "$v" =~ ^\"(.*)\"$ || "$v" =~ ^\'(.*)\'$ ]]; then v="${BASH_REMATCH[1]}"; fi
+  printf '%s' "$v"
+}
+load_settings() {
+  local f="$1" line key raw n=0 errors=()
+  [[ -f "$f" ]] || return 0
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    n=$((n + 1))
+    line="${line%$'\r'}"
+    [[ "$line" =~ ^[[:space:]]*(#|$) ]] && continue
+    if [[ ! "$line" =~ ^[[:space:]]*([A-Za-z_][A-Za-z0-9_]*)=(.*)$ ]]; then
+      errors+=("Zeile $n: erwartet SCHLÜSSEL=Wert"); continue
+    fi
+    key="${BASH_REMATCH[1]}"; raw="$(cfg_clean "${BASH_REMATCH[2]}")"
+    if [[ -n "${CFG_VAR[$key]:-}" ]]; then
+      printf -v "${CFG_VAR[$key]}" '%s' "$(cfg_unquote "$raw")"
+    elif in_list "$key" "${CFG_APP_KEYS[@]}"; then
+      APP_SETTING_LINES+="$key=$raw"$'\n'
+    elif in_list "$key" "${CFG_SERVER_ONLY[@]}"; then
+      errors+=("Zeile $n: $key wird auf dem Server erzeugt bzw. gesetzt und gehört nicht hierher")
+    else
+      errors+=("Zeile $n: unbekannter Schlüssel $key (Tippfehler?)")
+    fi
+  done < "$f"
+  if (( ${#errors[@]} > 0 )); then
+    echo "FEHLER in der Einstellungsdatei $f:" >&2
+    printf '  %s\n' "${errors[@]}" >&2
+    exit 2
+  fi
+}
+# Wert für die Datei: einfache Werte ohne, sonst in einfachen Anführungszeichen
+cfg_quote() {
+  if [[ "$1" =~ ^[A-Za-z0-9._:/@+,=-]*$ ]]; then printf '%s' "$1"
+  elif [[ "$1" != *"'"* ]]; then printf "'%s'" "$1"
+  else printf '"%s"' "$1"; fi
+}
+# Schlüssel setzen: vorhandene Zeile ersetzen, sonst die auskommentierte Vorlage, sonst anhängen
+cfg_write() {
+  local f="$SETTINGS_FILE"
+  ( umask 077
+    K="$1" V="$(cfg_quote "$2")" awk '
+      BEGIN { k = ENVIRON["K"]; l = k "=" ENVIRON["V"] }
+      FNR == NR { if (index($0, k "=") == 1) ex = 1; next }
+      ex && index($0, k "=") == 1 { print l; next }
+      !ex && !done && $0 ~ ("^#[ \t]*" k "=") { print l; done = 1; next }
+      { print }
+      END { if (!ex && !done) print l }' "$f" "$f" > "$f.tmp" )
+  cat "$f.tmp" > "$f"; rm -f "$f.tmp"
+}
+cfg_template() {
+  ( umask 077; cat > "$1" <<'TEMPLATE'
+# =============================================================================
+#  Einstellungen für setup-server-wehrkalender.sh (eine Datei je Installation)
+#
+#  Liegt auf DEINEM Rechner, nicht auf dem Server. Enthält ggf. Zugangsdaten
+#  (MAILER_DSN, AWS_*): nicht weitergeben, nicht ins Git-Repository.
+#  Das Skript liest die Datei bei jedem Aufruf. Optionen beim Aufruf
+#  (-H -d -T -e -B -u -n -t -E -S) überschreiben sie und werden hier gespeichert.
+#
+#  Form: SCHLÜSSEL=Wert. Leerzeichen im Wert: in Anführungszeichen setzen.
+#  Werte für die Anwendung gelten wie in /srv/wehrkalender/.env (Docker Compose):
+#  ein "$" im Wert als "$$" schreiben oder den Wert in 'einfache' Anführungszeichen.
+#  Auskommentierte Schlüssel (#) bleiben auf dem Server unverändert.
+# =============================================================================
+
+# ------------------------------------------------------------- Server (Skript)
+# SERVER=203.0.113.10                 # -H  IP-Adresse oder Name des vServers
+# DOMAIN=kalender.example.de          # -d  Domain des Wehrkalenders
+# TEST_DOMAIN=                        # -T  Test-Domain (eigene Testseite)
+# ACME_EMAIL=                         # -e  Kontakt bei Let's Encrypt (nicht nötig)
+# BACKUP_REPO=                        # -B  externes Backup-Ziel (restic), leer = lokal
+# SERVER_ADMIN=juno                   # -u  Admin-Benutzer des Servers
+# SERVER_HOSTNAME=                    # -n  interner Rechnername
+# TIMEZONE=Europe/Berlin              # -t  Zeitzone
+# APP_ENV=test                        # -E  prod | test
+# SKIP_HARDEN=0                       # -S  1 = SSH nicht härten (root-Login bleibt)
+
+# ---------------------------------------------------------- Anwendung (.env)
+# APP_NAME="Kalender FF Musterstadt"  # Name in Oberfläche, E-Mails, auf den Geräten
+# WEHR_NAME="FF Musterstadt"          # Name der Wehr in Texten („Kalender der …“)
+# SOURCE_URL=https://github.com/<besitzer>/<repo>   # Quellcode-Link (AGPL-3.0)
+# FEED_BROWSER_NOTICE=0               # 1 = Hinweisseite für Abo-Links im Browser (nach Gerätetest)
+
+# E-Mail-Versand (Betriebsdoku: „E-Mail-Versand einrichten“)
+# MAIL_DELIVERY=database              # database = Testbetrieb (nichts wird verschickt) | smtp
+# MAILER_DSN='smtp://benutzer%40example.de:GEHEIM@smtp.example.de:587'
+# MAIL_FROM=kalender@example.de
+# MAIL_FROM_NAME="Kalender FF Musterstadt"
+# ADMIN_ALERT_EMAILS=wehrleitung@example.de,it@example.de
+
+# Impressum und Datenschutz: Betreiber des Dienstes (Anschrift: Zeilen mit ; trennen)
+# BETREIBER_NAME="Förderverein der FF Musterstadt e. V."
+# BETREIBER_ANSCHRIFT="Hauptstraße 1; 12345 Musterstadt"
+# BETREIBER_VERTRETEN_DURCH="den Vorstand, dieser vertreten durch …"
+# BETREIBER_EMAIL=info@example.de
+# BETREIBER_TELEFON=
+# BETREIBER_REGISTER="Amtsgericht Musterstadt, VR 1234"
+# DATENSCHUTZ_KONTAKT=
+
+# Datensicherung
+# BACKUP_PING_URL=                    # Überwachungsdienst, z. B. https://hc-ping.com/<uuid>
+# BACKUP_KEEP_DAYS=30                 # tägliche Stände im restic-Repository
+# BACKUP_LOCAL_DAYS=7                 # einfache Dumps auf dem Server
+# AWS_ACCESS_KEY_ID=                  # nur für S3-Backup-Ziele
+# AWS_SECRET_ACCESS_KEY=
+TEMPLATE
+  )
+}
+
+# Zwei Durchläufe: zuerst nur -f (Einstellungsdatei), dann alle Optionen,
+# damit Optionen beim Aufruf die Datei überschreiben.
+OPTSTRING=":f:H:d:T:e:B:u:n:t:Z:a:E:cSUXyh"
+while getopts "$OPTSTRING" opt; do
+  if [[ "$opt" == f ]]; then SETTINGS_FILE="$OPTARG"; fi
+done
+OPTIND=1
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SETTINGS_FILE="${SETTINGS_FILE:-$SCRIPT_DIR/wehrkalender.env}"
+load_settings "$SETTINGS_FILE"
+
+while getopts "$OPTSTRING" opt; do
   case "$opt" in
-    H) SERVER="$OPTARG" ;;
-    d) DOMAIN="$OPTARG" ;;
-    T) TEST_DOMAIN="$OPTARG" ;;
-    e) ACME_EMAIL="$OPTARG" ;;
-    B) BACKUP_REPO="$OPTARG" ;;
-    u) ADMIN_USER="$OPTARG" ;;
-    n) NEW_HOSTNAME="$OPTARG" ;;
-    t) TIMEZONE="$OPTARG" ;;
+    f) ;;
+    H) SERVER="$OPTARG"; CFG_FROM_CLI[SERVER]=1 ;;
+    d) DOMAIN="$OPTARG"; CFG_FROM_CLI[DOMAIN]=1 ;;
+    T) TEST_DOMAIN="$OPTARG"; CFG_FROM_CLI[TEST_DOMAIN]=1 ;;
+    e) ACME_EMAIL="$OPTARG"; CFG_FROM_CLI[ACME_EMAIL]=1 ;;
+    B) BACKUP_REPO="$OPTARG"; CFG_FROM_CLI[BACKUP_REPO]=1 ;;
+    u) ADMIN_USER="$OPTARG"; CFG_FROM_CLI[SERVER_ADMIN]=1 ;;
+    n) NEW_HOSTNAME="$OPTARG"; CFG_FROM_CLI[SERVER_HOSTNAME]=1 ;;
+    t) TIMEZONE="$OPTARG"; CFG_FROM_CLI[TIMEZONE]=1 ;;
     Z) APP_ZIP="$OPTARG"; APP_ZIP_GIVEN=1 ;;
     a) APP_ADMIN="$OPTARG" ;;
-    E) APP_ENV_SET="$OPTARG" ;;
+    E) APP_ENV_SET="$OPTARG"; CFG_FROM_CLI[APP_ENV]=1 ;;
     c) CHECK_ONLY=1 ;;
-    S) SKIP_HARDEN=1 ;;
+    S) SKIP_HARDEN=1; CFG_FROM_CLI[SKIP_HARDEN]=1 ;;
     U) UPDATE_ONLY=1 ;;
     X) LOAD_TESTDATA=1 ;;
     y) ASSUME_YES=1 ;;
@@ -147,22 +317,52 @@ while getopts ":H:d:T:e:B:u:n:t:Z:a:E:cSUXyh" opt; do
     *) echo "Unbekannte Option: -$OPTARG" >&2; usage; exit 2 ;;
   esac
 done
+shift $((OPTIND - 1))
+if (( $# > 0 )); then echo "Unerwartete Angabe: $1 (Optionen beginnen mit -)" >&2; exit 2; fi
 
 if [[ -z "$SERVER" || -z "$DOMAIN" ]]; then
-  usage; exit 2
+  echo "Server (-H) und Domain (-d) fehlen – beim ersten Aufruf angeben, danach stehen sie in $SETTINGS_FILE." >&2
+  echo >&2; usage >&2; exit 2
 fi
 if [[ ! "$ADMIN_USER" =~ ^[a-z_][a-z0-9_-]{0,31}$ ]]; then
   echo "Ungültiger Benutzername: $ADMIN_USER" >&2; exit 2
+fi
+if [[ ! "$SKIP_HARDEN" =~ ^[01]$ ]]; then
+  echo "Ungültiger Wert SKIP_HARDEN=$SKIP_HARDEN (erlaubt: 0 oder 1)" >&2; exit 2
 fi
 if [[ -n "$APP_ADMIN" && ! "$APP_ADMIN" =~ ^[a-z0-9][a-z0-9.-]*$ ]]; then
   echo "Ungültiger Benutzername der Anwendung: $APP_ADMIN (Form vorname.nachname)" >&2; exit 2
 fi
 if [[ -n "$APP_ENV_SET" && ! "$APP_ENV_SET" =~ ^(prod|test)$ ]]; then
-  echo "Ungültige Umgebung für -E: $APP_ENV_SET (erlaubt: prod oder test)" >&2; exit 2
+  echo "Ungültige Umgebung: $APP_ENV_SET (erlaubt: prod oder test)" >&2; exit 2
 fi
 if [[ "$APP_ENV_SET" == prod && $LOAD_TESTDATA -eq 1 ]]; then
-  echo "-X (Testdaten) ist mit -E prod nicht erlaubt." >&2; exit 2
+  echo "-X (Testdaten) ist in der Umgebung prod nicht erlaubt." >&2; exit 2
 fi
+
+# Einstellungen speichern (nicht bei -c): neue Datei aus der Vorlage anlegen,
+# dann die beim Aufruf angegebenen Werte eintragen
+SETTINGS_NOTE="unverändert"
+if [[ $CHECK_ONLY -eq 1 ]]; then
+  if (( ${#CFG_FROM_CLI[@]} > 0 )); then SETTINGS_NOTE="nicht gespeichert (-c): ${!CFG_FROM_CLI[*]}"; fi
+else
+  if [[ ! -f "$SETTINGS_FILE" ]]; then
+    cfg_template "$SETTINGS_FILE"
+    CFG_FROM_CLI[SERVER]=1; CFG_FROM_CLI[DOMAIN]=1
+    SETTINGS_NOTE="neu angelegt"
+  fi
+  for key in "${!CFG_FROM_CLI[@]}"; do
+    var="${CFG_VAR[$key]}"
+    cfg_write "$key" "${!var}"
+  done
+  chmod 600 "$SETTINGS_FILE" 2>/dev/null || true
+  if (( ${#CFG_FROM_CLI[@]} > 0 )); then
+    saved="gespeichert: $(printf '%s\n' "${!CFG_FROM_CLI[@]}" | sort | paste -sd ' ')"
+    if [[ "$SETTINGS_NOTE" == unverändert ]]; then SETTINGS_NOTE="$saved"; else SETTINGS_NOTE+="; $saved"; fi
+  fi
+fi
+APP_SETTINGS_B64="$(printf '%s' "$APP_SETTING_LINES" | base64 | tr -d '\n')"
+APP_SETTING_KEYS="$(printf '%s' "$APP_SETTING_LINES" | cut -d= -f1 | paste -sd ' ')"
 
 # ----------------------------- Lokale Voraussetzungen ------------------------
 # Läuft vor allem anderen; bricht ab, wenn Pflichtprogramme fehlen.
@@ -196,7 +396,6 @@ check_local_tools
 
 # ----------------------------- Lokales Protokoll -----------------------------
 STAMP="$(date +%Y%m%d-%H%M%S)"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOG_DIR="$SCRIPT_DIR/logs"
 mkdir -p "$LOG_DIR"
 LOCAL_LOG="$LOG_DIR/setup-${SERVER}-${STAMP}.log"
@@ -211,6 +410,8 @@ SSH_OPTS=(-o BatchMode=yes -o ConnectTimeout=10 -o ServerAliveInterval=30
 
 log "Start ($([[ $CHECK_ONLY -eq 1 ]] && echo "nur Prüfung" || { [[ $UPDATE_ONLY -eq 1 ]] && echo "nur Anwendung" || echo "Einrichtung"; }))"
 log "Server: $SERVER | Domain: $DOMAIN | Test-Domain: ${TEST_DOMAIN:-keine} | Admin: $ADMIN_USER | Zeitzone: $TIMEZONE | Hostname: ${NEW_HOSTNAME:-unverändert}"
+log "Einstellungsdatei: $SETTINGS_FILE ($SETTINGS_NOTE)"
+log "Werte für die Anwendung aus der Einstellungsdatei: ${APP_SETTING_KEYS:-keine}"
 log "Lokales Protokoll: $LOCAL_LOG"
 
 # ----------------------------- Anwendung (ZIP) -------------------------------
@@ -224,9 +425,13 @@ if [[ -z "$APP_ZIP" && $APP_ZIP_GIVEN -eq 0 ]]; then
   APP_ZIP="$(ls -t "$SCRIPT_DIR"/wehrkalender*.zip 2>/dev/null | head -n1 || true)"
 fi
 APP_SHA=""
-# Einstellungen der Anwendung ohne neues ZIP (Umgebung, Testdaten, Administrator)
-APP_SETTINGS=0
-[[ -n "$APP_ENV_SET" || $LOAD_TESTDATA -eq 1 || -n "$APP_ADMIN" ]] && APP_SETTINGS=1
+# Einstellungen der Anwendung ohne neues ZIP:
+#   APP_ACTIONS  beim Aufruf verlangt (-E, -X, -a) – setzt eine installierte Anwendung voraus
+#   APP_SETTINGS zusätzlich Werte aus der Einstellungsdatei – werden übernommen, wenn installiert
+APP_ACTIONS=0
+[[ -n "${CFG_FROM_CLI[APP_ENV]:-}" || $LOAD_TESTDATA -eq 1 || -n "$APP_ADMIN" ]] && APP_ACTIONS=1
+APP_SETTINGS=$APP_ACTIONS
+[[ -n "$APP_ENV_SET" || -n "$APP_SETTING_LINES" ]] && APP_SETTINGS=1
 if [[ -n "$APP_ZIP" ]]; then
   [[ -f "$APP_ZIP" ]] || fail "ZIP nicht gefunden: $APP_ZIP"
   # Inhalt prüfen: erwartet wird das Verzeichnis wehrkalender/ mit Dockerfile und public/index.php
@@ -246,9 +451,9 @@ if [[ -n "$APP_ZIP" ]]; then
   APP_SHA="$(sha256_of "$APP_ZIP")"
   log "Anwendung: $APP_ZIP ($(du -h "$APP_ZIP" | cut -f1), SHA-256 ${APP_SHA:0:16}…)"
 elif [[ $APP_SETTINGS -eq 1 ]]; then
-  log "Kein neues ZIP – nur Einstellungen der installierten Anwendung:${APP_ENV_SET:+ Umgebung $APP_ENV_SET}$([[ $LOAD_TESTDATA -eq 1 ]] && echo ' Testdaten')${APP_ADMIN:+ Administrator $APP_ADMIN}"
+  log "Kein neues ZIP – nur Einstellungen der installierten Anwendung:${APP_ENV_SET:+ Umgebung $APP_ENV_SET}$([[ -n "$APP_SETTING_LINES" ]] && echo ' Werte aus der Einstellungsdatei')$([[ $LOAD_TESTDATA -eq 1 ]] && echo ' Testdaten')${APP_ADMIN:+ Administrator $APP_ADMIN}"
 else
-  [[ $UPDATE_ONLY -eq 1 ]] && fail "-U angegeben, aber kein ZIP gefunden und nichts umzustellen (wehrkalender*.zip neben das Skript legen, -Z oder -E/-X/-a)."
+  [[ $UPDATE_ONLY -eq 1 ]] && fail "-U angegeben, aber kein ZIP gefunden und nichts umzustellen (wehrkalender*.zip neben das Skript legen, -Z, -E/-X/-a oder Werte in der Einstellungsdatei)."
   log "Kein ZIP der Anwendung gefunden – es wird nur der Server eingerichtet (Platzhalterseite)."
 fi
 
@@ -289,7 +494,9 @@ fi
 if [[ $UPDATE_ONLY -eq 1 ]] && ! { grep -q '^docker=ja' <<<"$REMOTE_CHECK" && grep -q '^eingerichtet=ja' <<<"$REMOTE_CHECK"; }; then
   fail "-U: Der Server ist noch nicht eingerichtet (Docker oder /srv/wehrkalender/.env fehlt). Bitte zuerst ohne -U ausführen."
 fi
-if [[ -z "$APP_ZIP" && $APP_SETTINGS -eq 1 ]] && ! grep -q '^anwendung=ja' <<<"$REMOTE_CHECK"; then
+APP_INSTALLED=0
+grep -q '^anwendung=ja' <<<"$REMOTE_CHECK" && APP_INSTALLED=1
+if [[ -z "$APP_ZIP" && $APP_ACTIONS -eq 1 && $APP_INSTALLED -eq 0 ]]; then
   fail "-E/-X/-a ohne ZIP: Auf dem Server ist noch keine Anwendung installiert. Bitte mit ZIP aufrufen."
 fi
 log "Server-Voraussetzungen erfüllt."
@@ -418,8 +625,8 @@ if [[ "$ASSUME_YES" -ne 1 ]]; then
     read -r -p "Zum Fortfahren 'testdaten' eintippen: " answer
     [[ "$answer" == testdaten ]] || { log "Testdaten abgelehnt – Abbruch."; exit 0; }
   fi
-  if [[ "$APP_ENV_SET" == prod ]]; then
-    echo "HINWEIS: -E prod schaltet auf Produktion um. Prüfe vorher in /srv/wehrkalender/.env"
+  if [[ -n "${CFG_FROM_CLI[APP_ENV]:-}" && "$APP_ENV_SET" == prod ]]; then
+    echo "HINWEIS: -E prod schaltet auf Produktion um. Prüfe vorher in der Einstellungsdatei"
     echo "         MAIL_DELIVERY=smtp und MAILER_DSN, sonst werden keine E-Mails verschickt."
   fi
 fi
@@ -431,9 +638,9 @@ APP_ZIP_NAME="${APP_ZIP##*/}"
 run_remote() {  # $1 = Phase, Skript kommt über stdin
   local phase="$1"
   local envs
-  envs=$(printf 'PHASE=%q ADMIN_USER=%q TIMEZONE=%q NEW_HOSTNAME=%q DOMAIN=%q TEST_DOMAIN=%q ACME_EMAIL=%q BACKUP_REPO=%q STAMP=%q SSH_PORT=%q REMOTE_ZIP=%q APP_SHA=%q APP_ZIP_NAME=%q RELEASE=%q LOAD_TESTDATA=%q APP_ADMIN=%q APP_ENV_SET=%q' \
+  envs=$(printf 'PHASE=%q ADMIN_USER=%q TIMEZONE=%q NEW_HOSTNAME=%q DOMAIN=%q TEST_DOMAIN=%q ACME_EMAIL=%q BACKUP_REPO=%q STAMP=%q SSH_PORT=%q REMOTE_ZIP=%q APP_SHA=%q APP_ZIP_NAME=%q RELEASE=%q LOAD_TESTDATA=%q APP_ADMIN=%q APP_ENV_SET=%q APP_SETTINGS_B64=%q' \
     "$phase" "$ADMIN_USER" "$TIMEZONE" "$NEW_HOSTNAME" "$DOMAIN" "$TEST_DOMAIN" "$ACME_EMAIL" "$BACKUP_REPO" "$STAMP" "$SSH_PORT" \
-    "$REMOTE_ZIP" "$APP_SHA" "$APP_ZIP_NAME" "$RELEASE" "$LOAD_TESTDATA" "$APP_ADMIN" "$APP_ENV_SET")
+    "$REMOTE_ZIP" "$APP_SHA" "$APP_ZIP_NAME" "$RELEASE" "$LOAD_TESTDATA" "$APP_ADMIN" "$APP_ENV_SET" "$APP_SETTINGS_B64")
   # shellcheck disable=SC2029  # Variablen sollen lokal expandiert werden
   ssh "${SSH_OPTS[@]}" "$TARGET" "$SUDO env $envs bash -s"
 }
@@ -460,14 +667,41 @@ rnd() { head -c "$1" /dev/urandom | base64 | tr -d '/+=\n'; }
 ensure_env() {  # ensure_env KEY WERT  -> nur setzen, wenn KEY noch nicht existiert
   grep -q "^$1=" "$APP/.env" || { echo "$1=$2" >> "$APP/.env"; log ".env: $1 neu angelegt."; }
 }
-set_env() {
+set_env() {  # set_env KEY WERT -> setzen bzw. ersetzen (Wert unverändert, auch mit | & $ /)
   if grep -q "^$1=" "$APP/.env"; then
-    sed -i "s|^$1=.*|$1=$2|" "$APP/.env"
+    ( umask 077
+      K="$1" V="$2" awk 'index($0, ENVIRON["K"] "=") == 1 { print ENVIRON["K"] "=" ENVIRON["V"]; next } { print }' \
+        "$APP/.env" > "$APP/.env.tmp" )
+    cat "$APP/.env.tmp" > "$APP/.env"; rm -f "$APP/.env.tmp"
   else
-    echo "$1=$2" >> "$APP/.env"
+    printf '%s=%s\n' "$1" "$2" >> "$APP/.env"
   fi
 }
-envval() { grep -m1 "^$1=" "$APP/.env" | cut -d= -f2-; }
+# Werte aus der Einstellungsdatei des Setup-Skripts übernehmen (APP_SETTINGS_B64:
+# Zeilen KEY=WERT, base64-kodiert). Diese Werte gewinnen gegenüber der .env;
+# Schlüssel, die dort fehlen, bleiben unverändert.
+apply_app_settings() {
+  [[ -n "${APP_SETTINGS_B64:-}" ]] || return 0
+  local line k v old changed=()
+  while IFS= read -r line; do
+    [[ -n "$line" ]] || continue
+    k="${line%%=*}"; v="${line#*=}"
+    old="$(grep -m1 "^$k=" "$APP/.env" | cut -d= -f2- || true)"
+    if ! grep -q "^$k=" "$APP/.env" || [[ "$old" != "$v" ]]; then
+      set_env "$k" "$v"; changed+=("$k")
+    fi
+  done < <(printf '%s' "$APP_SETTINGS_B64" | base64 -d)
+  if (( ${#changed[@]} > 0 )); then
+    log "Einstellungsdatei: in $APP/.env übernommen: ${changed[*]}"
+  else
+    log "Einstellungsdatei: $APP/.env ist aktuell."
+  fi
+}
+envval() {  # Wert aus .env; umschließende Anführungszeichen werden entfernt
+  local v; v="$(grep -m1 "^$1=" "$APP/.env" | cut -d= -f2-)" || return 1
+  if [[ "$v" =~ ^\"(.*)\"$ || "$v" =~ ^\'(.*)\'$ ]]; then v="${BASH_REMATCH[1]}"; fi
+  printf '%s\n' "$v"
+}
 # Ist die Anwendung installiert? Dann gehören docker-compose.yml und Caddyfile
 # der Anwendungsphase und werden von der Grundeinrichtung nicht überschrieben.
 app_installed() { [[ -f "$APP/app/public/index.php" && -f "$APP/app/Dockerfile" ]]; }
@@ -489,19 +723,21 @@ guard_testdata() {
 apply_env() {
   if [[ -n "${APP_ENV_SET:-}" ]]; then
     local old; old="$(envval APP_ENV || true)"
-    set_env APP_ENV "$APP_ENV_SET"
-    log "Umgebung: ${old:-prod} -> $APP_ENV_SET"
+    if [[ "$old" != "$APP_ENV_SET" ]]; then
+      set_env APP_ENV "$APP_ENV_SET"
+      log "Umgebung: ${old:-prod} -> $APP_ENV_SET"
+    fi
   fi
   log "Umgebung der Anwendung: $(envval APP_ENV)$([[ "$(envval APP_ENV)" == test ]] && echo ' (Testsystem: Hinweisband, Fehlerdetails im Browser)')"
   if [[ -z "$(envval WEHR_NAME)" ]]; then
-    log "HINWEIS: WEHR_NAME ist leer – Texte und E-Mails sprechen allgemein von „Feuerwehr“. In $APP/.env eintragen, z. B. WEHR_NAME=\"FF Musterstadt\"."
+    log "HINWEIS: WEHR_NAME ist leer – Texte und E-Mails sprechen allgemein von „Feuerwehr“. In der Einstellungsdatei des Setup-Skripts eintragen, z. B. WEHR_NAME=\"FF Musterstadt\"."
   fi
   if [[ -z "$(envval BETREIBER_NAME)" || -z "$(envval BETREIBER_ANSCHRIFT)" || -z "$(envval BETREIBER_EMAIL)" ]]; then
-    log "WARNUNG: Impressum unvollständig – in $APP/.env BETREIBER_NAME, BETREIBER_ANSCHRIFT und BETREIBER_EMAIL eintragen."
+    log "WARNUNG: Impressum unvollständig – in der Einstellungsdatei des Setup-Skripts BETREIBER_NAME, BETREIBER_ANSCHRIFT und BETREIBER_EMAIL eintragen."
   fi
   if [[ "$(envval APP_ENV)" == prod && "$(envval MAIL_DELIVERY)" != smtp ]]; then
     log "WARNUNG: Produktion, aber MAIL_DELIVERY=$(envval MAIL_DELIVERY) – es werden keine E-Mails verschickt."
-    log "         In $APP/.env MAILER_DSN eintragen, MAIL_DELIVERY=smtp setzen und erneut mit -U aufrufen."
+    log "         In der Einstellungsdatei MAILER_DSN eintragen, MAIL_DELIVERY=smtp setzen und erneut mit -U aufrufen."
   fi
 }
 # Testdaten und Administrator (nach dem Start der Container)
@@ -708,6 +944,7 @@ EOF
   set_env DOMAIN "$DOMAIN"
   set_env TEST_DOMAIN "$TEST_DOMAIN"
   set_env ACME_EMAIL "$ACME_EMAIL"
+  apply_app_settings
   if [[ -n "$BACKUP_REPO" ]]; then
     set_env RESTIC_REPOSITORY "$BACKUP_REPO"
   elif [[ -z "$(envval RESTIC_REPOSITORY)" ]]; then
@@ -914,7 +1151,11 @@ set -Eeuo pipefail
 APP=/srv/wehrkalender
 DIR=/var/backups/wehrkalender
 KEY=/root/.ssh/wehrkalender-backup
-envval() { grep -m1 "^$1=" "$APP/.env" | cut -d= -f2-; }
+envval() {  # Wert aus .env; umschließende Anführungszeichen werden entfernt
+  local v; v="$(grep -m1 "^$1=" "$APP/.env" | cut -d= -f2-)" || return 1
+  if [[ "$v" =~ ^\"(.*)\"$ || "$v" =~ ^\'(.*)\'$ ]]; then v="${BASH_REMATCH[1]}"; fi
+  printf '%s\n' "$v"
+}
 log()  { printf '%s %s\n' "$(date '+%F %T')" "$*"; }
 ping_url() { local u; u="$(envval BACKUP_PING_URL)"; [[ -n "$u" ]] && curl -fsS -m 10 --retry 3 -o /dev/null "$u$1" || true; }
 trap 'log "FEHLER in Zeile $LINENO – Sicherung unvollständig"; ping_url /fail' ERR
@@ -999,7 +1240,11 @@ BACKUP
 set -Eeuo pipefail
 APP=/srv/wehrkalender; DIR=/var/backups/wehrkalender; KEY=/root/.ssh/wehrkalender-backup
 TARGET=wehrkalender_test; SNAP=""; LIST=0; YES=0
-envval() { grep -m1 "^$1=" "$APP/.env" | cut -d= -f2-; }
+envval() {  # Wert aus .env; umschließende Anführungszeichen werden entfernt
+  local v; v="$(grep -m1 "^$1=" "$APP/.env" | cut -d= -f2-)" || return 1
+  if [[ "$v" =~ ^\"(.*)\"$ || "$v" =~ ^\'(.*)\'$ ]]; then v="${BASH_REMATCH[1]}"; fi
+  printf '%s\n' "$v"
+}
 log() { printf '%s %s\n' "$(date '+%F %T')" "$*"; }
 [[ $EUID -eq 0 ]] || { echo "Bitte mit sudo ausführen." >&2; exit 1; }
 
@@ -1181,6 +1426,7 @@ phase_app() {
   ensure_env BETREIBER_REGISTER ""
   ensure_env DATENSCHUTZ_KONTAKT ""
   set_env DOMAIN "$DOMAIN"
+  apply_app_settings
   apply_env
   log "E-Mail-Versand: $(envval MAIL_DELIVERY)$([[ "$(envval MAIL_DELIVERY)" == database ]] && echo ' (Testbetrieb, nichts wird verschickt)')"
 
@@ -1381,6 +1627,7 @@ phase_settings() {
   step "Anwendung: Einstellungen"
   app_installed || { log "FEHLER: Keine Anwendung installiert – bitte mit ZIP aufrufen."; exit 1; }
   guard_testdata
+  apply_app_settings
   apply_env
   step "Anwendung: Container mit neuer Konfiguration starten"
   start_containers
@@ -1479,7 +1726,7 @@ if [[ -n "$APP_ZIP" ]]; then
   ssh "${SSH_OPTS[@]}" "$TARGET" "umask 077; cat > '$REMOTE_ZIP'" < "$APP_ZIP" \
     || fail "Hochladen des ZIP fehlgeschlagen."
   run_remote app <<<"$REMOTE_SCRIPT"
-elif [[ $APP_SETTINGS -eq 1 ]]; then
+elif [[ $APP_SETTINGS -eq 1 && $APP_INSTALLED -eq 1 ]]; then
   log "Phase 4: Einstellungen der Anwendung (ohne neues ZIP)"
   run_remote settings <<<"$REMOTE_SCRIPT"
 else
@@ -1497,7 +1744,7 @@ for d in "$DOMAIN" $TEST_DOMAIN; do
   fi
 done
 
-if [[ -n "$APP_ZIP" || $APP_SETTINGS -eq 1 ]]; then
+if [[ -n "$APP_ZIP" || ( $APP_SETTINGS -eq 1 && $APP_INSTALLED -eq 1 ) ]]; then
   log "Anwendung: https://$DOMAIN   (Verwaltung: https://$DOMAIN/admin)"
   log "Nächste Version einspielen: ZIP neben das Skript legen und mit -U erneut aufrufen."
 fi

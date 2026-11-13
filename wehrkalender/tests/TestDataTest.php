@@ -51,6 +51,10 @@ final class TestDataTest extends TestCase
             "SELECT e.summary FROM events e JOIN sources s ON s.id = e.source_id JOIN calendars c ON c.id = e.calendar_id
               WHERE c.slug = 'maschinist-2-2027' AND s.source_key = 'kreis' ORDER BY e.starts_at"));
         self::assertSame(105, (int) $db->value("SELECT event_count FROM source_files WHERE status = 'active'"));
+        // dieselbe Datei befüllt weitere Kalender; Truppführer über zwei Befüllungen (Theorie + Praxis)
+        foreach (['atemschutz-2-2027' => 4, 'truppfuehrer-1-2027' => 9] as $slug => $n) {
+            self::assertSame($n, (int) $db->value("SELECT COUNT(*) FROM events e JOIN calendars c ON c.id = e.calendar_id WHERE c.slug = ?", [$slug]), $slug);
+        }
         self::assertSame(45, (int) $db->value("SELECT COUNT(*) FROM events e JOIN calendars c ON c.id = e.calendar_id WHERE c.slug = 'abfall-drove'"), 'Serien aufgelöst');
         self::assertStringContainsString('Quelle: Ortsverein Drove · Stand ', (string) $db->value("SELECT description FROM events WHERE summary LIKE 'Dorffest%'"));
         self::assertNull($db->value("SELECT id FROM events WHERE summary LIKE 'Konzert%'"), 'vom Filter ausgeschlossen');

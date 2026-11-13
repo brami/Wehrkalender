@@ -42,7 +42,7 @@
         {Datum:   & \today\\
          Autor:   & \dsInhaber\\
          Projekt: & Wehrkalender (erster Einsatz: FF Kreuzau)\\
-         Version: & Entwurf (Stand der Umsetzung 12.11.2026)}
+         Version: & Entwurf (Stand der Umsetzung 13.11.2026)}
 
 \tableofcontents
 
@@ -1032,11 +1032,23 @@ und 17 Lehrgangsarten) zeigt, worauf es bei Filtern ankommt:
         Der Schlüssel wird Teil der Kennungen auf den Geräten und ist danach
         nicht mehr änderbar.
   \item \textbf{Befüllung anlegen:} Quelle, Kalender, Filter, Hinweis
-        \glqq Quelle\grqq\ und \glqq Stand\grqq\ in der Beschreibung.
+        \glqq Quelle\grqq\ und \glqq Stand\grqq\ in der Beschreibung. Eine
+        Quelle befüllt beliebig viele Kalender, je Kalender eine Befüllung
+        mit eigenem Filter (z.\,B.\ die Kreisdatei: \glqq Maschinist
+        2/2027\grqq, \glqq Atemschutz 2/2027\grqq, \glqq Truppführer
+        1/2027\grqq). Mehrere Befüllungen derselben Quelle in denselben
+        Kalender wirken als \glqq oder\grqq\ (Truppführer: Theorie und
+        Praxis).
   \item \textbf{Datei hochladen:} als weitere Datei oder neue Fassung einer
         vorhandenen. Die Vorschau zeigt je Befüllung neu, geändert, entfernt
-        und Auffälligkeiten; erst \glqq Übernehmen\grqq\ ändert die Kalender.
-        Nicht übernommene Vorschauen löscht \code{cleanup:run} nach einem Tag.
+        und Auffälligkeiten, dazu unter \glqq Nicht übernommen\grqq\ alle
+        Termine der Datei, die keine Befüllung trifft; erst \glqq
+        Übernehmen\grqq\ ändert die Kalender. Nicht übernommene Vorschauen
+        löscht \code{cleanup:run} nach einem Tag.
+  \item \textbf{Erneut übernehmen:} Nach einer neuen oder geänderten
+        Befüllung wird eine vorhandene Datei ohne neuen Upload noch einmal
+        verarbeitet, mit derselben Vorschau. Name und Hochladedatum der Datei
+        bleiben erhalten; unveränderte Termine bleiben unverändert.
   \item \textbf{Feeds} ruft \code{sources:fetch} alle 15 Minuten auf; abgerufen
         werden nur Quellen, deren Intervall abgelaufen ist. \glqq Jetzt
         abrufen\grqq\ in der Verwaltung bzw.\ \code{sources:fetch -{}-quelle=<schlüssel>}

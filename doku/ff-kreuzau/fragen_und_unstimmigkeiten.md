@@ -1,8 +1,8 @@
 # Kalender der FF KRZ (Software: Wehrkalender) – Fragen und Unstimmigkeiten
 
-Stand: 09.11.2026 · gesammelt bei der Umsetzung der Anwendung (ohne Import aus MP Feuer)
+Stand: 13.11.2026 · gesammelt bei der Umsetzung der Anwendung (ohne Import aus MP Feuer)
 
-Entschieden am 09.11.2026 (M. Bramer): A1, A3, A6, A7, A8, A9, A10, A11 – siehe dort, eingepflegt in die technische Doku und die Projektbeschreibung. Ebenfalls am 09.11.2026: Anleitung zu B2 in die technische Umsetzung aufgenommen; Android-Anleitung um Abo-Links im Google Kalender ergänzt (E1). Am 12.11.2026: Terminübersicht als PDF (E2), Kalenderansicht im Web vorgemerkt (F), Startseite und „Kalender abonnieren“ (E3), Abonnieren statt importieren (E4), Git-Repository, Lizenz und Impressum (E5), Umbenennung in „Wehrkalender“ (E6), Konzept weitere Quellen und Kalenderauswahl (E7). Offen: A2, A4, A5, A12.
+Entschieden am 09.11.2026 (M. Bramer): A1, A3, A6, A7, A8, A9, A10, A11 – siehe dort, eingepflegt in die technische Doku und die Projektbeschreibung. Ebenfalls am 09.11.2026: Anleitung zu B2 in die technische Umsetzung aufgenommen; Android-Anleitung um Abo-Links im Google Kalender ergänzt (E1). Am 13.11.2026: eine Datei befüllt mehrere Kalender, Einstellungsdatei für das Setup-Skript (E8). Am 12.11.2026: Terminübersicht als PDF (E2), Kalenderansicht im Web vorgemerkt (F), Startseite und „Kalender abonnieren“ (E3), Abonnieren statt importieren (E4), Git-Repository, Lizenz und Impressum (E5), Umbenennung in „Wehrkalender“ (E6), Konzept weitere Quellen und Kalenderauswahl (E7). Offen: A2, A4, A5, A12.
 
 Grundlage: `doku/technik/implementierung_wehrkalender.tex` (+ `_betrieb.tex`), `doku/ff-kreuzau/projektbeschreibung_kalender_ff_krz.tex`, `server/setup-server-wehrkalender.sh`. Ältere Einträge nennen noch die früheren Namen (`implementierung_kalender_ff_krz.tex`, `setup-server-kalender-ff.sh`, `/srv/kalender`), siehe E6.
 
@@ -240,13 +240,23 @@ Die Software heißt jetzt **Wehrkalender** und ist für jede Feuerwehr nutzbar. 
 - **UID-Schema** `<quelle>-<id>@<domain>`, für MP Feuer `mp` (unverändert). Für iCal-Quellen ein Hash der fremden UID. **Vor dem ersten Echtbetrieb festlegen**, ebenso die Trennung von Freischaltung und Befüllung.
 - **Aufwand:** etwa 5–6 PT zusätzlich zum MP-Feuer-Import. Reihenfolge: Datenmodell und UID-Schema zusammen mit dem MP-Feuer-Import, dann Kalenderauswahl, dann iCal-Quellen.
 
+### E8. Eine Datei, mehrere Kalender; Einstellungsdatei für das Setup-Skript (13.11.2026)
+
+Abgestimmt mit M. Bramer.
+
+- **Eine Quelle befüllt mehrere Kalender** – war schon so gebaut (je Kalender eine Befüllung mit Filter). Testdaten zeigen es jetzt mit der Kreisdatei: Maschinist 2/2027, Atemschutz 2/2027 und Truppführer 1/2027 (zwei Befüllungen Theorie + Praxis in denselben Kalender = „oder“). Hinweis „mehrere Quellen“ erscheint nur noch, wenn wirklich verschiedene Quellen einen Kalender befüllen.
+- **Erneut übernehmen:** Knopf an jeder hochgeladenen Datei; verarbeitet sie mit den aktuellen Befüllungen neu, mit Vorschau, ohne neuen Upload. Name und Hochladedatum bleiben.
+- **Vorschau zeigt „Nicht übernommen“:** alle Termine der Datei, die keine Befüllung trifft (z. B. 88 von 105 beim Kreisplan), damit fehlende Filter auffallen.
+- Texte: „Neue Befüllung (Feed oder hochgeladene Datei → Kalender)“, Beispiel im Filterfeld „Maschinist 2/2027“.
+- **Einstellungsdatei für `setup-server-wehrkalender.sh`** (Standard `wehrkalender.env` neben dem Skript, sonst `-f`): Das Skript liest sie bei jedem Aufruf; Optionen beim Aufruf (`-H -d -T -e -B -u -n -t -E -S`) überschreiben sie und werden gespeichert. Danach genügt z. B. `./setup-server-wehrkalender.sh -U`. Einmalige Aktionen (`-Z -U -X -a -c -y`) werden nicht gespeichert. Werte der Anwendung (`APP_NAME`, `WEHR_NAME`, `MAIL_*`, `MAILER_DSN`, `BETREIBER_*`, `SOURCE_URL`, `FEED_BROWSER_NOTICE`, `BACKUP_*`, `AWS_*`) überträgt das Skript bei jedem Lauf nach `/srv/wehrkalender/.env` – sie müssen nicht mehr auf dem Server von Hand eingetragen werden. Nur die vom Server erzeugten Geheimnisse (`APP_KEY`, `DB_*`, `RESTIC_PASSWORD`) bleiben ausschließlich dort. Fehlt die Datei, wird sie mit allen Schlüsseln (auskommentiert) angelegt; unbekannte Schlüssel brechen ab (Tippfehler). Die Datei gehört nicht ins Repository (`.gitignore`). Zusätzlich verträgt `.env` jetzt Werte mit `|`, `&`, `$` und Anführungszeichen.
+
 ---
 
 ## F. To-do / später
 
 - **`FEED_BROWSER_NOTICE=1` einschalten**, sobald der Gerätetest bestätigt, dass Outlook (klassisch, neu, Web, Mac) und der Google Kalender ihre Abos weiter mit Terminen füllen (siehe E4).
-- **Betreiber für Impressum und Datenschutz klären** (Förderverein, FF oder Stadt?) und `BETREIBER_*` sowie `DATENSCHUTZ_KONTAKT` in `/srv/kalender/.env` eintragen; Datenschutzhinweis mit der bzw. dem Datenschutzbeauftragten abstimmen (Seite ist noch als Entwurf markiert).
-- **`SOURCE_URL`** auf die Adresse des Git-Repositorys setzen, sobald es angelegt ist.
+- **Betreiber für Impressum und Datenschutz klären** (Förderverein, FF oder Stadt?) und `BETREIBER_*` sowie `DATENSCHUTZ_KONTAKT` in der Einstellungsdatei des Setup-Skripts eintragen; Datenschutzhinweis mit der bzw. dem Datenschutzbeauftragten abstimmen (Seite ist noch als Entwurf markiert).
+- **`SOURCE_URL`** in der Einstellungsdatei des Setup-Skripts auf die Adresse des Git-Repositorys setzen, sobald es angelegt ist.
 - **`composer.lock`** ins Repository aufnehmen, damit jeder Docker-Build dieselben Bibliotheksversionen verwendet.
 - **Echte Feed-Adressen** von Kreis (falls es einen Feed gibt) und Gemeinde (Abfall) beschaffen; Lehrgangskalender-Vorschlag mit MP Feuer klären (E7);
 - **Anleitung für Mitglieder** um „Kalender ein- und ausschalten“ ergänzen (neue Screenshots der Startseite).

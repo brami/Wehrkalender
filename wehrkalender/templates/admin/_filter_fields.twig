@@ -6,7 +6,7 @@
     <div class="filter-row">
       <select name="field[]" aria-label="Feld {{ i + 1 }}">{% for k, label in fields %}<option value="{{ k }}" {% if c and c.field == k %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
       <select name="op[]" aria-label="Bedingung {{ i + 1 }}">{% for k, label in ops %}<option value="{{ k }}" {% if c and c.op == k %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
-      <input type="text" name="value[]" value="{{ c ? c.value : '' }}" aria-label="Wert {{ i + 1 }}" placeholder="{{ i == 0 ? 'z. B. TM1' : '' }}">
+      <input type="text" name="value[]" value="{{ c ? c.value : '' }}" aria-label="Wert {{ i + 1 }}" placeholder="{{ i == 0 ? 'z. B. Maschinist 2/2027' : '' }}">
     </div>
   {% endfor %}
   <div class="filter-row">

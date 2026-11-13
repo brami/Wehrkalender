@@ -110,6 +110,8 @@ final class TestDataLoader
             ['jf-gr1', 'JF Gr1', '#CA8A04', 'Termine der Jugendfeuerwehr-Gruppe 1', 1, 0],
             ['kf', 'KF', '#DB2777', 'Termine der Kinderfeuerwehr', 1, 0],
             ['maschinist-2-2027', 'Maschinist 2/2027', '#059669', 'Kreislehrgang Maschinist (Termine aus dem Lehrgangsplan des Kreises)', 1, 0],
+            ['atemschutz-2-2027', 'Atemschutz 2/2027', '#7C3AED', 'Kreislehrgang Atemschutzgeräteträger (Termine aus dem Lehrgangsplan des Kreises)', 1, 0],
+            ['truppfuehrer-1-2027', 'Truppführer 1/2027', '#0369A1', 'Kreislehrgang Truppführer, Theorie und Praxis (Termine aus dem Lehrgangsplan des Kreises)', 1, 0],
             ['atemschutz', 'Atemschutz', '#475569', 'Übungen und Belastungsübungen der Atemschutzgeräteträger', 1, 0],
             ['tm1-2025', 'TM1 2025', '#9CA3AF', 'Abgeschlossener Lehrgang (deaktiviert)', 0, 0],
             // aus externen Quellen (iCal): Verband für alle, Abfall je Ort für alle mit Vorgabe „aus“
@@ -130,13 +132,14 @@ final class TestDataLoader
         $sources = [
             'FF-KRZ' => 'ff-krz', 'LG-DROVE' => 'lg-drove', 'LG-KREUZAU' => 'lg-kreuzau', 'LG-STOCKHEIM' => 'lg-stockheim',
             'GJF' => 'gjf', 'JF-GR1' => 'jf-gr1', 'JF-GR1-BETREUER' => 'jf-gr1', 'KF' => 'kf',
-            'LEHRGANG-MASCHINIST-2-2027' => 'maschinist-2-2027', 'AGT' => 'atemschutz', 'LEHRGANG-TM1-2025' => 'tm1-2025',
+            'LEHRGANG-MASCHINIST-2-2027' => 'maschinist-2-2027', 'LEHRGANG-AGT-2-2027' => 'atemschutz-2-2027',
+            'LEHRGANG-TRUPPFUEHRER-1-2027' => 'truppfuehrer-1-2027', 'AGT' => 'atemschutz', 'LEHRGANG-TM1-2025' => 'tm1-2025',
         ];
         foreach ($sources as $key => $slug) {
             $db->insert('calendar_sources', [
                 'mp_key' => $key, 'calendar_id' => $this->cal[$slug],
                 // Kreislehrgang: Teilnahme aus MP Feuer schaltet frei, die Termine liefert die Datei des Kreises
-                'grants_access' => 1, 'fills' => $key === 'LEHRGANG-MASCHINIST-2-2027' ? 0 : 1,
+                'grants_access' => 1, 'fills' => str_starts_with($key, 'LEHRGANG-') && str_ends_with($key, '-2027') ? 0 : 1,
                 'created_at' => $this->app->clock()->nowDb(),
             ]);
         }
@@ -166,7 +169,12 @@ final class TestDataLoader
         $feeds = [
             // Quelle, Kalender, Filter, Hinweis „Quelle: …“, „Stand“
             // Der Kreis-Plan nennt schon „Stand …“ in der Beschreibung → hier kein eigener Stand
+            // Eine Datei befüllt mehrere Kalender: je Lehrgang eine Befüllung mit Filter auf den Titel.
             ['kreis', 'maschinist-2-2027', '{"conditions":[{"field":"summary","op":"starts","value":"Maschinist 2/2027"}]}', 0, 0],
+            ['kreis', 'atemschutz-2-2027', '{"conditions":[{"field":"summary","op":"starts","value":"Atemschutzgeräteträger 2/2027"}]}', 0, 0],
+            // „oder“: zwei Befüllungen in denselben Kalender (Theorie und Praxis)
+            ['kreis', 'truppfuehrer-1-2027', '{"conditions":[{"field":"summary","op":"starts","value":"Truppführer Theorie 1/2027"}]}', 0, 0],
+            ['kreis', 'truppfuehrer-1-2027', '{"conditions":[{"field":"summary","op":"starts","value":"Truppführer Praxis 1/2027"}]}', 0, 0],
             ['kfv', 'kfv', null, 0, 1],
             ['abfall-drove', 'abfall-drove', null, 0, 1],
             ['abfall-kreuzau', 'abfall-kreuzau', null, 0, 1],
@@ -187,7 +195,8 @@ final class TestDataLoader
     private const LABELS = [
         'FF-KRZ' => 'FF KRZ', 'LG-DROVE' => 'LG Drove', 'LG-KREUZAU' => 'LG Kreuzau', 'LG-STOCKHEIM' => 'LG Stockheim',
         'GJF' => 'Gemeindejugendfeuerwehr (GJF)', 'JF-GR1' => 'JF Gruppe 1', 'JF-GR1-BETREUER' => 'JF Gruppe 1 – Betreuer',
-        'KF' => 'Kinderfeuerwehr (KF)', 'LEHRGANG-MASCHINIST-2-2027' => 'Maschinist 2/2027 (Kreis)', 'LEHRGANG-TM1-2025' => 'TM1 2025',
+        'KF' => 'Kinderfeuerwehr (KF)', 'LEHRGANG-MASCHINIST-2-2027' => 'Maschinist 2/2027 (Kreis)',
+        'LEHRGANG-AGT-2-2027' => 'Atemschutzgeräteträger 2/2027 (Kreis)', 'LEHRGANG-TRUPPFUEHRER-1-2027' => 'Truppführer 1/2027 (Kreis)', 'LEHRGANG-TM1-2025' => 'TM1 2025',
         'AGT' => 'Atemschutzgeräteträger', 'FOERDERVEREIN' => 'Förderverein', 'EHRENABTEILUNG' => 'Ehrenabteilung',
         'MUSIKZUG' => 'Musikzug',
     ];
@@ -313,7 +322,7 @@ final class TestDataLoader
         // 8 Sonderzeichen per Transliterator, 9 türkische Buchstaben
         $this->create('1008', 'François', 'Đorđević', 'f.dordevic@example.org', ['LG-KREUZAU', 'FOERDERVEREIN'], '-80 days');
         $this->useWelcome('1008', '-80 days');
-        $this->create('1009', 'Ömer', 'Yılmaz', 'oemer.yilmaz@example.org', ['LG-DROVE', 'LEHRGANG-MASCHINIST-2-2027'], '-60 days');
+        $this->create('1009', 'Ömer', 'Yılmaz', 'oemer.yilmaz@example.org', ['LG-DROVE', 'LEHRGANG-MASCHINIST-2-2027', 'LEHRGANG-TRUPPFUEHRER-1-2027'], '-60 days');
         $this->useWelcome('1009', '-59 days');
         $this->dav('1009', '-1 day', self::UA_IPAD);
 
@@ -330,7 +339,7 @@ final class TestDataLoader
         $this->importUpdate('1011', '-2 days', ['email' => 'thomas.schroeder@gmx.dee', 'status' => 'locked_email']);
 
         // 12 neu, Begrüßung vor 3 Tagen, nie angemeldet (Link noch gültig)
-        $this->create('1012', 'Lena', 'Fischer', 'lena.fischer@example.org', ['LG-KREUZAU', 'AGT'], '-3 days');
+        $this->create('1012', 'Lena', 'Fischer', 'lena.fischer@example.org', ['LG-KREUZAU', 'AGT', 'LEHRGANG-AGT-2-2027'], '-3 days');
 
         // 13 Begrüßung abgelaufen (vor 20 Tagen, Link nie aufgerufen)
         $this->create('1013', 'Paul', 'Wagner', 'paul.wagner@example.org', ['LG-STOCKHEIM'], '-20 days');

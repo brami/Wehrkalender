@@ -26,7 +26,12 @@ deutlich aus. Bei rund 200 Benutzern mit mehreren Geräten und Abrufen alle
 15 bis 60 Minuten sind etwa 20 bis 50 Anfragen pro Minute zu erwarten.
 
 \textbf{Konfiguration} über Umgebungsvariablen in
-\code{/srv/wehrkalender/.env} (nicht im Repository, Rechte 0600):
+\code{/srv/wehrkalender/.env} auf dem Server (nicht im Repository, Rechte 0600).
+Gepflegt werden sie in der \emph{Einstellungsdatei} des Setup-Skripts auf dem
+eigenen Rechner (Abschnitt~\ref{sec:einstellungen}); das Skript überträgt sie
+bei jedem Lauf. Nur Schlüssel und Passwörter, die der Server selbst erzeugt
+(\code{APP\_KEY}, \code{DB\_*}, \code{RESTIC\_PASSWORD}), stehen
+ausschließlich auf dem Server. Einträge:
 \code{APP\_ENV}, \code{APP\_KEY}, \code{DOMAIN} (an die Anwendung als
 \code{APP\_DOMAIN}), \code{APP\_NAME} (Name der Installation, z.\,B.\
 \glqq Kalender FF Musterstadt\grqq) und \code{WEHR\_NAME} (Name der Wehr in
@@ -35,7 +40,7 @@ Texten und E-Mails, z.\,B.\ \glqq FF Musterstadt\grqq), Datenbank-Zugang, E-Mail
 \code{MAIL\_FROM\_NAME}), zusätzliche Empfänger für Warnungen
 (\code{ADMIN\_ALERT\_EMAILS}) und die Hinweisseite für im Browser geöffnete
 Abo-Links (\code{FEED\_BROWSER\_NOTICE}, Standard \code{0}; erst nach dem
-Gerätetest auf \code{1} setzen und mit \code{-U -Z ""} übernehmen) sowie
+Gerätetest auf \code{1} setzen) sowie
 der Link zum Quellcode im Seitenfuß (\code{SOURCE\_URL}) und die Angaben
 zum Betreiber für Impressum und Datenschutzhinweis (\code{BETREIBER\_*},
 \code{DATENSCHUTZ\_KONTAKT}), beides in Abschnitt~\ref{sec:lizenz}. Alle Einträge sind in \code{.env.example} erläutert. Die Container erhalten die
@@ -58,7 +63,7 @@ Dokumentation liegen in einem Git-Repository; \code{vendor/} gehört nicht
 dazu, der Docker-Build installiert die Abhängigkeiten selbst.
 
 Die AGPL verlangt in §\,13, den Nutzern eines Webdienstes den Quellcode
-anzubieten. Dafür in \code{/srv/wehrkalender/.env} \code{SOURCE\_URL} auf die
+anzubieten. Dafür in der Einstellungsdatei \code{SOURCE\_URL} auf die
 Adresse des Repositorys setzen und mit \code{-U -Z ""} übernehmen; der Link
 \enquote{Quellcode (AGPL-3.0)} erscheint dann im Seitenfuß.
 
@@ -68,8 +73,8 @@ und im Seitenfuß verlinkt. Sie nennt den \emph{Betreiber} des Dienstes
 \enquote{Über diese Software} Urheber, Lizenzen, den Link zum Quellcode und
 alle mitgelieferten Bibliotheken mit Version und Lizenz. Diese Liste liest die
 Anwendung aus \code{vendor/composer/installed.json}; sie ist damit immer auf
-dem Stand des gebauten Images. Die Betreiberangaben stehen in
-\code{/srv/wehrkalender/.env}:
+dem Stand des gebauten Images. Die Betreiberangaben stehen in der
+Einstellungsdatei des Setup-Skripts:
 
 \begin{tabular}{@{}ll@{}}
 \code{BETREIBER\_NAME} & Name, z.\,B. des Fördervereins (Pflicht)\\
@@ -97,16 +102,20 @@ eigenen Rechner aufgerufen und arbeitet per SSH.
 
 \begin{lstlisting}
 # Erstinstallation: Server einrichten und Anwendung installieren
+# (-H, -d und -E werden in wehrkalender.env gespeichert)
 ./setup-server-wehrkalender.sh -H <server> -d kalender.example.de -E test
 
 # Neue Version der Anwendung (neuestes ZIP neben dem Skript)
-./setup-server-wehrkalender.sh -H <server> -d kalender.example.de -U
+./setup-server-wehrkalender.sh -U
 
-# Nur die Umgebung umstellen, ohne neues ZIP
-./setup-server-wehrkalender.sh -H <server> -d kalender.example.de -U -Z "" -E prod
+# Geänderte Einstellungen übernehmen, ohne neues ZIP
+./setup-server-wehrkalender.sh -U -Z ""
 
-# Testsystem: Testdaten laden und Administrator festlegen
-./setup-server-wehrkalender.sh -H <server> -d kalender.example.de -U -X -a michael.bramer
+# Auf Produktion umstellen (wird gespeichert)
+./setup-server-wehrkalender.sh -U -Z "" -E prod
+
+# Testsystem: Testdaten laden und Administrator festlegen (nur dieser Aufruf)
+./setup-server-wehrkalender.sh -U -X -a michael.bramer
 \end{lstlisting}
 
 \begin{center}
@@ -118,23 +127,78 @@ eigenen Rechner aufgerufen und arbeitet per SSH.
   \code{wehrkalender*.zip} neben dem Skript; \code{-Z ""} = ohne ZIP \\
 \code{-U} & nur Anwendung installieren, aktualisieren oder umstellen
   (Grundeinrichtung und SSH-Härtung werden übersprungen) \\
+\code{-f <datei>} & Einstellungsdatei (Standard: \code{wehrkalender.env}
+  neben dem Skript), siehe unten \\
+\code{-H}, \code{-d}, \code{-T}, \code{-e}, \code{-B}, \code{-u}, \code{-n},
+  \code{-t}, \code{-S} & Server, Domain, Test-Domain, Kontakt für
+  Let's Encrypt, Backup-Ziel, Admin-Benutzer, Rechnername, Zeitzone, ohne
+  SSH-Härtung; werden in der Einstellungsdatei gespeichert \\
 \code{-E prod|test} & Umgebung der Anwendung (\code{APP\_ENV}), siehe unten;
-  ohne Angabe bleibt die Einstellung erhalten \\
+  wird gespeichert \\
 \code{-X} & Testdaten laden; \textbf{löscht alle Daten}, nur in der
   Umgebung \code{test} \\
 \code{-a <benutzer>} & diesem Benutzer Administratorrechte geben \\
-\code{-c} & nur prüfen (SSH, DNS, ZIP), nichts ändern \\
+\code{-c} & nur prüfen (SSH, DNS, ZIP, Einstellungsdatei), nichts ändern
+  und nichts speichern \\
 \bottomrule
 \end{tabularx}
 \end{center}
 
 Bei jeder Installation legt das Skript die Version unter
 \code{/srv/wehrkalender/releases/} ab, kopiert sie nach \code{/srv/wehrkalender/app},
-baut das Image und startet die Container neu. Fehlende Einträge in der
-\code{.env} werden ergänzt, vorhandene nicht verändert. Datenbank-Migrationen
+baut das Image und startet die Container neu. Werte aus der
+Einstellungsdatei werden in die \code{.env} übernommen, fehlende Einträge mit
+Vorgaben ergänzt, alle anderen nicht verändert. Datenbank-Migrationen
 laufen beim Start des Containers \code{app} automatisch. Danach prüft das
 Skript, ob die Seite antwortet (kein 502), und zeigt bei Fehlern die
 Container-Protokolle.
+
+\subsubsection*{Einstellungsdatei}\label{sec:einstellungen}
+
+Alle Einstellungen einer Installation stehen in \emph{einer} Datei auf dem
+eigenen Rechner, neben dem Skript (Standard \code{wehrkalender.env}, sonst
+\code{-f <datei>}, z.\,B.\ \code{-f test.env} und \code{-f prod.env} für zwei
+Server). Damit ist die Einrichtung reproduzierbar: Ein neuer Server entsteht
+mit derselben Datei und denselben Werten, und beim nächsten Aufruf kann keine
+Option vergessen werden.
+
+\begin{itemize}
+  \item Das Skript liest die Datei bei jedem Aufruf. Optionen beim Aufruf
+        überschreiben sie und werden darin gespeichert (\code{-H}, \code{-d},
+        \code{-T}, \code{-e}, \code{-B}, \code{-u}, \code{-n}, \code{-t},
+        \code{-E}, \code{-S}). Einmalige Aktionen (\code{-Z}, \code{-U},
+        \code{-X}, \code{-a}, \code{-c}, \code{-y}) werden nicht gespeichert.
+  \item Fehlt die Datei, legt das Skript sie an: mit allen Schlüsseln,
+        auskommentiert und erläutert, und den Werten des Aufrufs. Rechte
+        0600; sie gehört nicht ins Git-Repository (\code{.gitignore}).
+  \item Werte für die Anwendung (\code{APP\_NAME}, \code{WEHR\_NAME},
+        \code{MAIL\_*}, \code{MAILER\_DSN}, \code{ADMIN\_ALERT\_EMAILS},
+        \code{FEED\_BROWSER\_NOTICE}, \code{SOURCE\_URL}, \code{BETREIBER\_*},
+        \code{DATENSCHUTZ\_KONTAKT}, \code{BACKUP\_*}, \code{AWS\_*}) überträgt
+        das Skript bei jedem Lauf nach \code{/srv/wehrkalender/.env}; sie
+        gewinnen gegenüber Änderungen von Hand. Auskommentierte Schlüssel
+        bleiben auf dem Server unverändert. Ist die Anwendung installiert,
+        genügt \code{-U -Z ""}, um geänderte Werte zu übernehmen.
+  \item Werte stehen wie in der \code{.env} von Docker Compose: mit
+        Leerzeichen in Anführungszeichen, ein \code{\$} als \code{\$\$} oder
+        der ganze Wert in einfachen Anführungszeichen.
+  \item Unbekannte Schlüssel (Tippfehler) und Schlüssel, die nur der Server
+        erzeugt (\code{APP\_KEY}, \code{DB\_*}, \code{RESTIC\_PASSWORD},
+        \code{RESTIC\_REPOSITORY}; das Backup-Ziel steht in
+        \code{BACKUP\_REPO}), führen zum Abbruch, bevor etwas geändert wird.
+\end{itemize}
+
+\begin{lstlisting}
+# wehrkalender.env (Auszug)
+SERVER=203.0.113.10
+DOMAIN=kalender.ff-musterstadt.de
+APP_ENV=test
+APP_NAME="Kalender FF Musterstadt"
+WEHR_NAME="FF Musterstadt"
+MAIL_DELIVERY=database
+MAILER_DSN='smtp://kalender%40ff-musterstadt.de:GEHEIM@smtp.example.de:587'
+BETREIBER_NAME="Förderverein der FF Musterstadt e. V."
+\end{lstlisting}
 
 \subsubsection*{Umgebungen (\code{APP\_ENV})}
 
@@ -163,8 +227,8 @@ Versand noch nicht eingerichtet ist.
 Nach der Installation verschickt der Kalenderserver keine E-Mails, sondern
 legt sie nur als Vorschau ab (Admin-Bereich $\rightarrow$ E-Mails, Status
 \glqq nicht versendet\grqq). Für den echten Versand sind ein SMTP-Zugang und
-einige Einträge in der \code{.env} nötig. Die Einträge sind nach dem ersten
-Lauf des Skripts bereits vorhanden, aber noch leer.
+einige Einträge in der Einstellungsdatei des Setup-Skripts nötig
+(Abschnitt~\ref{sec:einstellungen}); sie stehen dort bereits auskommentiert.
 
 \subsubsection*{1. SMTP-Zugang beschaffen}
 
@@ -194,14 +258,15 @@ Absenderadresse eingerichtet (genaue Werte nennt der Mail-Anbieter):
         \code{v=DMARC1; p=quarantine; rua=mailto:<adresse>}.
 \end{itemize}
 
-\subsubsection*{3. Einträge in der \code{.env}}
+\subsubsection*{3. Einträge in der Einstellungsdatei}
 
-Auf dem Server \code{sudo nano /srv/wehrkalender/.env} öffnen und eintragen:
+In \code{wehrkalender.env} neben dem Skript eintragen (\code{\#} am
+Zeilenanfang entfernen):
 
 \begin{lstlisting}
-MAILER_DSN=smtp://kalender%40ff-musterstadt.de:GEHEIM@smtp.example.de:587
+MAILER_DSN='smtp://kalender%40ff-musterstadt.de:GEHEIM@smtp.example.de:587'
 MAIL_FROM=kalender@ff-musterstadt.de
-MAIL_FROM_NAME=Kalender FF Musterstadt
+MAIL_FROM_NAME="Kalender FF Musterstadt"
 ADMIN_ALERT_EMAILS=wehrleitung@ff-musterstadt.de,it@ff-musterstadt.de
 MAIL_DELIVERY=database        # erst nach dem Test auf smtp umstellen
 \end{lstlisting}
@@ -216,8 +281,9 @@ MAIL_DELIVERY=database        # erst nach dem Test auf smtp umstellen
         \code{\%3A}, \code{/} $\rightarrow$ \code{\%2F}, \code{\#}
         $\rightarrow$ \code{\%23}, \code{?} $\rightarrow$ \code{\%3F},
         \code{\%} $\rightarrow$ \code{\%25}. Ein \code{\$} im Passwort
-        wird von Docker Compose als Variable gelesen und muss als
-        \code{\$\$} geschrieben werden.
+        wird von Docker Compose als Variable gelesen: den ganzen Wert in
+        einfache Anführungszeichen setzen (wie oben) oder \code{\$\$}
+        schreiben.
   \item \code{MAIL\_FROM} muss beim SMTP-Anbieter als Absender erlaubt sein.
         Leer bedeutet \code{kalender@<domain>}.
   \item \code{ADMIN\_ALERT\_EMAILS}: zusätzliche Empfänger für Warnungen,
@@ -227,12 +293,12 @@ MAIL_DELIVERY=database        # erst nach dem Test auf smtp umstellen
 
 \subsubsection*{4. Übernehmen und testen}
 
-Geänderte Werte in der \code{.env} werden erst mit neu erstellten Containern
-wirksam:
+Das Skript überträgt die Werte und erstellt die Container neu; danach auf
+dem Server testen:
 
 \begin{lstlisting}
-cd /srv/wehrkalender
-sudo docker compose up -d
+./setup-server-wehrkalender.sh -U -Z ""            # auf dem eigenen Rechner
+cd /srv/wehrkalender                               # auf dem Server
 sudo docker compose exec worker php bin/console mail:test ihre.adresse@example.de
 \end{lstlisting}
 
@@ -245,8 +311,8 @@ und schickt eine Test-E-Mail direkt über \code{MAILER\_DSN}, auch wenn
 \toprule
 \textbf{Meldung} & \textbf{Ursache} \\
 \midrule
-\code{MAILER\_DSN ist leer} & Eintrag fehlt oder Container nicht neu
-  erstellt (\code{docker compose up -d}) \\
+\code{MAILER\_DSN ist leer} & Eintrag fehlt, ist noch auskommentiert
+  oder wurde nicht übertragen (\code{-U -Z ""}) \\
 \code{Connection could not be established} & Server oder Port falsch,
   Port vom Anbieter gesperrt, \code{smtp://} statt \code{smtps://} bei
   Port 465 \\
@@ -264,12 +330,11 @@ prüfen (z.\,B.\ im Quelltext der E-Mail: \code{spf=pass},
 
 \subsubsection*{5. Versand einschalten}
 
-In der \code{.env} \code{MAIL\_DELIVERY=smtp} setzen und die Container neu
-erstellen (\code{sudo docker compose up -d}). Alternativ beides über das
-Skript mit Umstellung auf Produktion:
+In der Einstellungsdatei \code{MAIL\_DELIVERY=smtp} setzen und übernehmen,
+bei Bedarf zusammen mit der Umstellung auf Produktion:
 
 \begin{lstlisting}
-./setup-server-wehrkalender.sh -H <server> -d kalender.example.de -U -Z "" -E prod
+./setup-server-wehrkalender.sh -U -Z "" -E prod
 \end{lstlisting}
 
 E-Mails, die vorher im Testbetrieb abgelegt wurden (Status
@@ -376,13 +441,13 @@ vor dem Verlust des Servers. Dann bleibt nur der Neuimport aus MP Feuer mit
 neuen Passwörtern und Abo-Links für alle Mitglieder.
 
 \begin{enumerate}
-  \item Neuen Server mit \code{setup-server-wehrkalender.sh} einrichten, mit
-        derselben Domain und demselben Backup-Ziel (\code{-B}). Den
-        angezeigten öffentlichen Schlüssel beim Backup-Ziel hinterlegen,
-        falls der alte verloren ist.
-  \item In \code{/srv/wehrkalender/.env} die verwahrten Werte für
-        \code{APP\_KEY} und \code{RESTIC\_PASSWORD} eintragen, ebenso die
-        Einträge für den E-Mail-Versand (Abschnitt~\ref{sec:mailsetup}). Die
+  \item Neuen Server mit \code{setup-server-wehrkalender.sh} und der
+        bisherigen Einstellungsdatei einrichten (Domain, Backup-Ziel,
+        E-Mail-Versand und Betreiberangaben kommen von dort; bei neuer
+        IP-Adresse nur \code{-H <neue-ip>}). Den angezeigten öffentlichen
+        Schlüssel beim Backup-Ziel hinterlegen, falls der alte verloren ist.
+  \item In \code{/srv/wehrkalender/.env} auf dem neuen Server die verwahrten
+        Werte für \code{APP\_KEY} und \code{RESTIC\_PASSWORD} eintragen. Die
         Datenbank-Passwörter dürfen neu sein, weil der Dump keine
         Datenbank-Benutzer enthält.
   \item \code{sudo wehrkalender-restore -r latest -t wehrkalender}

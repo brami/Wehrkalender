@@ -13,7 +13,7 @@ use InvalidArgumentException;
  * Alle Bedingungen müssen zutreffen (UND); Groß-/Kleinschreibung spielt keine
  * Rolle. Ohne Bedingungen und ohne Zeitraum werden alle Termine übernommen.
  *
- *   {"conditions":[{"field":"summary","op":"contains","value":"TM1"}],
+ *   {"conditions":[{"field":"summary","op":"starts","value":"Maschinist 2/2027"}],
  *    "from":"2027-01-01","to":"2027-12-31"}
  */
 final class FeedFilter
@@ -115,7 +115,7 @@ final class FeedFilter
         return $this->conditions === [] && $this->from === null && $this->to === null;
     }
 
-    /** Lesbare Beschreibung, z. B. „Titel enthält „TM1“ · 01.01.2027–31.12.2027“ */
+    /** Lesbare Beschreibung, z. B. „Titel beginnt mit „Maschinist 2/2027“ · 01.01.2027–31.12.2027“ */
     public function describe(): string
     {
         if ($this->isEmpty()) {

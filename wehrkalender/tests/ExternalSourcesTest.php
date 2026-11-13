@@ -96,7 +96,9 @@ final class ExternalSourcesTest extends TestCase
         self::assertStringContainsString('105 Termine erkannt', $preview);
         self::assertStringContainsString('<strong>4</strong> neu', $preview, 'Maschinist 2/2027: 4 Tage');
         self::assertStringContainsString('<strong>5</strong> neu', $preview, 'Truppführer Theorie: 5 Tage (Praxis: 4)');
-        self::assertSame(3, substr_count($preview, '<h2 style="margin-top:0">'), 'eine Übersicht je Befüllung');
+        self::assertSame(4, substr_count($preview, '<h2 style="margin-top:0">'), 'eine Übersicht je Befüllung + „Nicht übernommen“');
+        self::assertStringContainsString('92 von 105 Terminen trifft keine Befüllung', $preview);
+        self::assertStringContainsString('Atemschutzgeräteträger 1/2027', $preview, 'nicht übernommene Termine werden gelistet');
 
         $this->web('POST', '/admin/quellen/datei/' . $pending['id'] . '/uebernehmen', ['x' => '1']);
         self::assertSame(4, (int) $db->value('SELECT COUNT(*) FROM events WHERE calendar_id = ?', [$m2]));
@@ -109,6 +111,25 @@ final class ExternalSourcesTest extends TestCase
         self::assertStringContainsString('Stand ' . $this->clock->now()->format('d.m.Y'),
             (string) $db->value("SELECT description FROM events WHERE calendar_id = ? LIMIT 1", [$tf]));
         self::assertStringStartsWith('kreis-', (string) $db->value('SELECT uid FROM events LIMIT 1'));
+
+        // neue Befüllung, Datei „erneut übernehmen“ ohne neuen Upload: Vorschau zeigt nur die neue Befüllung als neu
+        $agt = $this->calendar('atemschutz-2-2027', 'Atemschutz 2/2027');
+        $this->feed($kreis, $agt, 'Atemschutzgeräteträger 2/2027');
+        $uploadedAt = (string) $file['uploaded_at'];
+        $this->clock->fix($this->clock->now()->modify('+1 day'));
+        self::assertSame(303, $this->web('POST', '/admin/quellen/datei/' . $file['id'] . '/erneut', ['x' => '1'])->getStatusCode());
+        $re = $db->one("SELECT * FROM source_files WHERE status = 'pending'");
+        self::assertSame((int) $file['id'], (int) $re['replaces_id']);
+        $preview = (string) $this->web('GET', '/admin/quellen/datei/' . $re['id'])->getBody();
+        self::assertStringContainsString('identisch', $preview);
+        self::assertSame(1, substr_count($preview, '<strong>4</strong> neu'), 'nur Atemschutz neu');
+        self::assertStringContainsString('88 von 105', $preview);
+        $this->web('POST', '/admin/quellen/datei/' . $re['id'] . '/uebernehmen', ['x' => '1']);
+        self::assertSame(4, (int) $db->value('SELECT COUNT(*) FROM events WHERE calendar_id = ?', [$agt]));
+        self::assertSame(1, (int) $db->value('SELECT COUNT(*) FROM source_files'));
+        $file = $db->one('SELECT * FROM source_files WHERE id = ?', [$file['id']]);
+        self::assertSame($uploadedAt, (string) $file['uploaded_at'], 'Hochladedatum bleibt beim erneuten Übernehmen');
+        self::assertSame('Lehrgaenge_Kreis_Dueren_2027.ics', (string) $file['name']);
 
         // neue Fassung: Maschinist 2/2027 Tag 4 verschoben, Truppführer Praxis 1 abgesagt (fehlt) → Vorschau zeigt es
         $v2 = str_replace(['DTSTART;TZID=Europe/Berlin:20270710T080000', 'SUMMARY:Truppführer Praxis 1/2027'],
