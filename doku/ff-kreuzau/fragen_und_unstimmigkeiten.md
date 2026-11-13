@@ -254,6 +254,16 @@ Abgestimmt mit M. Bramer.
 - **Test mit den Abfallkalendern 2027 Drove und Boich/Thum** (von M. Bramer, `tests/fixtures/abfall-drove-2027.ics`, `abfall-boich-thum-2027.ics`, je 121 Termine): gleicher Abfuhrbezirk – 109 Termine identisch (Rest, Bio, Gelb, Weihnachtsbaum, Schadstoffe), nur die 12 Altpapier-Termine unterscheiden sich. Bestätigt „je Ort ein Kalender“: Ein gemeinsamer Kalender hätte zweimal so viele Altpapier-Termine, davon die Hälfte falsch. Je Ort eine Quelle und ein Kalender funktioniert ohne Nacharbeit; gleiche Termine kollidieren nicht (eigene UIDs je Quelle). Wer beide Orte einschaltet, sieht die gemeinsamen Abfuhren doppelt – gewollt. Für den Echtbetrieb fehlt in den Testdaten noch ein Kalender „Abfall Boich/Thum“ bzw. die übrigen Ortsteile.
 - **Einstellungsdatei für `setup-server-wehrkalender.sh`** (Standard `wehrkalender.env` neben dem Skript, sonst `-f`): Das Skript liest sie bei jedem Aufruf; Optionen beim Aufruf (`-H -d -T -e -B -u -n -t -E -S`) überschreiben sie und werden gespeichert. Danach genügt z. B. `./setup-server-wehrkalender.sh -U`. Einmalige Aktionen (`-Z -U -X -a -c -y`) werden nicht gespeichert. Werte der Anwendung (`APP_NAME`, `WEHR_NAME`, `MAIL_*`, `MAILER_DSN`, `BETREIBER_*`, `SOURCE_URL`, `FEED_BROWSER_NOTICE`, `BACKUP_*`, `AWS_*`) überträgt das Skript bei jedem Lauf nach `/srv/wehrkalender/.env` – sie müssen nicht mehr auf dem Server von Hand eingetragen werden. Nur die vom Server erzeugten Geheimnisse (`APP_KEY`, `DB_*`, `RESTIC_PASSWORD`) bleiben ausschließlich dort. Fehlt die Datei, wird sie mit allen Schlüsseln (auskommentiert) angelegt; unbekannte Schlüssel brechen ab (Tippfehler). Die Datei gehört nicht ins Repository (`.gitignore`). Zusätzlich verträgt `.env` jetzt Werte mit `|`, `&`, `$` und Anführungszeichen.
 
+### E9. Aufgabenliste und Lehrgangsregel – Konzept (13.11.2026)
+
+Abgestimmt mit M. Bramer, **noch nicht umgesetzt** (technische Doku, Abschnitt „Aufgabenliste und Lehrgangsregel“).
+
+- Fast jeder Kreislehrgang hat Teilnehmer aus Kreuzau (~35 im Jahr); drei Handgriffe je Lehrgang (Kalender, Zuordnung, Befüllung) sind zu viel.
+- **„Bereiche ohne Kalender“ wird Aufgabenliste:** je neuem MP-Schlüssel „Kalender anlegen“ (ein Klick), „bestehendem Kalender zuordnen“ oder „kein Kalender“; Hinweis auf der Status-Seite und in der Warn-E-Mail.
+- **Lehrgangsregel (Variante B):** einmal angelegt; der Admin legt fest, welche MP-Schlüssel Lehrgänge sind (Muster) und welche Quellen Lehrgangstermine enthalten („Lehrgangsquelle“, z. B. Kreisplan). Reihenfolge: liefert MP Feuer selbst Termine (Gemeindeebene) → aus MP Feuer; sonst Suche in den Lehrgangsquellen nach Bezeichnung mit Nummer bzw. Bezeichnung + Startdatum, mit Liste abweichender Schreibweisen; genau ein Treffer → automatisch, sonst Aufgabenliste; Lehrgangsplan fehlt → „wartet“.
+- **Einführung in zwei Stufen:** erst Vorschlag mit einem Klick (Trefferquote protokollieren), dann je Regel automatisch – weil noch offen ist, ob die Zuordnung zuverlässig trifft.
+- **Nach Kenntnis von M. Bramer** werden Lehrgänge in MP Feuer mit den Namen des Kreises angelegt, eventuell ohne Folgenummer, dann mit Startdatum – prüft er. Fragen an MP Feuer ergänzt (Abschnitt 6 der Anfrage).
+
 ---
 
 ## F. To-do / später
@@ -262,6 +272,8 @@ Abgestimmt mit M. Bramer.
 - **Betreiber für Impressum und Datenschutz klären** (Förderverein, FF oder Stadt?) und `BETREIBER_*` sowie `DATENSCHUTZ_KONTAKT` in der Einstellungsdatei des Setup-Skripts eintragen; Datenschutzhinweis mit der bzw. dem Datenschutzbeauftragten abstimmen (Seite ist noch als Entwurf markiert).
 - ~~`SOURCE_URL` setzen~~ – erledigt (13.11.2026): Repository https://github.com/brami/Wehrkalender (öffentlich); Vorgabe im Setup-Skript und in `.env.example`. Commits mit Autor m.bramer@deb-support.de.
 - **`composer.lock`** ins Repository aufnehmen, damit jeder Docker-Build dieselben Bibliotheksversionen verwendet.
+- **Aufgabenliste und Lehrgangsregel** umsetzen (E9), sobald das Lehrgangsformat aus MP Feuer bekannt ist.
+- **Sammelkalender „Meine Kreislehrgänge“** je Mitglied statt eines Kalenders je Lehrgang (Outlook/Google abonnieren nur einmal); Inhalt hängt vom Mitglied ab, ca. 2–3 PT (E9).
 - **Echte Feed-Adressen** von Kreis (falls es einen Feed gibt) und Gemeinde (Abfall) beschaffen; Lehrgangskalender-Vorschlag mit MP Feuer klären (E7);
 - **Anleitung für Mitglieder** um „Kalender ein- und ausschalten“ ergänzen (neue Screenshots der Startseite).
 - **Kalenderansicht im Web-Frontend** für Mitglieder: Monats- und Listenansicht mit Titel, Zeit und Ort, nur eigene Kalender, Filter je Kalender. Geschätzt etwa 1 Personentag. Vorgemerkt am 12.11.2026, zunächst nur das PDF (E2).

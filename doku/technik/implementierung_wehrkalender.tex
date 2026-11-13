@@ -1110,6 +1110,100 @@ Verwaltung & je Kalender Anzahl der Mitglieder, die ihn eingeschaltet haben;
 \end{tabularx}
 \end{center}
 
+\subsection{Aufgabenliste und Lehrgangsregel (Konzept)}\label{sec:lehrgangsregel}
+
+\begin{dshinweis}[title=Stand]
+Konzept, abgestimmt am 13.11.2026, \textbf{noch nicht umgesetzt}. Offen sind
+das Format der Lehrgänge im Export von MP Feuer (Bezeichnung, Startdatum,
+Schlüssel) und ob die automatische Zuordnung in der Praxis zuverlässig trifft.
+\end{dshinweis}
+
+Fast jeder Kreislehrgang hat Teilnehmer aus der Wehr; das sind rund 35
+Lehrgänge im Jahr. Je Lehrgang Kalender, Zuordnung und Befüllung von Hand
+anzulegen, ist zu aufwendig. Allgemein gilt: Jeder neue Schlüssel aus MP Feuer
+ohne Kalender ist eine Aufgabe für den Admin -- solange er offen ist, fehlt
+seinen Mitgliedern ein Kalender.
+
+\subsubsection*{Aufgabenliste \glqq Bereiche ohne Kalender\grqq}
+
+Die bisherige Liste auf der Status-Seite wird zur Aufgabenliste. Je Eintrag
+(Schlüssel, Bezeichnung, Anzahl der Mitglieder, seit wann) gibt es drei
+Erledigungen:
+\begin{enumerate}
+  \item \textbf{Kalender anlegen} mit einem Klick: Name aus der Bezeichnung,
+        Farbe automatisch, Zuordnung \glqq freischalten\grqq; bei Lehrgängen
+        zusätzlich die Befüllung mit Vorschau der gefundenen Termine.
+  \item \textbf{Bestehendem Kalender zuordnen}, z.\,B.\ \code{JF-GR1-BETREUER}
+        $\rightarrow$ JF Gr1.
+  \item \textbf{Kein Kalender} (bewusst ignorieren); der Eintrag verschwindet,
+        lässt sich aber wieder hervorholen.
+\end{enumerate}
+Neue Einträge erscheinen unter den Problemen der Status-Seite und in der
+täglichen Warn-E-Mail (\code{monitor:check}), nicht in \code{/health}.
+
+\subsubsection*{Lehrgangsregel}
+
+Für Lehrgänge legt der Admin \emph{einmal} eine Regel an; danach entstehen
+Kalender, Zuordnung und Befüllung beim Import von selbst. Der Algorithmus
+rät dabei nichts, sondern folgt zwei Festlegungen des Admins:
+
+\begin{itemize}
+  \item \textbf{Was ist ein Lehrgang?} Ein Muster für die Schlüssel aus MP Feuer,
+        z.\,B.\ \glqq beginnt mit \code{LEHRGANG-}\grqq\ oder eine Gruppe
+        \glqq Lehrgänge\grqq\ -- je nachdem, was der Export hergibt.
+  \item \textbf{Wo stehen Lehrgangstermine?} Quellen werden als
+        \glqq Lehrgangsquelle\grqq\ markiert, z.\,B.\ der Lehrgangsplan des
+        Kreises, später ggf.\ weitere (Landesfeuerwehrschule).
+\end{itemize}
+
+Für einen neuen Lehrgangsschlüssel entscheidet die Regel in dieser Reihenfolge:
+\begin{enumerate}
+  \item \textbf{MP Feuer liefert selbst Termine} für den Schlüssel (z.\,B.\
+        Truppmann-Ausbildung auf Gemeindeebene): Kalender wird aus MP Feuer
+        befüllt, keine weitere Quelle.
+  \item Sonst \textbf{Suche in den Lehrgangsquellen} nach dem Lehrgang:
+    \begin{itemize}
+      \item Bezeichnung mit Nummer (\glqq Maschinist 2/2027\grqq): Titel
+            beginnt mit dieser Bezeichnung.
+      \item Bezeichnung ohne Nummer, mit Startdatum (\glqq Maschinist\grqq,
+            05.06.2027): Lehrgang dieser Art, dessen erster Termin an diesem
+            Tag liegt -- eindeutig, da mehrere Lehrgänge einer Art nicht am
+            selben Tag beginnen.
+      \item Abweichende Schreibweisen des Kreises (2026 \glqq Technische
+            Hilfeleistung Wald\grqq, 2027 \glqq TH Wald\grqq) über eine
+            kleine, einmal gepflegte Liste von Entsprechungen.
+    \end{itemize}
+        In der Befüllung wird der gefundene konkrete Titel gespeichert
+        (\glqq Titel beginnt mit Maschinist 2/2027\grqq); verschobene Termine
+        bleiben so zugeordnet.
+  \item \textbf{Genau ein Treffer:} Kalender, Zuordnung (nur freischalten) und
+        Befüllung werden angelegt; Hinweis an den Admin (\glqq Maschinist
+        2/2027: Kalender angelegt, 4 Termine\grqq).
+  \item \textbf{Kein oder mehrere Treffer:} Eintrag in der Aufgabenliste mit
+        Vorschlägen; der Admin wählt.
+  \item \textbf{Lehrgangsquelle noch leer} (Plan des Folgejahres fehlt):
+        Kalender und Zuordnung sofort, Befüllung \glqq wartet auf
+        Lehrgangsplan\grqq; wird nach jedem Upload bzw.\ Abruf erneut versucht.
+\end{enumerate}
+Sind alle Termine vorbei und hat der Lehrgang keine Teilnehmer mehr, wird der
+Kalender inaktiv.
+
+\textbf{Einführung in zwei Stufen}, weil noch nicht feststeht, wie zuverlässig
+die Zuordnung trifft: zuerst als \emph{Vorschlag} -- die Regel füllt alles vor,
+der Admin bestätigt mit einem Klick in der Aufgabenliste; die Trefferquote wird
+protokolliert. Erst wenn sie sich bewährt, wird je Regel auf \emph{automatisch}
+umgeschaltet.
+
+Geschätzter Aufwand: Aufgabenliste 1~PT, Lehrgangsregel mit Vorschlag und
+Automatik 1,5--2~PT, abhängig vom Exportformat von MP Feuer.
+
+\textbf{Vorgemerkt: Sammelkalender \glqq Meine Kreislehrgänge\grqq.} Statt eines
+Kalenders je Lehrgang erhält jedes Mitglied einen Kalender, der nur seine
+Lehrgänge enthält. Vorteil: Outlook- und Google-Nutzer abonnieren einmal statt
+für jeden Lehrgang einen neuen Abo-Link. Neu ist, dass der Inhalt eines
+Kalenders vom Mitglied abhängt (aufwendiger für WebDAV-Sync); geschätzt
+2--3~PT.
+
 \subsection{Aufwand}
 
 \begin{center}
@@ -1135,8 +1229,9 @@ Kalenderauswahl durch Mitglieder (Schalter, CalDAV, Feed, PDF, E-Mails) &
 
 Der Import aus MP Feuer selbst ist darin nicht enthalten (Arbeitspakete 3
 und 3a). Sinnvolle Reihenfolge: Datenmodell und UID-Schema zusammen mit dem
-MP-Feuer-Import, danach Kalenderauswahl, danach iCal-Quellen. Bis auf den
-Vorschlag von Lehrgangskalendern ist alles umgesetzt (12./13.11.2026).
+MP-Feuer-Import, danach Kalenderauswahl, danach iCal-Quellen. Umgesetzt ist
+alles bis auf Aufgabenliste und Lehrgangsregel
+(Abschnitt~\ref{sec:lehrgangsregel}, 12./13.11.2026).
 
 % ------------------------------------------------------------------
 \section{CalDAV-Server}
