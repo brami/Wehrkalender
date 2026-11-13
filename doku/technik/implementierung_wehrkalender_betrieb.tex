@@ -458,16 +458,29 @@ neuen Passwörtern und Abo-Links für alle Mitglieder.
 \subsection{Überwachung}
 
 \begin{itemize}
-  \item Endpunkt \code{/health} für einen externen Uptime-Dienst. Antwort
-        \code{200} mit \code{\{"status":"ok"\}}, wenn die Datenbank erreichbar
-        ist und innerhalb der letzten 24 Stunden ein Export gesehen wurde
-        (auch ohne Änderungen), der letzte Import nicht fehlgeschlagen
-        ist und keine externe Quelle ein Problem hat (Abruffehler, länger kein
-        Abruf, Dateien enden bald); sonst \code{503} mit
-        \code{"status":"warning"} und der Liste der Probleme. Ohne Anmeldung
-        erreichbar, \code{Cache-Control: no-store}. Solange der Import aus MP
-        Feuer fehlt, meldet \code{/health} immer \code{503} (\glqq noch kein
-        Export\grqq).
+  \item Zwei Endpunkte ohne Anmeldung, beide mit \code{Cache-Control:
+        no-store} und ohne Sitzung:
+    \begin{itemize}
+      \item \code{/health/live} -- \emph{läuft der Dienst?} \code{200} mit
+            \code{\{"status":"ok","db":true\}}, wenn Anwendung und Datenbank
+            antworten, sonst \code{503}. Das ist die Adresse für einen
+            externen Uptime-Dienst (z.\,B.\ Uptime Kuma, UptimeRobot); sie
+            meldet auch dann \glqq ok\grqq, wenn der Import aus MP Feuer noch
+            fehlt oder eine Quelle gestört ist.
+      \item \code{/health} -- \emph{sind die Daten in Ordnung?} \code{200} mit
+            \code{\{"status":"ok","db":true,"problems":0\}}, wenn innerhalb
+            der letzten 24 Stunden ein Export gesehen wurde (auch ohne
+            Änderungen), der letzte Import nicht fehlgeschlagen ist und keine
+            externe Quelle ein Problem hat (Abruffehler, länger kein Abruf,
+            Dateien enden bald); sonst \code{503} mit \code{"status":"warning"}
+            und der \emph{Anzahl} der Probleme. Die Texte stehen nur auf der
+            Status-Seite und in den Warn-E-Mails, damit keine internen
+            Angaben öffentlich lesbar sind. Solange der Import aus MP Feuer
+            fehlt, meldet \code{/health} immer \code{503}.
+    \end{itemize}
+        Das Setup-Skript prüft nach jeder Installation \code{/health/live}
+        (Abbruch bei Fehler) und gibt den Zustand aus \code{/health} als
+        Hinweis aus.
   \item E-Mail an alle Administratoren und an \code{ADMIN\_ALERT\_EMAILS}
         bei fehlgeschlagenem oder abgebrochenem Import und bei ausbleibenden
         Exporten (\code{monitor:check}, höchstens einmal täglich).

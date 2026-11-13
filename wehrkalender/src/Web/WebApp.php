@@ -38,10 +38,21 @@ final class WebApp
         // ---------------------------------------------------- öffentlich
         $slim->get('/.well-known/caldav', fn (Request $q, Response $r) => $r->withHeader('Location', '/dav/')->withStatus(301));
         $slim->get('/.well-known/carddav', fn (Request $q, Response $r) => $r->withStatus(404));
-        $slim->get('/health', function (Request $q, Response $r) use ($app) {
+        // Überwachung, ohne Anmeldung:
+        //   /health/live  läuft der Dienst? (Anwendung + Datenbank) – für Uptime-Dienste
+        //   /health       sind die Daten in Ordnung? Nur Status und Anzahl der Probleme;
+        //                 die Texte stehen auf der Status-Seite und in den Warn-E-Mails.
+        $json = function (Response $r, array $body, int $code): Response {
+            $r->getBody()->write(json_encode($body, JSON_UNESCAPED_UNICODE));
+            return $r->withStatus($code)->withHeader('Content-Type', 'application/json')->withHeader('Cache-Control', 'no-store');
+        };
+        $slim->get('/health/live', function (Request $q, Response $r) use ($app, $json) {
+            $db = $app->status()->databaseOk();
+            return $json($r, ['status' => $db ? 'ok' : 'error', 'db' => $db], $db ? 200 : 503);
+        });
+        $slim->get('/health', function (Request $q, Response $r) use ($app, $json) {
             $h = $app->status()->health();
-            $r->getBody()->write(json_encode(['status' => $h['ok'] ? 'ok' : 'warning', 'db' => $h['db'], 'problems' => $h['problems']], JSON_UNESCAPED_UNICODE));
-            return $r->withStatus($h['ok'] ? 200 : 503)->withHeader('Content-Type', 'application/json')->withHeader('Cache-Control', 'no-store');
+            return $json($r, ['status' => $h['ok'] ? 'ok' : ($h['db'] ? 'warning' : 'error'), 'db' => $h['db'], 'problems' => count($h['problems'])], $h['ok'] ? 200 : 503);
         });
         $slim->get('/abo/{token}.ics', [$feed, 'show']);
 
@@ -135,7 +146,7 @@ final class WebApp
         // Benutzer laden, CSRF prüfen, Twig-Globals setzen
         $slim->add(function (Request $request, Handler $handler) use ($app, $session, $view): Response {
             $path = $request->getUri()->getPath();
-            $stateless = str_starts_with($path, '/abo/') || $path === '/health' || str_starts_with($path, '/.well-known/');
+            $stateless = str_starts_with($path, '/abo/') || str_starts_with($path, '/health') || str_starts_with($path, '/.well-known/');
             if ($stateless) {
                 return $handler->handle($request);
             }

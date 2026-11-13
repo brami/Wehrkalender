@@ -769,19 +769,28 @@ post_start_tasks() {
 check_health() {
   step "Anwendung: Erreichbarkeit"
   cd "$APP"
-  local code
-  code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 --resolve "$DOMAIN:443:127.0.0.1" "https://$DOMAIN/health" || true)
+  local code data
+  # /health/live: Anwendung und Datenbank laufen (die Adresse für einen Uptime-Dienst)
+  code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 --resolve "$DOMAIN:443:127.0.0.1" "https://$DOMAIN/health/live" || true)
   case "$code" in
-    200) log "https://$DOMAIN/health: in Ordnung." ;;
-    503) log "https://$DOMAIN/health antwortet (503: noch kein Import aus MP Feuer – bis zum Import erwartet)." ;;
-    502|504)
+    200) log "https://$DOMAIN/health/live: Anwendung und Datenbank laufen." ;;
+    502|503|504)
          docker compose ps
          docker compose logs --tail 40 app || true
-         log "FEHLER: Caddy erreicht die Anwendung nicht (HTTP $code). Protokoll des app-Containers siehe oben."
+         log "FEHLER: Anwendung oder Datenbank antwortet nicht (HTTP $code). Protokoll des app-Containers siehe oben."
          exit 1 ;;
-    *)   log "WARNUNG: https://$DOMAIN/health nicht erreichbar (HTTP ${code:-–}). Meist fehlt noch das Zertifikat (DNS prüfen)."
-         log "         Test im Container: docker compose exec app php bin/console list" ;;
+    *)   log "WARNUNG: https://$DOMAIN/health/live nicht erreichbar (HTTP ${code:-–}). Meist fehlt noch das Zertifikat (DNS prüfen)."
+         log "         Test im Container: docker compose exec app php bin/console list"
+         return 0 ;;
   esac
+  # /health: Zustand der Daten (Import, externe Quellen); Einzelheiten auf der Status-Seite
+  data=$(curl -s --max-time 15 --resolve "$DOMAIN:443:127.0.0.1" "https://$DOMAIN/health" || true)
+  if grep -q '"status":"ok"' <<<"$data"; then
+    log "https://$DOMAIN/health: Daten in Ordnung."
+  else
+    log "HINWEIS: https://$DOMAIN/health meldet $(grep -o '"problems":[0-9]*' <<<"$data" | cut -d: -f2) Problem(e) mit den Daten – Einzelheiten auf https://$DOMAIN/admin."
+    log "         Ohne Import aus MP Feuer ist das zu erwarten („noch kein Export“)."
+  fi
 }
 # Container starten bzw. mit geänderter Konfiguration neu erzeugen
 start_containers() {

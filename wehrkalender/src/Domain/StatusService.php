@@ -100,12 +100,20 @@ final class StatusService
         return $problems;
     }
 
-    /** @return array{ok:bool,db:bool,problems:list<string>} */
-    public function health(): array
+    public function databaseOk(): bool
     {
         try {
             $this->db->value('SELECT 1');
+            return true;
         } catch (Throwable) {
+            return false;
+        }
+    }
+
+    /** @return array{ok:bool,db:bool,problems:list<string>} */
+    public function health(): array
+    {
+        if (!$this->databaseOk()) {
             return ['ok' => false, 'db' => false, 'problems' => ['Datenbank nicht erreichbar']];
         }
         $problems = $this->problems();
