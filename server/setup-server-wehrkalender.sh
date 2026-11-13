@@ -21,8 +21,9 @@
 #        /var/backups/wehrkalender-restic, später extern (-B)
 #    7. Anmeldung als juno testen – erst DANACH SSH härten
 #       (kein root-Login, keine Passwörter, nur juno)
-#    8. Anwendung installieren bzw. aktualisieren: wehrkalender*.zip
-#       (liegt neben diesem Skript oder per -Z) wird hochgeladen, nach
+#    8. Anwendung installieren bzw. aktualisieren: aus dem Git-Checkout, in dem
+#       das Skript liegt (git archive von HEAD bzw. -G), sonst wehrkalender*.zip
+#       neben dem Skript oder per -Z; wird hochgeladen, nach
 #       /srv/wehrkalender/app entpackt (Versionen unter /srv/wehrkalender/releases),
 #       Docker-Image gebaut, app + worker gestartet, Datenbank migriert.
 #       Vorher wird automatisch eine Datensicherung erstellt.
@@ -77,6 +78,7 @@ ASSUME_YES=0
 CHECK_ONLY=0
 APP_ZIP=""            # leer = neueste wehrkalender*.zip neben dem Skript
 APP_ZIP_GIVEN=0       # 1 = -Z angegeben (auch -Z "" = ausdrücklich kein ZIP)
+APP_GIT_REF=""        # -G: Commit, Zweig oder Tag (Standard: HEAD des Checkouts)
 UPDATE_ONLY=0
 LOAD_TESTDATA=0
 APP_ADMIN=""
@@ -103,10 +105,16 @@ Pflicht (beim ersten Aufruf; danach aus der Einstellungsdatei):
   -d <domain>     Domain des Wehrkalenders, z. B. kalender.example.de (DOMAIN)
 
 Anwendung:
-  -Z <datei.zip>  ZIP der Anwendung. Standard: die neueste Datei
-                  wehrkalender*.zip im Verzeichnis dieses Skripts.
-                  -Z "" = kein ZIP (z. B. nur Einstellungen übernehmen).
-                  Ohne ZIP wird nur der Server eingerichtet (Platzhalterseite).
+  Quelle der Anwendung (in dieser Reihenfolge):
+                  1. Liegt das Skript in einem Git-Checkout (server/ im Repository),
+                     baut es das Paket aus Git: committeter Stand von HEAD bzw. -G.
+                     Nicht committete Änderungen werden nicht ausgeliefert.
+                  2. Sonst die neueste wehrkalender*.zip neben dem Skript.
+  -G <ref>        Git: diesen Commit, Zweig oder Tag ausliefern (Standard: HEAD),
+                  z. B. -G v1.0 oder -G origin/main (vorher git fetch)
+  -Z <datei.zip>  dieses ZIP ausliefern (statt Git bzw. neuester Datei).
+                  -Z "" = keine Anwendung ausliefern (z. B. nur Einstellungen übernehmen).
+                  Ohne Anwendung wird nur der Server eingerichtet (Platzhalterseite).
   -U              Nur die Anwendung installieren/aktualisieren/umstellen:
                   überspringt Grundeinrichtung und SSH-Härtung (Server muss
                   schon eingerichtet sein)
@@ -284,7 +292,7 @@ TEMPLATE
 
 # Zwei Durchläufe: zuerst nur -f (Einstellungsdatei), dann alle Optionen,
 # damit Optionen beim Aufruf die Datei überschreiben.
-OPTSTRING=":f:H:d:T:e:B:u:n:t:Z:a:E:cSUXyh"
+OPTSTRING=":f:H:d:T:e:B:u:n:t:Z:G:a:E:cSUXyh"
 while getopts "$OPTSTRING" opt; do
   if [[ "$opt" == f ]]; then SETTINGS_FILE="$OPTARG"; fi
 done
@@ -305,6 +313,7 @@ while getopts "$OPTSTRING" opt; do
     n) NEW_HOSTNAME="$OPTARG"; CFG_FROM_CLI[SERVER_HOSTNAME]=1 ;;
     t) TIMEZONE="$OPTARG"; CFG_FROM_CLI[TIMEZONE]=1 ;;
     Z) APP_ZIP="$OPTARG"; APP_ZIP_GIVEN=1 ;;
+    G) APP_GIT_REF="$OPTARG" ;;
     a) APP_ADMIN="$OPTARG" ;;
     E) APP_ENV_SET="$OPTARG"; CFG_FROM_CLI[APP_ENV]=1 ;;
     c) CHECK_ONLY=1 ;;
@@ -421,7 +430,40 @@ sha256_of() {
   elif command -v shasum >/dev/null 2>&1; then shasum -a 256 "$1" | cut -d' ' -f1
   else echo ""; fi
 }
-if [[ -z "$APP_ZIP" && $APP_ZIP_GIVEN -eq 0 ]]; then
+APP_SOURCE=""          # Anzeige/.release: Datei bzw. Git-Stand
+APP_ZIP_TMP=""
+# Quelle der Anwendung (ohne -Z):
+#   1. Liegt das Skript in einem Git-Checkout mit wehrkalender/, wird das Paket aus
+#      dem Repository gebaut (git archive): Stand HEAD bzw. -G <ref>. Nur Committetes,
+#      genau dieser Commit landet auf dem Server.
+#   2. Sonst die neueste wehrkalender*.zip neben dem Skript.
+REPO_ROOT=""
+if [[ $APP_ZIP_GIVEN -eq 0 ]] && command -v git >/dev/null 2>&1; then
+  REPO_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null || true)"
+  [[ -n "$REPO_ROOT" && -f "$REPO_ROOT/wehrkalender/Dockerfile" ]] || REPO_ROOT=""
+fi
+if [[ -n "$REPO_ROOT" ]]; then
+  ref="${APP_GIT_REF:-HEAD}"
+  commit="$(git -C "$REPO_ROOT" rev-parse --verify --quiet "$ref^{commit}")" \
+    || fail "Git: '$ref' ist kein Commit, Zweig oder Tag in $REPO_ROOT (vorher git fetch?)."
+  desc="$(git -C "$REPO_ROOT" describe --tags --always "$commit" 2>/dev/null || echo "${commit:0:7}")"
+  branch="$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
+  APP_ZIP_TMP="$(mktemp "${TMPDIR:-/tmp}/wehrkalender-XXXXXX")"; rm -f "$APP_ZIP_TMP"; APP_ZIP_TMP+=".zip"
+  trap 'rm -f "$APP_ZIP_TMP"' EXIT
+  git -C "$REPO_ROOT" archive --format=zip -o "$APP_ZIP_TMP" "$commit" wehrkalender \
+    || fail "Git: Paket konnte nicht gebaut werden."
+  APP_ZIP="$APP_ZIP_TMP"
+  APP_SOURCE="git $desc vom $(git -C "$REPO_ROOT" log -1 --format='%cs' "$commit")"
+  log "Anwendung aus Git: $REPO_ROOT, $ref = $APP_SOURCE"
+  if [[ "$ref" == HEAD && -n "$(git -C "$REPO_ROOT" status --porcelain -- wehrkalender 2>/dev/null)" ]]; then
+    log "WARNUNG: Nicht committete Änderungen in wehrkalender/ werden NICHT ausgeliefert (nur Commit ${commit:0:7})."
+  fi
+  if [[ -n "$branch" && "$branch" != HEAD ]] && git -C "$REPO_ROOT" rev-parse --verify --quiet "@{upstream}" >/dev/null; then
+    behind="$(git -C "$REPO_ROOT" rev-list --count "HEAD..@{upstream}" 2>/dev/null || echo 0)"
+    [[ "$behind" == 0 ]] || log "HINWEIS: $branch ist $behind Commit(s) hinter $(git -C "$REPO_ROOT" rev-parse --abbrev-ref '@{upstream}') (Stand des letzten git fetch) – vorher git pull?"
+  fi
+elif [[ -z "$APP_ZIP" && $APP_ZIP_GIVEN -eq 0 ]]; then
+  [[ -n "$APP_GIT_REF" ]] && fail "-G: Das Skript liegt nicht in einem Git-Checkout des Wehrkalenders."
   APP_ZIP="$(ls -t "$SCRIPT_DIR"/wehrkalender*.zip 2>/dev/null | head -n1 || true)"
 fi
 APP_SHA=""
@@ -449,11 +491,12 @@ if [[ -n "$APP_ZIP" ]]; then
     grep -qx "$f" <<<"$ZIP_LIST" || fail "$APP_ZIP enthält $f nicht – ist das das richtige ZIP?"
   done
   APP_SHA="$(sha256_of "$APP_ZIP")"
-  log "Anwendung: $APP_ZIP ($(du -h "$APP_ZIP" | cut -f1), SHA-256 ${APP_SHA:0:16}…)"
+  [[ -n "$APP_SOURCE" ]] || APP_SOURCE="${APP_ZIP##*/}"
+  log "Anwendung: $APP_SOURCE ($(du -h "$APP_ZIP" | cut -f1), SHA-256 ${APP_SHA:0:16}…)"
 elif [[ $APP_SETTINGS -eq 1 ]]; then
   log "Kein neues ZIP – nur Einstellungen der installierten Anwendung:${APP_ENV_SET:+ Umgebung $APP_ENV_SET}$([[ -n "$APP_SETTING_LINES" ]] && echo ' Werte aus der Einstellungsdatei')$([[ $LOAD_TESTDATA -eq 1 ]] && echo ' Testdaten')${APP_ADMIN:+ Administrator $APP_ADMIN}"
 else
-  [[ $UPDATE_ONLY -eq 1 ]] && fail "-U angegeben, aber kein ZIP gefunden und nichts umzustellen (wehrkalender*.zip neben das Skript legen, -Z, -E/-X/-a oder Werte in der Einstellungsdatei)."
+  [[ $UPDATE_ONLY -eq 1 ]] && fail "-U angegeben, aber kein ZIP gefunden und nichts umzustellen (Skript aus dem Git-Checkout aufrufen, wehrkalender*.zip neben das Skript legen, -Z, -E/-X/-a oder Werte in der Einstellungsdatei)."
   log "Kein ZIP der Anwendung gefunden – es wird nur der Server eingerichtet (Platzhalterseite)."
 fi
 
@@ -634,7 +677,7 @@ fi
 # Hilfsfunktion: Remote-Skript mit Umgebungsvariablen ausführen
 RELEASE="$STAMP"
 REMOTE_ZIP=""
-APP_ZIP_NAME="${APP_ZIP##*/}"
+APP_ZIP_NAME="${APP_SOURCE:-${APP_ZIP##*/}}"
 run_remote() {  # $1 = Phase, Skript kommt über stdin
   local phase="$1"
   local envs

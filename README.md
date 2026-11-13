@@ -12,16 +12,23 @@ Bringt die Termine einer Feuerwehr aus MP Feuer nur lesend auf die Geräte der M
 | `doku/ff-kreuzau/` | Erster Einsatz: Projektbeschreibung, bebilderte Anleitung für Mitglieder, Fragen und Entscheidungen |
 | `doku/latex/` | Vorlage `debsupport.sty` |
 
-## Paket für den Server bauen
+## Server einrichten und aktualisieren
 
-`vendor/` ist nicht im Repository; der Docker-Build installiert die Abhängigkeiten selbst.
+Das Skript wird direkt aus dem Checkout aufgerufen und baut das Paket selbst aus Git
+(`git archive`, committeter Stand von `HEAD`; nicht committete Änderungen werden nicht
+ausgeliefert). `vendor/` ist nicht im Repository; der Docker-Build installiert die
+Abhängigkeiten.
 
 ```sh
-zip -r wehrkalender.zip wehrkalender -x 'wehrkalender/vendor/*' 'wehrkalender/.env' 'wehrkalender/storage/*'
-cp server/setup-server-wehrkalender.sh .
+cd server
 ./setup-server-wehrkalender.sh -H <server> -d <domain> -E test   # Erstinstallation (legt wehrkalender.env an)
-./setup-server-wehrkalender.sh -U                                # Update (Einstellungen aus wehrkalender.env)
+git pull && ./setup-server-wehrkalender.sh -U                    # Update auf den aktuellen Stand
+./setup-server-wehrkalender.sh -U -G v1.0                        # bestimmten Tag/Commit ausliefern
+./setup-server-wehrkalender.sh -U -Z ""                          # nur Einstellungen übernehmen
 ```
+
+Außerhalb eines Checkouts (Skript einzeln kopiert) nimmt das Skript die neueste
+`wehrkalender*.zip` neben sich bzw. `-Z <datei>`.
 
 ## Dokumentation übersetzen
 

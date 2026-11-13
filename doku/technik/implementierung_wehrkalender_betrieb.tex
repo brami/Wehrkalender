@@ -96,17 +96,32 @@ Datenschutzbeauftragte bzw. Datenschutzbeauftragter).
 \subsection{Einrichtung und Aktualisierung des Servers}
 
 Das Skript \code{setup-server-wehrkalender.sh}
-richtet den Server ein und installiert die Anwendung aus dem ZIP
-\code{wehrkalender*.zip}, das neben dem Skript liegt. Es wird auf dem
-eigenen Rechner aufgerufen und arbeitet per SSH.
+richtet den Server ein und installiert die Anwendung. Es wird auf dem
+eigenen Rechner aufgerufen, am besten direkt aus dem Git-Checkout
+(\code{server/}), und arbeitet per SSH. Die Anwendung kommt
+\begin{itemize}
+  \item aus \textbf{Git}, wenn das Skript in einem Checkout liegt: Es baut das
+        Paket mit \code{git archive} aus dem committeten Stand von \code{HEAD}
+        bzw.\ \code{-G <ref>} (Tag, Zweig, Commit). Nicht committete
+        Änderungen werden nicht ausgeliefert (Warnung); ist der Zweig hinter
+        \code{origin}, weist das Skript darauf hin (vorher \code{git pull}).
+        Auf dem Server steht danach in \code{app/.release}, welcher Stand
+        läuft.
+  \item sonst aus der neuesten \code{wehrkalender*.zip} neben dem Skript
+        bzw.\ \code{-Z <datei>}.
+\end{itemize}
+Der Server braucht keinen Zugang zu GitHub.
 
 \begin{lstlisting}
 # Erstinstallation: Server einrichten und Anwendung installieren
 # (-H, -d und -E werden in wehrkalender.env gespeichert)
 ./setup-server-wehrkalender.sh -H <server> -d kalender.example.de -E test
 
-# Neue Version der Anwendung (neuestes ZIP neben dem Skript)
-./setup-server-wehrkalender.sh -U
+# Neue Version der Anwendung (aktueller Stand aus Git)
+git pull && ./setup-server-wehrkalender.sh -U
+
+# Bestimmten Stand ausliefern (Tag, Zweig oder Commit)
+./setup-server-wehrkalender.sh -U -G v1.0
 
 # Geänderte Einstellungen übernehmen, ohne neues ZIP
 ./setup-server-wehrkalender.sh -U -Z ""
@@ -123,8 +138,10 @@ eigenen Rechner aufgerufen und arbeitet per SSH.
 \toprule
 \textbf{Option} & \textbf{Bedeutung} \\
 \midrule
-\code{-Z <zip>} & ZIP der Anwendung; Standard: neueste Datei
-  \code{wehrkalender*.zip} neben dem Skript; \code{-Z ""} = ohne ZIP \\
+\code{-G <ref>} & aus Git diesen Tag, Zweig oder Commit ausliefern
+  (Standard: \code{HEAD} des Checkouts) \\
+\code{-Z <zip>} & dieses ZIP ausliefern statt Git bzw.\ neuester
+  \code{wehrkalender*.zip}; \code{-Z ""} = keine Anwendung ausliefern \\
 \code{-U} & nur Anwendung installieren, aktualisieren oder umstellen
   (Grundeinrichtung und SSH-Härtung werden übersprungen) \\
 \code{-f <datei>} & Einstellungsdatei (Standard: \code{wehrkalender.env}
